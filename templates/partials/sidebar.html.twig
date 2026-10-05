@@ -1,0 +1,13 @@
+<aside class="sidebar" aria-label="Sidebar">
+    <nav aria-label="Main navigation">
+        <ul>
+            {% for item in sidebar.items %}
+                <li>
+                    <a href="{{ item.href }}" {% if item.current %}aria-current="page"{% endif %}>
+                        <span>{{ item.label }}</span>
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    </nav>
+</aside>

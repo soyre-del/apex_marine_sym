@@ -1,0 +1,885 @@
+/* About page content, scoped to keep the compact shared layout intact. */
+.dashboard-workspace main.about-main {
+    padding: 0;
+}
+
+.about-page {
+    --about-accent: #0ba5df;
+    --about-heading: #f7faff;
+    --about-muted: #a3b6c8;
+    --about-border: rgba(163, 182, 200, .18);
+    --about-caution: #e7b254;
+    color: var(--about-heading);
+    background: #0e2b49;
+    font-family: Montserrat, Arial, sans-serif;
+}
+
+.about-page .about-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: clamp(18px, 3vw, 44px);
+}
+
+.about-page .about-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 350px;
+    padding-block: clamp(54px, 6vw, 80px);
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 0, #174365, #081c2d 75%);
+    border-bottom: 1px solid var(--about-border);
+}
+
+.about-page .about-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 7px 14px;
+    border: 1px solid var(--about-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .04);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.about-page .about-pill-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--about-accent);
+}
+
+.about-page .about-pill-dot-caution {
+    background: var(--about-caution);
+}
+
+.about-page .about-pill-dot-active {
+    background: #11b981;
+}
+
+.dashboard-workspace main.about-main .about-title {
+    margin: 22px 0 20px;
+    font: 800 clamp(30px, 3.6vw, 52px)/1.15 Montserrat, Arial, sans-serif;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.about-page .about-accent {
+    color: var(--about-accent);
+}
+
+.about-page .about-intro,
+.about-page .about-copy p,
+.about-page .about-hub-list,
+.about-page .about-card-description,
+.about-page .about-standard-description,
+.about-page .about-cta-description,
+.about-page .about-section-heading > p {
+    color: var(--about-muted);
+    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.about-page .about-intro {
+    max-width: 750px;
+    margin: 0 auto;
+    font-size: 15px;
+}
+
+.about-page .about-stats {
+    padding-block: 28px;
+    border-bottom: 1px solid var(--about-border);
+}
+
+.about-page .about-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 24px;
+    text-align: center;
+}
+
+.about-page .about-stat-value {
+    display: block;
+    margin-bottom: 6px;
+    font-size: clamp(30px, 3.2vw, 42px);
+    font-weight: 800;
+    line-height: 1.1;
+}
+
+.about-page .about-stat-label {
+    color: var(--about-muted);
+    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.about-page .about-section,
+.about-page .about-cta {
+    position: relative;
+    padding-block: clamp(48px, 5vw, 76px);
+    border-bottom: 1px solid var(--about-border);
+}
+
+.about-page .about-section-dark,
+.about-page .about-cta {
+    background: #081c2d;
+}
+
+.about-page .about-section-glow::before,
+.about-page .about-cta::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0, rgba(11, 165, 223, .1), transparent 65%);
+    pointer-events: none;
+}
+
+.about-page .about-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: clamp(26px, 4vw, 52px);
+}
+
+.about-page .about-columns-reverse .about-copy {
+    order: 2;
+}
+
+.about-page .about-copy {
+    min-width: 0;
+}
+
+.about-page .about-heading {
+    margin: 20px 0;
+    font-size: clamp(24px, 2.7vw, 38px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.6px;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.about-page .about-copy > p {
+    margin: 0 0 20px;
+}
+
+.about-page .about-objective {
+    margin-bottom: 24px;
+    padding: 22px;
+    border-left: 4px solid var(--about-accent);
+    border-radius: 0 12px 12px 0;
+    background: rgba(46, 107, 156, .12);
+}
+
+.about-page .about-objective p {
+    margin: 0;
+    color: var(--about-heading);
+}
+
+.about-page .about-certifications {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 18px 24px;
+    margin-top: 28px;
+}
+
+.about-page .about-certifications > div + div {
+    padding-left: 24px;
+    border-left: 1px solid var(--about-border);
+}
+
+.about-page .about-certifications strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 21px;
+}
+
+.about-page .about-certifications span {
+    color: var(--about-accent);
+    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.about-page .about-heritage {
+    position: relative;
+    min-width: 0;
+    aspect-ratio: 600 / 399;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--about-border);
+    border-radius: 14px;
+    background: radial-gradient(ellipse at 35% 30%, rgba(11, 165, 223, .22), transparent 70%), #12324b;
+}
+
+.about-page .about-heritage > img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.about-page .about-heritage::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(transparent 40%, rgba(4, 20, 34, .7));
+    pointer-events: none;
+}
+
+.about-page .about-image-placeholder {
+    display: grid;
+    place-items: center;
+    width: 100%;
+    height: 100%;
+    padding: 24px 24px 100px;
+    color: var(--about-muted);
+    font: 13px/1.8 'Cascadia Code', 'Courier New', monospace;
+    text-align: center;
+}
+
+.about-page .about-heritage-caption {
+    position: absolute;
+    bottom: 22px;
+    left: 22px;
+    z-index: 1;
+    max-width: calc(100% - 44px);
+    padding: 16px 20px;
+    border: 1px solid var(--about-border);
+    border-radius: 8px;
+    background: rgba(8, 28, 45, .88);
+}
+
+.about-page .about-heritage-caption strong {
+    display: block;
+    margin-bottom: 7px;
+    font-size: 13px;
+    letter-spacing: .7px;
+    text-transform: uppercase;
+}
+
+.about-page .about-heritage-caption span {
+    color: var(--about-caution);
+    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+}
+
+.about-page .about-hub-list {
+    margin: 24px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.about-page .about-hub-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+}
+
+.about-page .about-hub-list li + li {
+    margin-top: 14px;
+}
+
+.about-page .about-hub-list svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 3px;
+    color: var(--about-accent);
+}
+
+.about-page .about-hub-list strong {
+    color: var(--about-heading);
+}
+
+.about-page .about-map-card {
+    min-width: 0;
+    margin: 0;
+    padding: 16px;
+    border: 1px solid var(--about-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .04);
+}
+
+.about-page .about-map {
+    position: relative;
+    height: 360px;
+    isolation: isolate;
+    overflow: hidden;
+    border: 1px solid var(--about-border);
+    border-radius: 10px;
+    background: #05101c;
+    box-shadow: inset 0 0 50px rgba(0, 0, 0, .6);
+}
+
+.about-page .about-map-grid {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    background-image: linear-gradient(rgba(46, 107, 156, .13) 1px, transparent 1px), linear-gradient(90deg, rgba(46, 107, 156, .13) 1px, transparent 1px);
+    background-size: 30px 30px;
+    pointer-events: none;
+}
+
+.about-page .about-map-scanner {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 1;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, #2e6b9c, transparent);
+    box-shadow: 0 0 15px #2e6b9c;
+    opacity: .5;
+    pointer-events: none;
+    animation: about-scan 6s linear infinite;
+}
+
+.about-page .about-map-markers {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+}
+
+.about-page .about-hub-marker {
+    position: absolute;
+    top: var(--hub-y);
+    left: var(--hub-x);
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--about-heading);
+    font: inherit;
+    text-align: left;
+    transform: translate(-50%, -50%);
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.about-page .about-hub-marker:hover,
+.about-page .about-hub-marker:focus {
+    z-index: 3;
+}
+
+.about-page .about-hub-dot {
+    position: relative;
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    background: var(--about-caution);
+    box-shadow: 0 0 15px rgba(231, 178, 84, .65);
+    transition: transform .2s ease, background-color .2s ease;
+}
+
+.about-page .about-hub-marker:hover .about-hub-dot,
+.about-page .about-hub-marker:focus .about-hub-dot {
+    border-color: var(--about-caution);
+    background: #fff;
+    transform: scale(1.25);
+}
+
+.about-page .about-hub-ping {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 14px;
+    height: 14px;
+    border: 1px solid rgba(231, 178, 84, .5);
+    border-radius: 50%;
+    background: rgba(231, 178, 84, .35);
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+    animation: about-radar-ping 2.5s cubic-bezier(.215, .61, .355, 1) infinite;
+    animation-delay: var(--hub-delay, 0s);
+}
+
+.about-page .about-hub-tooltip {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    z-index: 4;
+    display: block;
+    width: 190px;
+    padding: 12px;
+    border: 1px solid rgba(46, 107, 156, .6);
+    border-radius: 8px;
+    background: rgba(8, 28, 45, .96);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+    opacity: 0;
+    visibility: hidden;
+    transform: translate(-50%, 6px);
+    transition: opacity .2s ease, transform .2s ease, visibility .2s ease;
+    pointer-events: none;
+}
+
+.about-page .about-hub-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    border: 6px solid transparent;
+    border-top-color: rgba(46, 107, 156, .6);
+    transform: translateX(-50%);
+}
+
+.about-page .about-hub-marker:hover .about-hub-tooltip,
+.about-page .about-hub-marker:focus .about-hub-tooltip {
+    opacity: 1;
+    visibility: visible;
+    transform: translate(-50%, 0);
+}
+
+.about-page .about-hub-marker-right .about-hub-tooltip {
+    right: 0;
+    left: auto;
+    transform: translate(0, 6px);
+}
+
+.about-page .about-hub-marker-left .about-hub-tooltip {
+    left: 0;
+    transform: translate(0, 6px);
+}
+
+.about-page .about-hub-marker-right:hover .about-hub-tooltip,
+.about-page .about-hub-marker-right:focus .about-hub-tooltip,
+.about-page .about-hub-marker-left:hover .about-hub-tooltip,
+.about-page .about-hub-marker-left:focus .about-hub-tooltip {
+    transform: translate(0, 0);
+}
+
+.about-page .about-hub-marker-right .about-hub-tooltip::after {
+    right: 12px;
+    left: auto;
+    transform: none;
+}
+
+.about-page .about-hub-marker-left .about-hub-tooltip::after {
+    left: 12px;
+    transform: none;
+}
+
+/* Northern hubs open downward so their tooltip remains inside the panel. */
+.about-page .about-hub-marker-top .about-hub-tooltip {
+    top: calc(100% + 4px);
+    bottom: auto;
+}
+
+.about-page .about-hub-marker-top .about-hub-tooltip::after {
+    top: auto;
+    bottom: 100%;
+    border-top-color: transparent;
+    border-bottom-color: rgba(46, 107, 156, .6);
+}
+
+.about-page .about-hub-tooltip-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 9px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--about-border);
+    font-size: 9px;
+    text-transform: uppercase;
+}
+
+.about-page .about-hub-tooltip-header strong {
+    color: var(--about-caution);
+}
+
+.about-page .about-hub-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 8px;
+}
+
+.about-page .about-hub-status::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: #11b981;
+}
+
+.about-page .about-hub-city {
+    display: block;
+    margin-bottom: 5px;
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.about-page .about-hub-description {
+    display: block;
+    color: var(--about-muted);
+    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+}
+
+.about-page .about-map-legend {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    z-index: 1;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: calc(100% - 24px);
+    padding: 8px 10px;
+    border: 1px solid var(--about-border);
+    border-radius: 6px;
+    background: rgba(8, 28, 45, .9);
+    color: var(--about-muted);
+    font: 10px/1.5 'Cascadia Code', 'Courier New', monospace;
+    letter-spacing: .6px;
+    text-transform: uppercase;
+    pointer-events: none;
+}
+
+.about-page .about-map-indicator {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--about-accent);
+    animation: about-indicator-pulse 2s ease-in-out infinite;
+}
+
+.about-page .about-map-caption {
+    margin-top: 12px;
+    color: var(--about-muted);
+    font: 11px/1.6 'Cascadia Code', 'Courier New', monospace;
+    text-align: center;
+}
+
+.about-page .about-section-heading {
+    max-width: 800px;
+    margin: 0 auto 36px;
+    text-align: center;
+}
+
+.about-page .about-section-heading > p {
+    max-width: 640px;
+    margin: 0 auto;
+}
+
+.about-page .about-card-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+}
+
+.about-page .about-card {
+    min-width: 0;
+    padding: clamp(22px, 2.8vw, 38px);
+    border: 1px solid var(--about-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .045);
+}
+
+.about-page .about-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.about-page .about-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(46, 107, 156, .3);
+    border-radius: 12px;
+    background: rgba(46, 107, 156, .12);
+    color: #4d9bcc;
+}
+
+.about-page .about-icon svg {
+    width: 27px;
+    height: 27px;
+}
+
+.about-page .about-card-number {
+    color: #7c96ad;
+    font: 700 14px 'Cascadia Code', 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.about-page .about-card-title,
+.about-page .about-standard-title {
+    margin: 0 0 14px;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.35;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.about-page .about-card-description,
+.about-page .about-standard-description {
+    margin: 0;
+}
+
+.about-page .about-standard-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    text-align: center;
+}
+
+.about-page .about-standard {
+    min-width: 0;
+    padding: 20px 24px;
+}
+
+.about-page .about-standard + .about-standard {
+    border-left: 1px solid var(--about-border);
+}
+
+.about-page .about-standard-icon {
+    margin-bottom: 20px;
+    color: #4d9bcc;
+}
+
+.about-page .about-standard-icon-caution {
+    color: var(--about-caution);
+}
+
+.about-page .about-standard-icon-ocean {
+    color: var(--about-accent);
+}
+
+.about-page .about-standard-icon svg {
+    width: 40px;
+    height: 40px;
+}
+
+.about-page .about-standard-title {
+    font-size: 17px;
+}
+
+.about-page .about-standard-description {
+    font-size: 12px;
+}
+
+.about-page .about-cta {
+    text-align: center;
+}
+
+.about-page .about-cta .about-heading {
+    margin-top: 0;
+}
+
+.about-page .about-cta-description {
+    max-width: 640px;
+    margin: 0 auto 30px;
+}
+
+.about-page .about-cta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.about-page .about-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    max-width: 100%;
+    padding: 14px 22px;
+    border: 1px solid var(--about-accent);
+    border-radius: 6px;
+    background: var(--about-accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+
+.about-page .about-button:hover {
+    border-color: #078ec2;
+    background: #078ec2;
+}
+
+.about-page .about-button-outline {
+    border-color: rgba(163, 182, 200, .45);
+    background: transparent;
+}
+
+.about-page .about-button-outline:hover {
+    border-color: var(--about-accent);
+    background: rgba(11, 165, 223, .1);
+}
+
+.about-page .about-button svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+@keyframes about-scan {
+    0% { top: -4px; opacity: 0; }
+    10%, 90% { opacity: .5; }
+    100% { top: 100%; opacity: 0; }
+}
+
+@keyframes about-radar-ping {
+    0% { width: 14px; height: 14px; opacity: 1; }
+    100% { width: 60px; height: 60px; opacity: 0; }
+}
+
+@keyframes about-indicator-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .3; }
+}
+
+@media (max-width: 1000px) {
+    .about-page .about-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .about-page .about-columns-reverse .about-copy {
+        order: initial;
+    }
+
+    .about-page .about-heritage,
+    .about-page .about-map-card {
+        width: 100%;
+        max-width: 640px;
+        margin-inline: auto;
+    }
+
+    .about-page .about-standard {
+        padding-inline: 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .about-page .about-hero {
+        min-height: 320px;
+        padding-block: 48px;
+    }
+
+    .dashboard-workspace main.about-main .about-title {
+        font-size: clamp(28px, 7vw, 38px);
+        letter-spacing: -.6px;
+    }
+
+    .about-page .about-pill {
+        font-size: 9px;
+        letter-spacing: 1.2px;
+    }
+
+    .about-page .about-stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 28px 16px;
+    }
+
+    .about-page .about-card-grid,
+    .about-page .about-standard-grid {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .about-page .about-section-heading {
+        margin-bottom: 28px;
+    }
+
+    .about-page .about-standard + .about-standard {
+        border-top: 1px solid var(--about-border);
+        border-left: 0;
+    }
+
+    .about-page .about-map-card {
+        padding: 10px;
+    }
+
+    .about-page .about-map {
+        height: 320px;
+    }
+
+    .about-page .about-hub-tooltip {
+        width: 175px;
+        padding: 10px;
+    }
+
+    .about-page .about-heritage-caption {
+        bottom: 14px;
+        left: 14px;
+        max-width: calc(100% - 28px);
+        padding: 12px 14px;
+    }
+
+    .about-page .about-cta-actions {
+        flex-direction: column;
+        align-items: stretch;
+        max-width: 340px;
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 380px) {
+    .about-page .about-map {
+        height: 280px;
+    }
+
+    .about-page .about-hub-tooltip {
+        width: 155px;
+    }
+
+    .about-page .about-hub-tooltip-header {
+        gap: 4px;
+        font-size: 8px;
+    }
+
+    .about-page .about-button {
+        padding-inline: 16px;
+        font-size: 10px;
+        letter-spacing: .5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .about-page .about-map-scanner,
+    .about-page .about-hub-ping,
+    .about-page .about-map-indicator {
+        animation: none;
+    }
+
+    .about-page .about-hub-ping,
+    .about-page .about-map-scanner {
+        display: none;
+    }
+
+    .about-page .about-hub-dot,
+    .about-page .about-hub-tooltip,
+    .about-page .about-button {
+        transition: none;
+    }
+}

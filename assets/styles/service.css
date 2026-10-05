@@ -1,0 +1,559 @@
+/* Services content keeps the compact shared navigation and footer intact. */
+.dashboard-workspace main.service-main {
+    padding: 0;
+}
+
+.service-page {
+    --service-accent: #0ba5df;
+    --service-heading: #f7faff;
+    --service-muted: #a3b6c8;
+    --service-border: rgba(163, 182, 200, .18);
+    --service-caution: #e7b254;
+    color: var(--service-heading);
+    background: #0e2b49;
+    font-family: Montserrat, Arial, sans-serif;
+}
+
+.service-page .service-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: clamp(18px, 3vw, 44px);
+}
+
+.service-page .service-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 350px;
+    padding-block: clamp(54px, 6vw, 80px);
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 0, #174365, #081c2d 75%);
+}
+
+.service-page .service-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 100%;
+    padding: 7px 14px;
+    border: 1px solid var(--service-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .04);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.service-page .service-pill-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--service-accent);
+}
+
+.dashboard-workspace main.service-main .service-title {
+    margin: 22px 0 20px;
+    font: 800 clamp(30px, 3.6vw, 52px)/1.15 Montserrat, Arial, sans-serif;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.service-page .service-accent {
+    color: var(--service-accent);
+}
+
+.service-page .service-accent-caution {
+    color: var(--service-caution);
+}
+
+.service-page .service-accent-muted {
+    color: var(--service-muted);
+}
+
+.service-page .service-intro,
+.service-page .service-description,
+.service-page .service-discipline-description,
+.service-page .service-note p,
+.service-page .service-detail-list,
+.service-page .service-step-description,
+.service-page .service-cta-description,
+.service-page .service-section-heading > p {
+    color: var(--service-muted);
+    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.service-page .service-intro {
+    max-width: 800px;
+    margin: 0 auto;
+    font-size: 15px;
+}
+
+.service-page .service-section,
+.service-page .service-cta {
+    position: relative;
+    padding-block: clamp(48px, 5vw, 76px);
+    border-bottom: 1px solid var(--service-border);
+    scroll-margin-top: 24px;
+}
+
+.service-page .service-section-dark,
+.service-page .service-cta {
+    background: #081c2d;
+}
+
+.service-page .service-section-glow::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 50% 0, rgba(11, 165, 223, .1), transparent 65%);
+    pointer-events: none;
+}
+
+.service-page .service-heading {
+    margin: 0 0 20px;
+    font-size: clamp(24px, 2.7vw, 38px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.6px;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.service-page .service-section-heading {
+    max-width: 800px;
+    margin: 0 auto 36px;
+    text-align: center;
+}
+
+.service-page .service-section-heading > p {
+    margin: 0;
+}
+
+.service-page .service-disciplines-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px;
+}
+
+.service-page .service-discipline-card {
+    min-width: 0;
+    padding: 26px 22px;
+    border: 1px solid var(--service-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .025);
+    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+}
+
+.service-page .service-discipline-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(11, 165, 223, .4);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, .13);
+}
+
+.service-page .service-discipline-icon {
+    margin-bottom: 22px;
+    color: var(--service-accent);
+}
+
+.service-page .service-discipline-icon svg {
+    display: block;
+    width: 36px;
+    height: 36px;
+}
+
+.service-page .service-discipline-icon-caution {
+    color: var(--service-caution);
+}
+
+.service-page .service-discipline-icon-white {
+    color: var(--service-heading);
+}
+
+.service-page .service-discipline-icon-ocean {
+    color: var(--service-accent);
+}
+
+.service-page .service-discipline-title,
+.service-page .service-step-title {
+    margin: 0 0 14px;
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+    text-transform: uppercase;
+}
+
+.service-page .service-discipline-description {
+    margin: 0;
+    font-size: 13px;
+}
+
+.service-page .service-columns {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-items: center;
+    gap: clamp(26px, 4vw, 52px);
+}
+
+.service-page .service-columns-reverse .service-image {
+    order: 2;
+}
+
+.service-page .service-copy {
+    min-width: 0;
+}
+
+.service-page .service-image {
+    min-width: 0;
+    aspect-ratio: 4 / 3;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--service-border);
+    border-radius: 14px;
+    background: #12354f;
+    box-shadow: 0 18px 36px rgba(0, 0, 0, .16);
+}
+
+.service-page .service-image img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.service-page .service-image-placeholder {
+    display: grid;
+    place-items: center;
+    align-content: center;
+    width: 100%;
+    height: 100%;
+    padding: 24px;
+    background: radial-gradient(circle at 30% 30%, rgba(11, 165, 223, .24), transparent 50%),
+        linear-gradient(145deg, #174365, #081c2d);
+    color: var(--service-muted);
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    line-height: 1.6;
+    text-align: center;
+    text-transform: uppercase;
+}
+
+.service-page .service-image-maintenance .service-image-placeholder {
+    background: radial-gradient(circle at 70% 35%, rgba(231, 178, 84, .16), transparent 55%),
+        linear-gradient(145deg, #173b5c, #081c2d);
+}
+
+.service-page .service-image-operation .service-image-placeholder {
+    background: radial-gradient(circle at 40% 45%, rgba(163, 182, 200, .18), transparent 55%),
+        linear-gradient(145deg, #14364f, #081c2d);
+}
+
+.service-page .service-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 52px;
+    height: 52px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(11, 165, 223, .2);
+    border-radius: 10px;
+    background: rgba(11, 165, 223, .1);
+    color: var(--service-accent);
+}
+
+.service-page .service-icon svg {
+    width: 28px;
+    height: 28px;
+}
+
+.service-page .service-icon-caution {
+    border-color: rgba(231, 178, 84, .2);
+    background: rgba(231, 178, 84, .1);
+    color: var(--service-caution);
+}
+
+.service-page .service-icon-white {
+    border-color: var(--service-border);
+    background: rgba(255, 255, 255, .05);
+    color: var(--service-heading);
+}
+
+.service-page .service-icon-ocean {
+    color: var(--service-accent);
+}
+
+.service-page .service-description {
+    margin: 0 0 24px;
+}
+
+.service-page .service-engineering-list,
+.service-page .service-detail-list,
+.service-page .service-process-grid {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.service-page .service-engineering-list {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 18px;
+    color: var(--service-muted);
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.6;
+}
+
+.service-page .service-engineering-list li,
+.service-page .service-detail-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    min-width: 0;
+}
+
+.service-page .service-engineering-list svg,
+.service-page .service-detail-list svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    margin-top: 3px;
+    color: var(--service-accent);
+}
+
+.service-page #maintenance .service-detail-list svg {
+    color: var(--service-caution);
+}
+
+.service-page .service-note {
+    margin-bottom: 24px;
+    padding: 22px;
+    border: 1px solid var(--service-border);
+    border-radius: 12px;
+    background: #081c2d;
+}
+
+.service-page .service-subheading {
+    margin: 0 0 14px;
+    color: var(--service-heading);
+    font-size: 15px;
+    font-weight: 700;
+    line-height: 1.5;
+}
+
+.service-page .service-note p {
+    margin: 0;
+    font-size: 13px;
+}
+
+.service-page .service-detail-list li + li {
+    margin-top: 18px;
+}
+
+.service-page .service-detail-list strong {
+    color: var(--service-heading);
+    font-family: Montserrat, Arial, sans-serif;
+}
+
+.service-page .service-process-grid {
+    position: relative;
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 28px 24px;
+}
+
+.service-page .service-step {
+    position: relative;
+    z-index: 1;
+    min-width: 0;
+    text-align: center;
+}
+
+.service-page .service-step-number {
+    display: grid;
+    place-items: center;
+    width: 72px;
+    height: 72px;
+    margin: 0 auto 22px;
+    border: 1px solid var(--service-border);
+    border-radius: 50%;
+    background: #081c2d;
+    color: var(--service-accent);
+    font-size: 24px;
+    font-weight: 700;
+}
+
+.service-page .service-step-number-caution {
+    color: var(--service-caution);
+}
+
+.service-page .service-step-number-white {
+    color: var(--service-heading);
+}
+
+.service-page .service-step-number-ocean {
+    color: var(--service-accent);
+}
+
+.service-page .service-step-description {
+    margin: 0;
+    font-size: 13px;
+}
+
+.service-page .service-cta {
+    text-align: center;
+}
+
+.service-page .service-cta-description {
+    max-width: 700px;
+    margin: 0 auto 28px;
+}
+
+.service-page .service-cta-actions {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 14px;
+}
+
+.service-page .service-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+    max-width: 100%;
+    min-height: 44px;
+    padding: 14px 22px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: var(--service-accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    line-height: 1.4;
+    text-transform: uppercase;
+    transition: background-color .2s ease, border-color .2s ease;
+}
+
+.service-page .service-button:hover {
+    background: #078ec2;
+}
+
+.service-page .service-button svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.service-page .service-button-outline {
+    border-color: rgba(163, 182, 200, .45);
+    background: transparent;
+}
+
+.service-page .service-button-outline:hover {
+    border-color: var(--service-accent);
+    background: rgba(11, 165, 223, .1);
+}
+
+@media (min-width: 1200px) {
+    .service-page .service-disciplines-grid,
+    .service-page .service-process-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .service-page .service-process-grid::before {
+        content: '';
+        position: absolute;
+        top: 35px;
+        right: 12%;
+        left: 12%;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, rgba(163, 182, 200, .2), transparent);
+        pointer-events: none;
+    }
+}
+
+@media (max-width: 1050px) {
+    .service-page .service-columns {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .service-page .service-columns-reverse .service-image {
+        order: initial;
+    }
+
+    .service-page .service-image {
+        width: 100%;
+        max-width: 640px;
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 640px) {
+    .service-page .service-hero {
+        min-height: 320px;
+        padding-block: 48px;
+    }
+
+    .dashboard-workspace main.service-main .service-title {
+        font-size: clamp(28px, 7vw, 38px);
+        letter-spacing: -.6px;
+    }
+
+    .service-page .service-pill {
+        font-size: 9px;
+        letter-spacing: 1.2px;
+    }
+
+    .service-page .service-disciplines-grid,
+    .service-page .service-engineering-list,
+    .service-page .service-process-grid {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .service-page .service-section-heading {
+        margin-bottom: 28px;
+    }
+
+    .service-page .service-step-description {
+        max-width: 360px;
+        margin-inline: auto;
+    }
+
+    .service-page .service-cta-actions {
+        flex-direction: column;
+        align-items: stretch;
+        max-width: 340px;
+        margin-inline: auto;
+    }
+}
+
+@media (max-width: 380px) {
+    .service-page .service-button {
+        padding-inline: 16px;
+        font-size: 10px;
+        letter-spacing: .5px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .service-page .service-discipline-card,
+    .service-page .service-button {
+        transition: none;
+    }
+
+    .service-page .service-discipline-card:hover {
+        transform: none;
+    }
+}

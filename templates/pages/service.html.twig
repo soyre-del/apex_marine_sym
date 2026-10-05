@@ -1,0 +1,173 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% block main_class %}service-main{% endblock %}
+
+{% macro icon(name, size = 28) %}
+    <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        {% if name == 'sliders' %}
+            <path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
+        {% elseif name == 'lightning' %}
+            <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+        {% elseif name == 'toolbox' %}
+            <path d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+        {% elseif name == 'cube' %}
+            <path d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+        {% elseif name == 'gear' %}
+            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <circle cx="12" cy="12" r="3" />
+        {% elseif name == 'shield' %}
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        {% elseif name == 'clock' %}
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4l3 3" />
+        {% elseif name == 'check' %}
+            <path d="M5 13l4 4L19 7" />
+        {% else %}
+            <path d="M14 5l7 7-7 7M21 12H3" />
+        {% endif %}
+    </svg>
+{% endmacro %}
+
+{% block page_content %}
+    {% import _self as icons %}
+    <div class="service-page">
+        {# 1. Page header #}
+        <header class="service-hero" aria-labelledby="service-heading">
+            <div class="service-container">
+                <div class="service-pill">
+                    <span class="service-pill-dot" aria-hidden="true"></span>
+                    <span>Comprehensive Solutions</span>
+                </div>
+                <h1 id="service-heading" class="service-title">Our Core <span class="service-accent">Services</span></h1>
+                <p class="service-intro">From critical mid-ocean emergency interventions to strategic dry-dock planning. We provide specialized, Class-approved marine repair and maintenance operations executed by certified OEM-trained engineers.</p>
+            </div>
+        </header>
+
+        {# 2. Technical disciplines #}
+        <section id="disciplines" class="service-section" aria-labelledby="disciplines-heading">
+            <div class="service-container">
+                <div class="service-section-heading">
+                    <h2 id="disciplines-heading" class="service-heading">Technical Disciplines</h2>
+                    <p class="service-description">Comprehensive coverage across all critical vessel systems.</p>
+                </div>
+                <div class="service-disciplines-grid">
+                    {% for discipline in service.disciplines %}
+                        <article class="service-discipline-card">
+                            <div class="service-discipline-icon service-discipline-icon-{{ discipline.color }}">{{ icons.icon(discipline.icon, 40) }}</div>
+                            <h3 class="service-discipline-title">{{ discipline.title }}</h3>
+                            <p class="service-discipline-description">{{ discipline.description }}</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {# 3. Marine engineering #}
+        <section id="engineering" class="service-section service-section-dark" aria-labelledby="engineering-heading">
+            <div class="service-container service-columns">
+                <figure class="service-image service-image-engineering">
+                    {% if service.images.engineering %}
+                        <img src="{{ asset(service.images.engineering) }}" alt="Marine Engineering" loading="lazy" width="640" height="480">
+                    {% else %}
+                        <div class="service-image-placeholder">Marine Engineering<br>Image placeholder</div>
+                    {% endif %}
+                </figure>
+                <div class="service-copy">
+                    <div class="service-icon service-icon-ocean">{{ icons.icon('gear') }}</div>
+                    <h2 id="engineering-heading" class="service-heading">Marine <span class="service-accent">Engineering</span></h2>
+                    <p class="service-description">When critical propulsion or auxiliary systems fail, our certified mechanics and automation experts intervene to restore full operability under the most demanding conditions. We go beyond parts replacement, focusing on root-cause analysis to prevent recurrent failures.</p>
+                    <ul class="service-engineering-list">
+                        {% for check in service.engineering_checks %}
+                            <li>{{ icons.icon('check', 18) }}<span>{{ check }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        {# 4. Preventative maintenance #}
+        <section id="maintenance" class="service-section service-section-glow" aria-labelledby="maintenance-heading">
+            <div class="service-container service-columns service-columns-reverse">
+                <figure class="service-image service-image-maintenance">
+                    {% if service.images.maintenance %}
+                        <img src="{{ asset(service.images.maintenance) }}" alt="Preventative Maintenance" loading="lazy" width="640" height="480">
+                    {% else %}
+                        <div class="service-image-placeholder">Preventative Maintenance<br>Image placeholder</div>
+                    {% endif %}
+                </figure>
+                <div class="service-copy">
+                    <div class="service-icon service-icon-caution">{{ icons.icon('shield') }}</div>
+                    <h2 id="maintenance-heading" class="service-heading">Preventative <span class="service-accent-caution">Maintenance</span></h2>
+                    <p class="service-description">Shift the paradigm from reactive repair to strategic prevention. Our preventative maintenance programs are designed to satisfy Class requirements, optimize fuel consumption, and eliminate costly off-hire periods before they occur.</p>
+                    <div class="service-note">
+                        <h3 class="service-subheading">Condition-Based Monitoring (CBM)</h3>
+                        <p class="service-description">We utilize advanced thermography, vibration analysis, and lube oil particulate testing to chart degradation curves, allowing us to predict and schedule bearing or seal replacements precisely when needed&mdash;maximizing component lifespan.</p>
+                    </div>
+                    <ul class="service-detail-list">
+                        {% for detail in service.maintenance_details %}
+                            <li>{{ icons.icon('check', 20) }}<div><strong>{{ detail.label }}:</strong> {{ detail.description }}</div></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        {# 5. Seamless operation and global hubs #}
+        <section id="operation" class="service-section service-section-dark" aria-labelledby="operation-heading">
+            <div class="service-container service-columns">
+                <figure class="service-image service-image-operation">
+                    {% if service.images.operation %}
+                        <img src="{{ asset(service.images.operation) }}" alt="Seamless Operation" loading="lazy" width="640" height="480">
+                    {% else %}
+                        <div class="service-image-placeholder">Seamless Operation<br>Image placeholder</div>
+                    {% endif %}
+                </figure>
+                <div class="service-copy">
+                    <div class="service-icon service-icon-white">{{ icons.icon('clock') }}</div>
+                    <h2 id="operation-heading" class="service-heading">Seamless <span class="service-accent-muted">Operation</span></h2>
+                    <p class="service-description">Modern workflows, rapid response times, and efficient logistics. We streamline every project phase so your crew can focus on navigation and cargo. Our riding squads are pre-cleared and deploy globally with specialized tooling to conduct mid-voyage repairs without interrupting transit.</p>
+                    <h3 class="service-subheading">Global Service Network</h3>
+                    <ul class="service-detail-list">
+                        {% for region in service.regions %}
+                            <li>
+                                {{ icons.icon('check', 20) }}
+                                <div><strong>{{ region.label }}:</strong> {{ region.description }}{% if region.note %} <span class="service-accent">({{ region.note }})</span>{% endif %}</div>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </section>
+
+        {# 6. Our process #}
+        <section id="process" class="service-section" aria-labelledby="process-heading">
+            <div class="service-container">
+                <div class="service-section-heading">
+                    <h2 id="process-heading" class="service-heading">The Execution Protocol</h2>
+                    <p class="service-description">How we manage complex technical interventions from notification to Class approval.</p>
+                </div>
+                <ol class="service-process-grid">
+                    {% for step in service.process %}
+                        <li class="service-step">
+                            <span class="service-step-number service-step-number-{{ step.color }}" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
+                            <h3 class="service-step-title">{{ step.title }}</h3>
+                            <p class="service-step-description">{{ step.description }}</p>
+                        </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </section>
+
+        {# 7. Call to action #}
+        <section id="service-cta" class="service-section service-section-dark service-section-glow service-cta" aria-labelledby="service-cta-heading">
+            <div class="service-container">
+                <h2 id="service-cta-heading" class="service-heading">Minimize Downtime. Maximize Output.</h2>
+                <p class="service-cta-description">Whether you require an immediate mid-ocean intervention or are formulating specifications for an upcoming dry-dock, connect with our global operations center for a rapid technical assessment.</p>
+                <div class="service-cta-actions">
+                    <a href="{{ path('app_contact') }}" class="service-button">Request Service Dispatch {{ icons.icon('arrow', 20) }}</a>
+                    <a href="{{ path('app_contact') }}" class="service-button service-button-outline">Contact Engineering</a>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}

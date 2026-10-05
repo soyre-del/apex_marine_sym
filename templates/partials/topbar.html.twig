@@ -1,0 +1,20 @@
+<header class="topbar">
+    <a class="skip-link" href="#main-content">Skip to content</a>
+    <a class="header-brand" href="{{ path('app_home') }}" aria-label="{{ brand }} home">
+        <span class="header-logo" aria-hidden="true">
+            {# Replace this placeholder with your logo image when ready. #}
+            <span class="logo-placeholder">LOGO</span>
+        </span>
+        <span class="header-brand-name">{{ brand }}</span>
+    </a>
+    <nav class="header-actions" aria-label="Account">
+        <button class="login-button" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 5H5v14h5M9 12h11m-4-4 4 4-4 4" /></svg>
+            Log In
+        </button>
+        <button class="register-button" type="button">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="7" r="3" /><path d="M3 20v-3a6 6 0 0 1 12 0v3H3m16-13v6m-3-3h6" /></svg>
+            Sign Up
+        </button>
+    </nav>
+</header>

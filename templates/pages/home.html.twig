@@ -1,0 +1,131 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% block main_class %}homepage-main{% endblock %}
+
+{% macro icon(name, size = 28) %}
+    <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        {% if name == 'gear' %}
+            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <circle cx="12" cy="12" r="3" />
+        {% elseif name == 'shield' %}
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        {% elseif name == 'personnel' %}
+            <path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+        {% else %}
+            <path d="M14 5l7 7-7 7M21 12H3" />
+        {% endif %}
+    </svg>
+{% endmacro %}
+
+{% block page_content %}
+    {% import _self as icons %}
+    <div class="home-page">
+        {# Section 1: Hero #}
+        <header class="home-hero" aria-labelledby="home-heading">
+            <div class="home-hero-overlay" aria-hidden="true"></div>
+            <div class="home-container home-hero-content">
+                <div class="home-pill">
+                    <span class="home-pill-dot" aria-hidden="true"></span>
+                    <span>Apex Marine</span>
+                </div>
+                <h1 id="home-heading" class="home-hero-title">
+                    Heavy-Duty Marine<br>
+                    <span class="home-text-gradient">Engineering &amp; Maintenance</span>
+                </h1>
+                <p class="home-hero-description">
+                    Executed by highly trained marine engineers and dedicated crews to keep your vessel moving at peak operational capacity.
+                </p>
+                <a href="{{ path('app_contact') }}" class="home-button">
+                    Request Immediate Service
+                    {{ icons.icon('arrow', 20) }}
+                </a>
+            </div>
+        </header>
+
+        {# Section 2: Core Competencies #}
+        <section class="home-section home-section-glow" aria-labelledby="competencies-heading">
+            <div class="home-container">
+                <div class="home-section-heading">
+                    <div class="home-pill">
+                        <span class="home-pill-dot home-pill-dot-caution" aria-hidden="true"></span>
+                        <span>Core Competencies</span>
+                    </div>
+                    <h2 id="competencies-heading" class="home-section-title">Excellence in Maritime Engineering</h2>
+                </div>
+                <div class="home-grid home-grid-two">
+                    <article class="home-card">
+                        <div class="home-card-top">
+                            <div class="home-icon">{{ icons.icon('gear') }}</div>
+                            <span class="home-card-number" aria-hidden="true">01</span>
+                        </div>
+                        <h3 class="home-card-title">Heavy-Duty Ship Repairs</h3>
+                        <p class="home-card-description">Comprehensive structural and mechanical repairs engineered to restore performance and guarantee long-term vessel integrity.</p>
+                    </article>
+                    <article class="home-card">
+                        <div class="home-card-top">
+                            <div class="home-icon">{{ icons.icon('shield') }}</div>
+                            <span class="home-card-number" aria-hidden="true">02</span>
+                        </div>
+                        <h3 class="home-card-title">Trust &amp; Reliability</h3>
+                        <p class="home-card-description">Providing highly efficient services through a seamlessly organized operation. Our in-house marine engineers and skilled crews instill immediate confidence.</p>
+                    </article>
+                </div>
+            </div>
+        </section>
+
+        {# Section 3: Core Services #}
+        <section class="home-section home-section-dark" aria-labelledby="services-heading">
+            <div class="home-container">
+                <div class="home-section-heading">
+                    <span class="home-eyebrow">What We Do</span>
+                    <h2 id="services-heading" class="home-section-title">Our Core Services</h2>
+                    <p class="home-section-description">Specialized marine repair and maintenance operations executed by certified engineers, designed to restore, maintain, and optimize your vessel's critical systems.</p>
+                </div>
+                <div class="home-grid home-grid-three">
+                    {% for service in services %}
+                        <a href="{{ path('app_service') }}" class="home-service-card">
+                            <div class="home-service-image home-service-image-{{ service.style }}">
+                                {% if service.image %}
+                                    <img src="{{ asset(service.image) }}" alt="{{ service.title }}" loading="lazy" width="640" height="360">
+                                {% else %}
+                                    <span class="home-service-image-placeholder">{{ service.title }}<br>Image placeholder</span>
+                                {% endif %}
+                            </div>
+                            <div class="home-service-body">
+                                <h3 class="home-service-title">{{ service.title }}</h3>
+                                <p class="home-service-description">{{ service.description }}</p>
+                                <span class="home-learn-more">Learn More {{ icons.icon('arrow', 16) }}</span>
+                            </div>
+                        </a>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {# Section 4: The Apex Advantage #}
+        <section class="home-section home-section-glow" aria-labelledby="advantage-heading">
+            <div class="home-container">
+                <div class="home-section-heading">
+                    <span class="home-eyebrow">The Apex Advantage</span>
+                    <h2 id="advantage-heading" class="home-section-title">Why Choose Apex?</h2>
+                </div>
+                <div class="home-grid home-grid-two">
+                    <article class="home-card home-feature-card">
+                        <div class="home-icon">{{ icons.icon('personnel') }}</div>
+                        <div class="home-feature-body">
+                            <h3 class="home-feature-title">Expert Personnel</h3>
+                            <p class="home-feature-description">Your vessel is serviced directly by our dedicated team of certified marine engineers and skilled crews. We guarantee precision and uncompromising quality on every job.</p>
+                        </div>
+                    </article>
+                    <article class="home-card home-feature-card">
+                        <div class="home-icon">{{ icons.icon('shield') }}</div>
+                        <div class="home-feature-body">
+                            <h3 class="home-feature-title">Proven Reliability</h3>
+                            <p class="home-feature-description">Built on a foundation of trust, our heavy-duty standards mean every repair is engineered to last, minimizing your downtime and maximizing fleet performance.</p>
+                        </div>
+                    </article>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}

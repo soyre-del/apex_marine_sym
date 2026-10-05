@@ -1,0 +1,411 @@
+/* Homepage content; the compact shared navigation and footer keep their styles. */
+.dashboard-workspace main.homepage-main {
+    padding: 0;
+}
+
+.home-page {
+    --home-accent: #0ba5df;
+    --home-heading: #f7faff;
+    --home-muted: #a3b6c8;
+    --home-border: rgba(163, 182, 200, .18);
+    color: var(--home-heading);
+    font-family: Montserrat, Arial, sans-serif;
+    background: #0e2b49;
+}
+
+.home-page .home-container {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    max-width: 1200px;
+    margin-inline: auto;
+    padding-inline: clamp(18px, 3vw, 44px);
+}
+
+.home-page .home-hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 460px;
+    padding-block: clamp(64px, 7vw, 100px);
+    overflow: hidden;
+    text-align: center;
+    background: radial-gradient(ellipse at 50% 15%, #174365 0%, #0e2b49 65%, #0a2037 100%);
+    border-bottom: 1px solid var(--home-border);
+}
+
+.home-page .home-hero-overlay {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(180deg, transparent, rgba(4, 20, 34, .3));
+}
+
+.home-page .home-hero-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.home-page .home-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 7px 14px;
+    border: 1px solid var(--home-border);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, .04);
+    color: var(--home-heading);
+    font-size: 10px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 1.8px;
+    text-transform: uppercase;
+}
+
+.home-page .home-pill-dot {
+    flex-shrink: 0;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--home-accent);
+}
+
+.home-page .home-pill-dot-caution {
+    background: #e7b254;
+}
+
+.dashboard-workspace main.homepage-main .home-hero-title {
+    max-width: 1000px;
+    margin: 24px 0 20px;
+    font: 800 clamp(30px, 3.4vw, 52px)/1.15 Montserrat, Arial, sans-serif;
+    letter-spacing: -1px;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.home-page .home-text-gradient {
+    color: #36bef1;
+    background: linear-gradient(100deg, #7ddaff, #0ba5df);
+    background-clip: text;
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.home-page .home-hero-description,
+.home-page .home-section-description,
+.home-page .home-card-description,
+.home-page .home-service-description,
+.home-page .home-feature-description {
+    margin: 0;
+    color: var(--home-muted);
+    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-size: 14px;
+    line-height: 1.8;
+}
+
+.home-page .home-hero-description {
+    max-width: 700px;
+    margin-bottom: 30px;
+    color: #c5d4e2;
+    font-size: 15px;
+}
+
+.home-page .home-button {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    max-width: 100%;
+    padding: 14px 22px;
+    border-radius: 6px;
+    background: var(--home-accent);
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    transition: background-color .2s ease;
+}
+
+.home-page .home-button:hover {
+    background: #078ec2;
+}
+
+.home-page .home-button svg,
+.home-page .home-learn-more svg {
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+}
+
+.home-page .home-section {
+    position: relative;
+    padding-block: clamp(48px, 5vw, 76px);
+    overflow: hidden;
+    border-bottom: 1px solid var(--home-border);
+}
+
+.home-page .home-section-dark {
+    background: #081c2d;
+}
+
+.home-page .home-section-glow::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: min(800px, 100%);
+    height: 400px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse, rgba(11, 165, 223, .09), transparent 70%);
+    pointer-events: none;
+}
+
+.home-page .home-section-heading {
+    max-width: 800px;
+    margin: 0 auto 36px;
+    text-align: center;
+}
+
+.home-page .home-eyebrow {
+    display: inline-block;
+    color: var(--home-accent);
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.5;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+}
+
+.home-page .home-section-title {
+    margin: 16px 0;
+    font-size: clamp(24px, 2.7vw, 38px);
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: -.6px;
+    text-transform: uppercase;
+}
+
+.home-page .home-grid {
+    display: grid;
+    gap: 24px;
+}
+
+.home-page .home-grid-two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.home-page .home-grid-three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.home-page .home-card,
+.home-page .home-feature-card,
+.home-page .home-service-card {
+    min-width: 0;
+    border: 1px solid var(--home-border);
+    border-radius: 14px;
+    background: rgba(255, 255, 255, .045);
+}
+
+.home-page .home-card,
+.home-page .home-feature-card {
+    padding: clamp(22px, 2.8vw, 38px);
+}
+
+.home-page .home-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.home-page .home-icon {
+    display: grid;
+    place-items: center;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border: 1px solid rgba(46, 107, 156, .3);
+    border-radius: 12px;
+    background: rgba(46, 107, 156, .12);
+    color: #4d9bcc;
+}
+
+.home-page .home-icon svg {
+    width: 27px;
+    height: 27px;
+}
+
+.home-page .home-card-number {
+    color: #7c96ad;
+    font: 700 14px 'Cascadia Code', 'Courier New', monospace;
+    letter-spacing: 2px;
+}
+
+.home-page .home-card-title,
+.home-page .home-service-title,
+.home-page .home-feature-title {
+    margin: 0 0 14px;
+    font-size: 19px;
+    font-weight: 800;
+    line-height: 1.35;
+    text-transform: uppercase;
+    overflow-wrap: break-word;
+}
+
+.home-page .home-service-card {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: border-color .2s ease, background-color .2s ease;
+}
+
+.home-page .home-service-card:hover {
+    border-color: rgba(11, 165, 223, .55);
+    background: rgba(255, 255, 255, .07);
+}
+
+.home-page .home-service-image {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 100%;
+    min-height: 170px;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    border-bottom: 1px solid var(--home-border);
+    background: radial-gradient(ellipse at 50% 35%, rgba(11, 165, 223, .2), transparent 70%), #12324b;
+}
+
+.home-page .home-service-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.home-page .home-service-image-placeholder {
+    padding: 20px;
+    color: #a3b6c8;
+    font: 12px/1.8 'Cascadia Code', 'Courier New', monospace;
+    text-align: center;
+}
+
+.home-page .home-service-image-maintenance {
+    background: radial-gradient(ellipse at 35% 40%, rgba(79, 153, 156, .22), transparent 70%), #102e44;
+}
+
+.home-page .home-service-image-operation {
+    background: radial-gradient(ellipse at 70% 40%, rgba(56, 126, 178, .25), transparent 70%), #102a42;
+}
+
+.home-page .home-service-body {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    padding: 24px;
+}
+
+.home-page .home-service-title {
+    font-size: 17px;
+}
+
+.home-page .home-service-description {
+    flex: 1;
+    margin-bottom: 24px;
+    font-size: 13px;
+}
+
+.home-page .home-learn-more {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    color: #36bef1;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+}
+
+.home-page .home-learn-more svg {
+    width: 16px;
+    height: 16px;
+}
+
+.home-page .home-feature-card {
+    display: flex;
+    align-items: flex-start;
+    gap: 22px;
+}
+
+.home-page .home-feature-body {
+    min-width: 0;
+    padding-top: 3px;
+}
+
+@media (min-width: 641px) and (max-width: 1100px) {
+    .home-page .home-grid-three {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .home-page .home-feature-card {
+        flex-direction: column;
+        gap: 18px;
+    }
+}
+
+@media (max-width: 640px) {
+    .home-page .home-hero {
+        min-height: 420px;
+        padding-block: 54px;
+    }
+
+    .dashboard-workspace main.homepage-main .home-hero-title {
+        font-size: clamp(27px, 6.8vw, 38px);
+        letter-spacing: -.6px;
+    }
+
+    .home-page .home-hero-title br {
+        display: none;
+    }
+
+    .home-page .home-grid-two,
+    .home-page .home-grid-three {
+        grid-template-columns: minmax(0, 1fr);
+        gap: 18px;
+    }
+
+    .home-page .home-section-heading {
+        margin-bottom: 28px;
+    }
+
+    .home-page .home-feature-card {
+        gap: 16px;
+    }
+
+    .home-page .home-feature-title {
+        font-size: 17px;
+    }
+}
+
+@media (max-width: 380px) {
+    .home-page .home-button {
+        padding-inline: 16px;
+        font-size: 10px;
+        letter-spacing: .5px;
+    }
+
+    .home-page .home-feature-card {
+        flex-direction: column;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .home-page .home-button,
+    .home-page .home-service-card {
+        transition: none;
+    }
+}

@@ -1,0 +1,23 @@
+{% extends 'base.html.twig' %}
+
+{% set dashboard = configuration.dashboard %}
+{% set sidebar = configuration.sidebar %}
+
+{% block title %}{{ dashboard.title }} | {{ sidebar.brand }}{% endblock %}
+
+{% block body %}
+{% include 'partials/topbar.html.twig' with { brand: sidebar.brand } only %}
+<div class="dashboard-shell">
+    {% include 'partials/sidebar.html.twig' with { sidebar: sidebar } only %}
+
+    <div class="dashboard-workspace">
+        <main id="main-content" class="{% block main_class %}{% endblock %}" tabindex="-1">
+            {% block page_content %}
+                <h1>{{ dashboard.title }}</h1>
+            {% endblock %}
+        </main>
+
+    </div>
+</div>
+{% include 'partials/footer.html.twig' with { brand: sidebar.brand } only %}
+{% endblock %}

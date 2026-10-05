@@ -1,0 +1,189 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% block main_class %}about-main{% endblock %}
+
+{% macro icon(name, size = 28) %}
+    <svg width="{{ size }}" height="{{ size }}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        {% if name == 'gear' %}
+            <path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+            <circle cx="12" cy="12" r="3" />
+        {% elseif name == 'shield' %}
+            <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+        {% elseif name == 'globe' %}
+            <path d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        {% elseif name == 'cpu' %}
+            <path d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z" />
+        {% elseif name == 'safety' %}
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+        {% elseif name == 'flask' %}
+            <path d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
+        {% elseif name == 'check' %}
+            <path d="M5 13l4 4L19 7" />
+        {% else %}
+            <path d="M14 5l7 7-7 7M21 12H3" />
+        {% endif %}
+    </svg>
+{% endmacro %}
+
+{% block page_content %}
+    {% import _self as icons %}
+    <div class="about-page">
+        {# 1. Page header #}
+        <header class="about-hero" aria-labelledby="about-heading">
+            <div class="about-container">
+                <div class="about-pill">
+                    <span class="about-pill-dot" aria-hidden="true"></span>
+                    <span>A Century of Maritime Excellence</span>
+                </div>
+                <h1 id="about-heading" class="about-title">About <span class="about-accent">Apex Marine</span></h1>
+                <p class="about-intro">Pioneering heavy-duty maritime engineering, rapid global response, and uncompromising vessel maintenance since the dawn of modern commercial shipping.</p>
+            </div>
+        </header>
+
+        {# 2. Key statistics #}
+        <section class="about-stats" aria-label="Key statistics">
+            <div class="about-container about-stats-grid">
+                {% for statistic in about.statistics %}
+                    <article class="about-stat">
+                        <strong class="about-stat-value">{{ statistic.value }}<span class="about-accent">{{ statistic.suffix }}</span></strong>
+                        <span class="about-stat-label">{{ statistic.label }}</span>
+                    </article>
+                {% endfor %}
+            </div>
+        </section>
+
+        {# 3. Core objective and heritage #}
+        <section id="about-heritage" class="about-section about-section-dark about-section-glow" aria-labelledby="heritage-heading">
+            <div class="about-container about-columns">
+                <div class="about-copy">
+                    <div class="about-pill">
+                        <span class="about-pill-dot about-pill-dot-active" aria-hidden="true"></span>
+                        <span>Our Core Objective</span>
+                    </div>
+                    <h2 id="heritage-heading" class="about-heading">Forged in the <br>Deep Blue</h2>
+                    <div class="about-objective">
+                        <p>To provide highly efficient, heavy-duty ship repairs through a modern, seamlessly organized operation. Executed by our highly trained marine engineers and dedicated crews, we ensure immediate trust and reliability for the maritime industry.</p>
+                    </div>
+                    <p>What began as a localized dockside repair shop has evolved into a global powerhouse in maritime diagnostics and mechanical overhauls, built entirely around the mandate to eliminate critical downtime for the global shipping industry.</p>
+                    <p>We don't just repair systems; we optimize them. From legacy two-stroke engines to modern dual-fuel propulsion systems, our institutional knowledge ensures your fleet operates safely and in full compliance with international maritime laws.</p>
+                    <div class="about-certifications" aria-label="Certifications">
+                        <div><strong>ISO</strong><span>9001:2015</span></div>
+                        <div><strong>IACS</strong><span>Certified Teams</span></div>
+                    </div>
+                </div>
+                <figure class="about-heritage">
+                    {% if about.heritage_image %}
+                        <img src="{{ asset(about.heritage_image) }}" alt="Founded in 1910" loading="lazy" width="600" height="399">
+                    {% else %}
+                        <div class="about-image-placeholder">Heritage photo<br>Image placeholder</div>
+                    {% endif %}
+                    <figcaption class="about-heritage-caption">
+                        <strong>Founded in 1910</strong>
+                        <span>Over a century of excellence</span>
+                    </figcaption>
+                </figure>
+            </div>
+        </section>
+
+        {# 4. Global reach and infrastructure #}
+        <section id="about-infrastructure" class="about-section" aria-labelledby="infrastructure-heading">
+            <div class="about-container about-columns about-columns-reverse">
+                <div class="about-copy">
+                    <h2 id="infrastructure-heading" class="about-heading">Strategic Global<br><span class="about-accent">Infrastructure</span></h2>
+                    <p>Vessels don't break down on a convenient schedule. That's why our infrastructure is designed for maximum agility. With strategic hubs located near the world's busiest shipping lanes, our riding squads are pre-staged with specialized tooling and ready to fly at a moment's notice to uphold our objective of immediate reliability.</p>
+                    <ul class="about-hub-list">
+                        {% for region in about.regions %}
+                            <li>{{ icons.icon('check', 20) }}<span><strong>{{ region.label }}:</strong> {{ region.description }}</span></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                <figure class="about-map-card">
+                    <div class="about-map" role="group" aria-label="Global operations hub diagram">
+                        <div class="about-map-grid" aria-hidden="true"></div>
+                        <div class="about-map-scanner" aria-hidden="true"></div>
+                        <div class="about-map-markers">
+                            {% for hub in about.hubs %}
+                                <button type="button" class="about-hub-marker{% if hub.left > 70 %} about-hub-marker-right{% elseif hub.left < 30 %} about-hub-marker-left{% endif %}{% if hub.top <= 45 %} about-hub-marker-top{% endif %}"
+                                        style="--hub-x: {{ hub.left }}%; --hub-y: {{ hub.top }}%; --hub-delay: {{ hub.delay }}s;"
+                                        aria-label="{{ hub.city }}, {{ hub.region }}"
+                                        aria-describedby="hub-tooltip-{{ loop.index }}">
+                                    <span class="about-hub-ping" aria-hidden="true"></span>
+                                    <span class="about-hub-dot" aria-hidden="true"></span>
+                                    <span id="hub-tooltip-{{ loop.index }}" class="about-hub-tooltip" role="tooltip">
+                                        <span class="about-hub-tooltip-header">
+                                            <strong>{{ hub.region }}</strong>
+                                            <span class="about-hub-status">Online</span>
+                                        </span>
+                                        <span class="about-hub-city">{{ hub.city }}</span>
+                                        <span class="about-hub-description">{{ hub.description }}</span>
+                                    </span>
+                                </button>
+                            {% endfor %}
+                        </div>
+                        <div class="about-map-legend">
+                            <span class="about-map-indicator" aria-hidden="true"></span>
+                            <span>Live Offline Network</span>
+                        </div>
+                    </div>
+                    <figcaption class="about-map-caption">Global operations hubs</figcaption>
+                </figure>
+            </div>
+        </section>
+
+        {# 5. Core competencies #}
+        <section id="about-competencies" class="about-section about-section-dark about-section-glow" aria-labelledby="competencies-heading">
+            <div class="about-container">
+                <div class="about-section-heading">
+                    <div class="about-pill">
+                        <span class="about-pill-dot about-pill-dot-caution" aria-hidden="true"></span>
+                        <span>Apex Advantage</span>
+                    </div>
+                    <h2 id="competencies-heading" class="about-heading">Excellence in <br><span class="about-accent">Maritime Engineering</span></h2>
+                </div>
+                <div class="about-card-grid">
+                    {% for competency in about.competencies %}
+                        <article class="about-card">
+                            <div class="about-card-top">
+                                <div class="about-icon">{{ icons.icon(competency.icon) }}</div>
+                                <span class="about-card-number" aria-hidden="true">{{ '%02d'|format(loop.index) }}</span>
+                            </div>
+                            <h3 class="about-card-title">{{ competency.title }}</h3>
+                            <p class="about-card-description">{{ competency.description }}</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {# 6. Safety and HSEQ culture #}
+        <section id="about-standard" class="about-section" aria-labelledby="standard-heading">
+            <div class="about-container">
+                <div class="about-section-heading">
+                    <h2 id="standard-heading" class="about-heading">The Apex Standard</h2>
+                    <p>Our commitment to safety and environmental stewardship is non-negotiable. Every project is executed with a "Zero Harm" philosophy to ensure immediate trust.</p>
+                </div>
+                <div class="about-standard-grid">
+                    {% for standard in about.standards %}
+                        <article class="about-standard">
+                            <div class="about-standard-icon about-standard-icon-{{ standard.color }}">{{ icons.icon(standard.icon, 40) }}</div>
+                            <h3 class="about-standard-title">{{ standard.title }}</h3>
+                            <p class="about-standard-description">{{ standard.description }}</p>
+                        </article>
+                    {% endfor %}
+                </div>
+            </div>
+        </section>
+
+        {# 7. Final call to action #}
+        <section id="about-cta" class="about-section about-section-dark about-section-glow about-cta" aria-labelledby="cta-heading">
+            <div class="about-container">
+                <h2 id="cta-heading" class="about-heading">Ready to Secure Your Fleet?</h2>
+                <p class="about-cta-description">Whether you need emergency dockside repairs, a mid-ocean riding squad, or a scheduled dry-dock overhaul, our operations desk is standing by 24/7.</p>
+                <div class="about-cta-actions">
+                    <a href="{{ path('app_contact') }}" class="about-button">Contact Operations {{ icons.icon('arrow', 20) }}</a>
+                    <a href="{{ path('app_service') }}" class="about-button about-button-outline">View Capabilities</a>
+                </div>
+            </div>
+        </section>
+    </div>
+{% endblock %}

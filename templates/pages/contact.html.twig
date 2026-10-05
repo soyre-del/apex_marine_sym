@@ -1,0 +1,222 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% macro icon(name) %}
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+        {% if name == 'mail' %}
+            <rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/>
+        {% elseif name == 'building' %}
+            <path d="M5 21V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v16M3 21h18M9 7h1m4 0h1M9 11h1m4 0h1M10 21v-6h4v6"/>
+        {% elseif name == 'globe' %}
+            <circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a16 16 0 0 1 0 18 16 16 0 0 1 0-18Z"/>
+        {% elseif name == 'chat' %}
+            <path d="M21 11.5a8.5 8.5 0 0 1-12.3 7.6L3 21l1.9-5.7A8.5 8.5 0 1 1 21 11.5Z"/>
+        {% elseif name == 'linkedin' %}
+            <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-4 0v7h-4v-7a6 6 0 0 1 6-6ZM2 9h4v12H2Z"/><circle cx="4" cy="4" r="2"/>
+        {% elseif name == 'facebook' %}
+            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3Z"/>
+        {% elseif name == 'instagram' %}
+            <rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><path d="M17.5 6.5h.01"/>
+        {% elseif name == 'clock' %}
+            <circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 3"/>
+        {% elseif name == 'lock' %}
+            <rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V6a4 4 0 0 1 8 0v4M12 14v3"/>
+        {% else %}
+            <path d="m22 2-7 20-4-9L2 9 22 2ZM11 13 22 2"/>
+        {% endif %}
+    </svg>
+{% endmacro %}
+
+{% macro field_error(name, errors) %}
+    {% if errors[name] is defined %}
+        <p class="contact-field-error" id="{{ name }}_error">{{ errors[name] }}</p>
+    {% endif %}
+{% endmacro %}
+
+{% macro input_field(name, label, type, values, errors, required = true, placeholder = '', maxlength = null) %}
+    <div class="contact-field">
+        <label class="contact-field-label" for="{{ name }}">{{ label }}</label>
+        <input class="contact-input" id="{{ name }}" name="{{ name }}" type="{{ type }}" value="{{ values[name] }}"{% if required %} required{% endif %}{% if placeholder %} placeholder="{{ placeholder }}"{% endif %}{% if maxlength %} maxlength="{{ maxlength }}"{% endif %}{% if errors[name] is defined %} aria-invalid="true" aria-describedby="{{ name }}_error"{% endif %}>
+        {{ _self.field_error(name, errors) }}
+    </div>
+{% endmacro %}
+
+{% macro select_field(name, label, choices, values, errors) %}
+    <div class="contact-field">
+        <label class="contact-field-label" for="{{ name }}">{{ label }}</label>
+        <select class="contact-input" id="{{ name }}" name="{{ name }}" required{% if errors[name] is defined %} aria-invalid="true" aria-describedby="{{ name }}_error"{% endif %}>
+            <option value="">Select {{ label|lower }}</option>
+            {% for value, text in choices %}
+                <option value="{{ value }}"{% if values[name] == value %} selected{% endif %}>{{ text }}</option>
+            {% endfor %}
+        </select>
+        {{ _self.field_error(name, errors) }}
+    </div>
+{% endmacro %}
+
+{% block main_class %}contact-main{% endblock %}
+
+{% block page_content %}
+    {% import _self as ui %}
+    <div class="contact-page">
+        <div class="contact-container">
+            <header class="contact-heading-area">
+                <p class="contact-eyebrow"><span class="contact-eyebrow-dot" aria-hidden="true"></span>Reach Out</p>
+                <h1 class="contact-title">Contact Operations</h1>
+                <p class="contact-intro">Whether it's an emergency dispatch or scheduling routine heavy-duty maintenance, our engineering team is ready to deploy.</p>
+            </header>
+
+            <div class="contact-columns">
+                <aside class="contact-info-card" aria-labelledby="contact-operations-heading">
+                    <h2 class="contact-card-title" id="contact-operations-heading">Global Operations</h2>
+                    <a class="contact-dispatch-email" href="mailto:{{ contact.email }}">
+                        <span class="contact-info-icon">{{ ui.icon('mail') }}</span>
+                        <div>
+                            <span class="contact-label">Central Dispatch Email</span>
+                            <strong class="contact-email">{{ contact.email }}</strong>
+                        </div>
+                    </a>
+
+                    <div class="contact-hubs">
+                        {% for hub in contact.hubs %}
+                            <section class="contact-hub" aria-labelledby="contact-hub-{{ loop.index }}">
+                                <h3 class="contact-hub-title" id="contact-hub-{{ loop.index }}">
+                                    {{ ui.icon(loop.first ? 'building' : 'globe') }}
+                                    <span>{{ hub.title }}</span>
+                                    {% if hub.badge %}<span class="contact-badge">{{ hub.badge }}</span>{% endif %}
+                                </h3>
+                                <div class="contact-hub-entries">
+                                    {% for entry in hub.entries %}
+                                        <div class="contact-hub-entry">
+                                            <span class="contact-label">{{ entry.location }}</span>
+                                            <a class="contact-phone" href="tel:{{ entry.dial }}">{{ entry.phone }}</a>
+                                        </div>
+                                    {% endfor %}
+                                </div>
+                            </section>
+                        {% endfor %}
+                    </div>
+
+                    <section class="contact-digital" aria-labelledby="contact-digital-heading">
+                        <h3 class="contact-label" id="contact-digital-heading">Digital Channels</h3>
+                        {% for channel in contact.channels %}
+                            <div class="contact-channel">
+                                <span class="contact-info-icon">{{ ui.icon(channel.icon) }}</span>
+                                <div>
+                                    <span class="contact-label">{{ channel.label }}</span>
+                                    <strong class="contact-handle">{{ channel.handle }}</strong>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </section>
+
+                    <div class="contact-operational-status">
+                        <span class="contact-label">{{ ui.icon('clock') }}Status</span>
+                        <p class="contact-online"><span aria-hidden="true"></span>Online &amp; Operating 24/7</p>
+                    </div>
+                </aside>
+
+                <section class="contact-form-card" aria-labelledby="contact-dispatch-heading">
+                    <div class="contact-form-heading">
+                        {{ ui.icon('send') }}
+                        <h2 class="contact-form-title" id="contact-dispatch-heading">Request Dispatch</h2>
+                    </div>
+
+                    {% for message in app.flashes('dispatch_success') %}
+                        <div class="contact-alert contact-alert-success" role="status">{{ message }}</div>
+                    {% endfor %}
+                    {% if error_status %}
+                        <div class="contact-alert contact-alert-error" role="alert">
+                            <p>{{ error_status }}</p>
+                            {% if errors %}
+                                <ul>
+                                    {% for field, message in errors %}
+                                        <li><a href="#{{ field }}">{{ message }}</a></li>
+                                    {% endfor %}
+                                </ul>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+
+                    <form class="contact-form" action="{{ path('app_contact') }}" method="post" enctype="multipart/form-data">
+                        <input type="hidden" name="_token" value="{{ csrf_token('dispatch_request') }}">
+                        <div class="contact-form-grid">
+                            {{ ui.input_field('vessel_name', 'Vessel Name', 'text', values, errors, true, '', 255) }}
+                            {{ ui.input_field('imo_number', 'IMO Number', 'text', values, errors, true, 'e.g., 9876543', 7) }}
+                            {{ ui.select_field('vessel_type', 'Vessel Type', contact.vessel_types, values, errors) }}
+                            {{ ui.input_field('company', 'Company (Optional)', 'text', values, errors, false, '', 255) }}
+                            {{ ui.input_field('contact_person', 'Contact Person', 'text', values, errors, true, '', 255) }}
+                            <div class="contact-field">
+                                <label class="contact-field-label" for="phone_number">Contact Phone</label>
+                                <div class="contact-phone-group">
+                                    <select class="contact-input" id="country_code" name="country_code" aria-label="Country code" required{% if errors.country_code is defined %} aria-invalid="true" aria-describedby="country_code_error"{% endif %}>
+                                        {% for code, label in contact.country_codes %}
+                                            <option value="{{ code }}"{% if values.country_code == code %} selected{% endif %}>{{ label }}</option>
+                                        {% endfor %}
+                                    </select>
+                                    <input class="contact-input" id="phone_number" name="phone_number" type="tel" value="{{ values.phone_number }}" autocomplete="tel-national" placeholder="917 000 1234" maxlength="30" required{% if errors.phone_number is defined %} aria-invalid="true" aria-describedby="phone_number_error"{% endif %}>
+                                </div>
+                                {{ ui.field_error('country_code', errors) }}
+                                {{ ui.field_error('phone_number', errors) }}
+                            </div>
+                            {{ ui.input_field('eta_date', 'ETA / Service Date', 'date', values, errors) }}
+                            <div class="contact-field">
+                                <label class="contact-urgent" for="urgent">
+                                    <input type="checkbox" id="urgent" name="urgent" value="1"{% if values.urgent %} checked{% endif %}>
+                                    <span>Urgent Request</span>
+                                </label>
+                            </div>
+                            <div class="contact-field">
+                                <label class="contact-field-label" for="location">Service Location</label>
+                                <select class="contact-input" id="location" name="location" required{% if errors.location is defined %} aria-invalid="true" aria-describedby="location_error"{% endif %}>
+                                    <option value="">Select service location</option>
+                                    {% for group, locations in contact.locations %}
+                                        <optgroup label="{{ group }}">
+                                            {% for id, label in locations %}
+                                                <option value="{{ id }}"{% if values.location == id %} selected{% endif %}>{{ label }}</option>
+                                            {% endfor %}
+                                        </optgroup>
+                                    {% endfor %}
+                                </select>
+                                {{ ui.field_error('location', errors) }}
+                            </div>
+                            {{ ui.select_field('service_type', 'Service Type', contact.service_types, values, errors) }}
+                        </div>
+
+                        <div class="contact-form-row contact-field">
+                            <label class="contact-field-label" for="attachment">Attachment (Optional)</label>
+                            <input class="contact-input" id="attachment" name="attachment" type="file" accept="image/png,image/jpeg,application/pdf" aria-describedby="attachment_hint{% if errors.attachment is defined %} attachment_error{% endif %}"{% if errors.attachment is defined %} aria-invalid="true"{% endif %}>
+                            <p class="contact-file-hint" id="attachment_hint">JPG, PNG, or PDF. Maximum size: 5 MB. Select the file again if you need to resubmit.</p>
+                            {{ ui.field_error('attachment', errors) }}
+                        </div>
+                        <div class="contact-form-row contact-field">
+                            <label class="contact-field-label" for="description">Request Details</label>
+                            <textarea class="contact-input" id="description" name="description" rows="4" maxlength="10000" placeholder="Provide details about the required maintenance or repair..." required{% if errors.description is defined %} aria-invalid="true" aria-describedby="description_error"{% endif %}>{{ values.description }}</textarea>
+                            {{ ui.field_error('description', errors) }}
+                        </div>
+
+                        {% if can_submit %}
+                            <button class="contact-submit" type="submit">{{ ui.icon('send') }}Submit Request</button>
+                        {% else %}
+                            <div class="contact-clearance">
+                                {{ ui.icon('lock') }}
+                                <p>Clearance required to submit dispatch</p>
+                                <div class="contact-auth-actions">
+                                    {% if login_url %}
+                                        <a class="contact-auth-button" href="{{ login_url }}">Authenticate</a>
+                                    {% else %}
+                                        <button class="contact-auth-button" type="button" disabled title="Account access is currently unavailable">Authenticate</button>
+                                    {% endif %}
+                                    {% if register_url %}
+                                        <a class="contact-auth-button contact-auth-button-outline" href="{{ register_url }}">Enlist Now</a>
+                                    {% else %}
+                                        <button class="contact-auth-button contact-auth-button-outline" type="button" disabled title="Registration is currently unavailable">Enlist Now</button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </form>
+                </section>
+            </div>
+        </div>
+    </div>
+{% endblock %}
