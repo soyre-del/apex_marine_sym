@@ -1,13 +1,39 @@
-<aside class="sidebar" aria-label="Sidebar">
-    <nav aria-label="Main navigation">
-        <ul>
+<aside class="sidebar" aria-label="Sidebar" tabindex="0">
+    <div class="sidebar-heading">
+        <span class="sidebar-kicker">Navigation</span>
+        <p class="sidebar-title">Explore Apex</p>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+        <ul class="sidebar-nav-list">
             {% for item in sidebar.items %}
-                <li>
-                    <a href="{{ item.href }}" {% if item.current %}aria-current="page"{% endif %}>
-                        <span>{{ item.label }}</span>
+                <li class="sidebar-nav-item">
+                    <a class="sidebar-link" href="{{ item.href }}" {% if item.current %}aria-current="page"{% endif %}>
+                        <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            {% if item.label == 'Home' %}
+                                <path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/>
+                            {% elseif item.label == 'About' %}
+                                <circle cx="12" cy="12" r="9"/>
+                                <path d="M12 11v6M12 7h.01"/>
+                            {% elseif item.label == 'Service' %}
+                                <path d="M14.5 6.5a5 5 0 0 0-6.7 6.7L3 18a2.1 2.1 0 0 0 3 3l4.8-4.8a5 5 0 0 0 6.7-6.7l-3 3-3-3 3-3Z"/>
+                            {% elseif item.label == 'Contact' %}
+                                <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1V11.5A8.5 8.5 0 0 1 11.5 3h1a8.5 8.5 0 0 1 8.5 8.5Z"/>
+                                <path d="M7 9h10M7 13h6"/>
+                            {% endif %}
+                        </svg>
+                        <span class="sidebar-label">{{ item.label }}</span>
+                        <svg class="sidebar-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                            <path d="m9 6 6 6-6 6"/>
+                        </svg>
                     </a>
                 </li>
             {% endfor %}
         </ul>
     </nav>
+
+    <div class="sidebar-footer">
+        <span class="sidebar-footer-label">Marine Engineering</span>
+        <p class="sidebar-footer-caption">Built for the sea.</p>
+    </div>
 </aside>

@@ -5,13 +5,14 @@
 
 {% block title %}{{ dashboard.title }} | {{ sidebar.brand }}{% endblock %}
 {% block meta_description %}{{ dashboard.description }}{% endblock %}
+{% block body_class %}app-layout{% endblock %}
 
 {% block body %}
 {% include 'partials/topbar.html.twig' with { brand: sidebar.brand } only %}
 <div class="dashboard-shell">
     {% include 'partials/sidebar.html.twig' with { sidebar: sidebar } only %}
 
-    <div class="dashboard-workspace">
+    <div class="dashboard-workspace" tabindex="0" role="region" aria-label="Page content">
         <main id="main-content" class="{% block main_class %}{% endblock %}" tabindex="-1">
             {% block page_content %}
                 <h1>{{ dashboard.title }}</h1>

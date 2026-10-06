@@ -8,6 +8,7 @@
     --text-color: #f0f5ff;
     --muted-color: #a3b6c8;
     --accent-color: #0ba5df;
+    --sidebar-width: 212px;
     font-family: Arial, sans-serif;
     color: var(--text-color);
     background: var(--navy-background);
@@ -23,6 +24,12 @@ body {
     min-height: 100vh;
     min-height: 100dvh;
     margin: 0;
+}
+
+body.app-layout {
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
 }
 
 a {
@@ -138,53 +145,146 @@ button:focus-visible {
     transform: translateY(0);
 }
 
-/* Simple sidebar and content */
+/* The sidebar and page content each own their scroll area. */
 .dashboard-shell {
     display: flex;
     flex: 1;
     min-height: 0;
+    overflow: hidden;
 }
 
 .sidebar {
-    width: 176px;
+    display: flex;
+    flex-direction: column;
+    width: var(--sidebar-width);
+    min-height: 0;
     flex-shrink: 0;
-    padding: 20px 10px;
-    background: var(--navy-surface);
+    padding: 26px 14px 20px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #3a617d transparent;
+    background: linear-gradient(170deg, #102f4b, #081c2d 85%);
     border-right: 1px solid var(--border-color);
 }
 
+.sidebar-heading {
+    flex-shrink: 0;
+    padding: 0 12px 24px;
+}
+
+.sidebar-kicker {
+    display: block;
+    margin: 0 0 8px;
+    color: #7095af;
+    font: 700 9px/1.5 Montserrat, Arial, sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+}
+
+.sidebar-title {
+    margin: 0;
+    color: var(--text-color);
+    font: 700 15px/1.4 Montserrat, Arial, sans-serif;
+    letter-spacing: -.2px;
+}
+
+.sidebar-nav {
+    flex-shrink: 0;
+}
+
 .sidebar nav ul {
+    display: grid;
+    gap: 8px;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.sidebar nav li + li {
-    margin-top: 4px;
-}
-
 .sidebar nav a {
+    position: relative;
     display: flex;
     align-items: center;
-    min-height: 44px;
-    padding: 10px 14px;
-    border-radius: 4px;
-    color: var(--muted-color);
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: .8px;
-    text-transform: uppercase;
+    gap: 12px;
+    min-height: 52px;
+    padding: 12px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    color: #abc0d1;
+    font: 600 13px/1.4 Montserrat, Arial, sans-serif;
+    transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.sidebar-icon {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    color: #7b9bb5;
+    transition: color .18s ease;
+}
+
+.sidebar-label {
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.sidebar-chevron {
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+    margin-left: auto;
+    opacity: .35;
+    transition: opacity .18s ease;
 }
 
 .sidebar nav a:hover {
-    background: var(--navy-hover);
+    border-color: rgba(123, 155, 181, .16);
+    background: rgba(34, 76, 107, .5);
     color: #fff;
 }
 
+.sidebar nav a:hover .sidebar-icon {
+    color: #d3e8f7;
+}
+
+.sidebar nav a:hover .sidebar-chevron {
+    opacity: 1;
+}
+
 .sidebar nav a[aria-current='page'] {
-    background: var(--navy-hover);
+    border-color: rgba(11, 165, 223, .3);
+    background: linear-gradient(110deg, rgba(11, 165, 223, .19), rgba(11, 165, 223, .06));
     color: #fff;
-    box-shadow: inset 2px 0 var(--accent-color);
+    box-shadow: inset 3px 0 var(--accent-color), 0 4px 16px rgba(0, 0, 0, .08);
+}
+
+.sidebar nav a[aria-current='page'] .sidebar-icon,
+.sidebar nav a[aria-current='page'] .sidebar-chevron {
+    color: #55caff;
+    opacity: 1;
+}
+
+.sidebar-footer {
+    flex-shrink: 0;
+    margin-top: auto;
+    padding: 30px 12px 0;
+}
+
+.sidebar-footer-label {
+    display: block;
+    padding-top: 18px;
+    border-top: 1px solid rgba(123, 155, 181, .16);
+    color: #afc6d8;
+    font: 700 9px/1.5 Montserrat, Arial, sans-serif;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+}
+
+.sidebar-footer-caption {
+    margin: 6px 0 0;
+    color: #7999b1;
+    font: 11px/1.6 'Cascadia Code', 'Courier New', monospace;
 }
 
 .dashboard-workspace {
@@ -192,10 +292,23 @@ button:focus-visible {
     flex-direction: column;
     flex: 1;
     min-width: 0;
+    min-height: 0;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: thin;
+    scrollbar-color: #3a617d var(--navy-background);
+    scrollbar-gutter: stable;
+}
+
+.sidebar:focus-visible,
+.dashboard-workspace:focus-visible {
+    outline: 2px solid var(--accent-color);
+    outline-offset: -3px;
 }
 
 .dashboard-workspace main {
-    flex: 1;
+    flex: 1 0 auto;
     padding: 28px 24px;
 }
 
@@ -258,31 +371,51 @@ button:focus-visible {
     }
 
     .sidebar {
+        display: block;
         width: 100%;
-        padding: 6px 10px;
+        padding: 8px 10px;
+        overflow-x: auto;
+        overflow-y: hidden;
         border-right: 0;
         border-bottom: 1px solid var(--border-color);
     }
 
+    .sidebar-heading,
+    .sidebar-footer {
+        display: none;
+    }
+
     .sidebar nav ul {
         display: flex;
-        flex-wrap: wrap;
-        gap: 4px;
+        flex-wrap: nowrap;
+        gap: 6px;
     }
 
     .sidebar nav li {
-        flex: 1;
-    }
-
-    .sidebar nav li + li {
-        margin-top: 0;
+        flex: 1 0 auto;
     }
 
     .sidebar nav a {
         justify-content: center;
-        padding: 10px 8px;
+        gap: 6px;
+        min-height: 44px;
+        padding: 10px;
+        border-radius: 8px;
         font-size: 11px;
-        letter-spacing: .4px;
+        white-space: nowrap;
+    }
+
+    .sidebar-icon {
+        width: 16px;
+        height: 16px;
+    }
+
+    .sidebar-label {
+        overflow-wrap: normal;
+    }
+
+    .sidebar-chevron {
+        display: none;
     }
 
     .dashboard-workspace main {
@@ -300,5 +433,13 @@ button:focus-visible {
 
     .footer-copyright {
         width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .sidebar nav a,
+    .sidebar-icon,
+    .sidebar-chevron {
+        transition: none;
     }
 }
