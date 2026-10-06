@@ -13,10 +13,26 @@ final class PageConfiguration
     public function build(string $section = 'home'): array
     {
         $pages = [
-            'home' => ['label' => 'Home', 'title' => 'Home', 'description' => 'Welcome to Apex Marine'],
-            'about' => ['label' => 'About', 'title' => 'About', 'description' => 'About Apex Marine'],
-            'service' => ['label' => 'Service', 'title' => 'Service', 'description' => 'Apex Marine services'],
-            'contact' => ['label' => 'Contact', 'title' => 'Contact', 'description' => 'Contact Apex Marine'],
+            'home' => [
+                'label' => 'Home',
+                'title' => 'Home',
+                'description' => 'Apex Marine provides marine engineering, vessel maintenance, and worldwide operations support.',
+            ],
+            'about' => [
+                'label' => 'About',
+                'title' => 'About',
+                'description' => 'Meet Apex Marine and explore our engineering team, global service network, and marine standards.',
+            ],
+            'service' => [
+                'label' => 'Service',
+                'title' => 'Service',
+                'description' => 'Explore Apex Marine\'s marine engineering, preventative maintenance, and global vessel operations services.',
+            ],
+            'contact' => [
+                'label' => 'Contact',
+                'title' => 'Contact',
+                'description' => 'Contact Apex Marine\'s global operations team to discuss vessel repairs, maintenance, and dispatch requests.',
+            ],
         ];
 
         $items = [];

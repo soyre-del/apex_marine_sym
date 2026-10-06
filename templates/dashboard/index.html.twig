@@ -4,6 +4,7 @@
 {% set sidebar = configuration.sidebar %}
 
 {% block title %}{{ dashboard.title }} | {{ sidebar.brand }}{% endblock %}
+{% block meta_description %}{{ dashboard.description }}{% endblock %}
 
 {% block body %}
 {% include 'partials/topbar.html.twig' with { brand: sidebar.brand } only %}
