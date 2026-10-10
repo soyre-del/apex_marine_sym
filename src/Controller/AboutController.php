@@ -3,22 +3,22 @@
 namespace App\Controller;
 
 use App\Service\PageConfiguration;
+use App\Service\PageImages;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class AboutController extends AbstractController
 {
-    public function __construct(private readonly PageConfiguration $pageConfiguration)
-    {
+    public function __construct(
+        private readonly PageConfiguration $pageConfiguration,
+        private readonly PageImages $pageImages,
+    ) {
     }
 
     #[Route('/about', name: 'app_about', methods: ['GET'])]
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        $request->getSession()->start();
-
         return $this->render('pages/about.html.twig', [
             'configuration' => $this->pageConfiguration->build('about'),
             'about' => $this->buildAboutData(),
@@ -27,11 +27,8 @@ final class AboutController extends AbstractController
 
     private function buildAboutData(): array
     {
-        $heritageImage = 'assets/images/founded.jpg';
-        $publicDirectory = $this->getParameter('kernel.project_dir') . '/public/';
-
         return [
-            'heritage_image' => is_file($publicDirectory . $heritageImage) ? $heritageImage : null,
+            'heritage_image' => $this->pageImages->resolve('founded.jpg'),
             'statistics' => [
                 ['value' => '110', 'suffix' => '+', 'label' => 'Years Active'],
                 ['value' => '24', 'suffix' => '/7', 'label' => 'Global Dispatch'],

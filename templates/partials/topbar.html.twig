@@ -2,8 +2,11 @@
     <a class="skip-link" href="#main-content">Skip to content</a>
     <a class="header-brand" href="{{ path('app_home') }}" aria-label="{{ brand }} home">
         <span class="header-logo" aria-hidden="true">
-            {# Replace this placeholder with your logo image when ready. #}
-            <span class="logo-placeholder">LOGO</span>
+            {% if logo_path %}
+                <img src="{{ asset(logo_path) }}" width="40" height="40" alt="">
+            {% else %}
+                <span class="logo-placeholder">LOGO</span>
+            {% endif %}
         </span>
         <span class="header-brand-name">{{ brand }}</span>
     </a>

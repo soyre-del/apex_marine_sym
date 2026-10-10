@@ -6,8 +6,10 @@ use Symfony\Component\Routing\RouterInterface;
 
 final class PageConfiguration
 {
-    public function __construct(private readonly RouterInterface $router)
-    {
+    public function __construct(
+        private readonly RouterInterface $router,
+        private readonly PageImages $pageImages,
+    ) {
     }
 
     public function build(string $section = 'home'): array
@@ -52,6 +54,7 @@ final class PageConfiguration
             ],
             'sidebar' => [
                 'brand' => 'Apex Marine',
+                'logo_path' => $this->pageImages->resolve('Logo.png'),
                 'items' => $items,
             ],
         ];

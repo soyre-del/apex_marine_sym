@@ -3,23 +3,23 @@
 namespace App\Controller;
 
 use App\Service\PageConfiguration;
+use App\Service\PageImages;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
 final class ServiceController extends AbstractController
 {
-    public function __construct(private readonly PageConfiguration $pageConfiguration)
-    {
+    public function __construct(
+        private readonly PageConfiguration $pageConfiguration,
+        private readonly PageImages $pageImages,
+    ) {
     }
 
     #[Route('/service', name: 'app_service', methods: ['GET'])]
-    public function index(Request $request): Response
+    public function index(): Response
     {
-        $request->getSession()->start();
-
         return $this->render('pages/service.html.twig', [
             'configuration' => $this->pageConfiguration->build('service'),
             'service' => $this->buildServiceData(),
@@ -34,21 +34,12 @@ final class ServiceController extends AbstractController
 
     private function buildServiceData(): array
     {
-        $images = [
-            'engineering' => 'assets/images/solutions.jpg',
-            'maintenance' => 'assets/images/maintenancee.jpg',
-            'operation' => 'assets/images/workflowww.jpg',
-        ];
-        $publicDirectory = $this->getParameter('kernel.project_dir') . '/public/';
-
-        foreach ($images as $key => $image) {
-            if (!is_file($publicDirectory . $image)) {
-                $images[$key] = null;
-            }
-        }
-
         return [
-            'images' => $images,
+            'images' => [
+                'engineering' => $this->pageImages->resolve('solutions.jpg'),
+                'maintenance' => $this->pageImages->resolve('maintenancee.jpg'),
+                'operation' => $this->pageImages->resolve('workflowww.jpg'),
+            ],
             'disciplines' => [
                 [
                     'title' => 'Propulsion & Machinery',

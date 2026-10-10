@@ -9,3 +9,13 @@
 
 controllers:
     resource: routing.controllers
+
+# Some browsers and development tools request this conventional path even
+# when the page declares the SVG favicon explicitly.
+favicon:
+    path: /favicon.ico
+    methods: [GET]
+    controller: Symfony\Bundle\FrameworkBundle\Controller\RedirectController
+    defaults:
+        path: /favicon.svg
+        permanent: true

@@ -155,6 +155,25 @@ final class DashboardControllerTest extends WebTestCase
         }
     }
 
+    public function testPublicPagesDoNotStartASession(): void
+    {
+        $client = static::createClient();
+
+        foreach (['/', '/home', '/about', '/service'] as $path) {
+            $client->request('GET', $path);
+            self::assertResponseIsSuccessful();
+            self::assertSame([], $client->getResponse()->headers->getCookies(), $path.' should not set a session cookie.');
+        }
+    }
+
+    public function testConventionalFaviconRedirectsToTheSvgIcon(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/favicon.ico');
+
+        self::assertResponseRedirects('http://localhost/favicon.svg', 301);
+    }
+
     public function testUnknownSectionReturnsNotFound(): void
     {
         $client = static::createClient();
