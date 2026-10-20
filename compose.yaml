@@ -1,25 +1,41 @@
+name: webdev_b
 
 services:
-###> doctrine/doctrine-bundle ###
-  database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+  webdev_b_mysql:
+    image: mysql:8.0
+    container_name: webdev_b_mysql
+    restart: unless-stopped
     environment:
-      POSTGRES_DB: ${POSTGRES_DB:-app}
-      # You should definitely change the password in production
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-!ChangeMe!}
-      POSTGRES_USER: ${POSTGRES_USER:-app}
-    healthcheck:
-      test: ["CMD", "pg_isready", "-d", "${POSTGRES_DB:-app}", "-U", "${POSTGRES_USER:-app}"]
-      timeout: 5s
-      retries: 5
-      start_period: 60s
+      MYSQL_ROOT_PASSWORD: ${DATABASE_PASSWORD}
+      MYSQL_ROOT_HOST: "%"
+      MYSQL_DATABASE: ${DATABASE_NAME}
+    ports:
+      - "${DATABASE_PORT}:3306"
     volumes:
-      - database_data:/var/lib/postgresql/data:rw
-      # You may use a bind-mounted host directory instead, so that it is harder to accidentally remove the volume and lose all your data!
-      # - ./docker/db/data:/var/lib/postgresql/data:rw
-###< doctrine/doctrine-bundle ###
+      - webdev_b_db_data:/var/lib/mysql
+    networks:
+      - webdev_b_network
+
+  webdev_b_phpmyadmin:
+    image: phpmyadmin
+    container_name: webdev_b_phpmyadmin
+    restart: unless-stopped
+    depends_on:
+      - webdev_b_mysql
+    environment:
+      PMA_HOST: webdev_b_mysql
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${DATABASE_PASSWORD}
+    ports:
+      - "8082:80"
+    networks:
+      - webdev_b_network
 
 volumes:
-###> doctrine/doctrine-bundle ###
-  database_data:
-###< doctrine/doctrine-bundle ###
+  webdev_b_db_data:
+    name: webdev_b_db_data
+
+networks:
+  webdev_b_network:
+    name: webdev_b_network

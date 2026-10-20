@@ -22,7 +22,11 @@ final class ContactControllerTest extends WebTestCase
     protected function tearDown(): void
     {
         parent::tearDown();
-        $this->connection?->close();
+        if ($this->connection !== null) {
+            $this->connection->close();
+            $this->connection = null;
+        }
+        static::ensureKernelShutdown();
         if ($this->testDirectory !== null) {
             (new Filesystem())->remove($this->testDirectory);
         }

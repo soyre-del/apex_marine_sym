@@ -129,6 +129,10 @@ final class ContactController extends AbstractController
                         if ($storedFile !== null && is_file($storedFile)) {
                             @unlink($storedFile);
                         }
+                        try {
+                            $this->connection->close();
+                        } catch (\Throwable) {
+                        }
                         $this->logger->error('Unable to save a dispatch request.', ['exception' => $exception]);
                         $errorStatus = 'Your request could not be saved. Please try again or contact Central Dispatch directly.';
                         $status = Response::HTTP_SERVICE_UNAVAILABLE;
