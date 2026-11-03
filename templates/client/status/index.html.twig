@@ -1,0 +1,111 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Client Operations | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/client_status.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="client-status-page">
+        <nav class="client-status-nav" aria-label="Client portal navigation">
+            <div class="client-status-nav-inner">
+                <a href="{{ path('client_status') }}" class="client-status-brand">
+                    <span class="client-status-pill"><span aria-hidden="true"></span> Client Portal</span>
+                    <strong>Apex Marine</strong>
+                </a>
+                <div class="client-status-nav-actions">
+                    <a href="{{ path('client_status') }}" class="client-status-link" aria-current="page">Refresh Feed</a>
+                    <a href="{{ path('app_contact') }}" class="client-status-link">New Dispatch</a>
+                    <a href="{{ path('client_billing') }}" class="client-status-link">Billing</a>
+                    <a href="{{ path('app_home') }}" class="client-status-link">Home</a>
+                    <span class="client-status-identity">ID: <strong>{{ client_name }}</strong></span>
+                </div>
+            </div>
+        </nav>
+
+        <div class="client-status-content">
+            <header class="client-status-heading">
+                <p>Client Portal</p>
+                <h1>Active Dispatch Monitoring</h1>
+                <span>Review request status, invoice state, and the latest operation timeline.</span>
+            </header>
+
+            {% if load_error %}
+                <div class="client-status-alert" role="alert">
+                    Unable to load your operations right now. Please try again later.
+                </div>
+            {% elseif requests is empty %}
+                <section class="client-status-empty">
+                    <span class="client-status-empty-icon" aria-hidden="true">✓</span>
+                    <h2>No Active Operations</h2>
+                    <p>You currently have no vessels requiring assistance.</p>
+                    <a href="{{ path('app_contact') }}" class="client-status-button client-status-button-primary">
+                        Initialize Request
+                    </a>
+                </section>
+            {% else %}
+                <section class="client-status-requests" aria-label="Dispatch requests">
+                    {% for dispatch in requests %}
+                        {% set badge_class = {
+                            pending: 'client-status-badge-warning',
+                            acknowledged: 'client-status-badge-info',
+                            deployed: 'client-status-badge-info',
+                            in_progress: 'client-status-badge-primary',
+                            resolved: 'client-status-badge-success',
+                            completed: 'client-status-badge-success',
+                            cancelled: 'client-status-badge-danger'
+                        }[dispatch.status]|default('client-status-badge-muted') %}
+
+                        <article class="client-status-card">
+                            <header class="client-status-card-heading">
+                                <div class="client-status-vessel">
+                                    <span class="client-status-lightning" aria-hidden="true">ϟ</span>
+                                    <h2>{{ dispatch.vessel_name }}</h2>
+                                    <span class="client-status-request-id">REQ-{{ '%04d'|format(dispatch.request_id) }}</span>
+                                </div>
+                                <div class="client-status-card-badges">
+                                    <span class="client-status-badge {{ badge_class }}">
+                                        Status: {{ dispatch.status|replace({'_': ' '})|title }}
+                                    </span>
+                                    {% if dispatch.invoice_id %}
+                                        {% if dispatch.payment_status == 'unpaid' %}
+                                            <a href="{{ path('client_checkout', {invoice_id: dispatch.invoice_id}) }}"
+                                               class="client-status-button client-status-button-pay">
+                                                Pay {{ dispatch.currency }} {{ dispatch.amount|number_format(2, '.', ',') }}
+                                            </a>
+                                        {% elseif dispatch.payment_status == 'paid' %}
+                                            <span class="client-status-badge client-status-badge-paid">Paid</span>
+                                        {% endif %}
+                                    {% endif %}
+                                </div>
+                            </header>
+
+                            <h3 class="client-status-timeline-title">Live Timeline Log</h3>
+                            {% set request_updates = updates_by_request[dispatch.request_id]|default([]) %}
+                            {% if request_updates is empty %}
+                                <div class="client-status-no-updates">
+                                    Awaiting Central Command to assign specialized personnel. No updates recorded yet.
+                                </div>
+                            {% else %}
+                                <ol class="client-status-timeline">
+                                    {% for update in request_updates %}
+                                        <li class="client-status-timeline-item">
+                                            <div class="client-status-timeline-meta">
+                                                <strong><span aria-hidden="true">&gt;</span> {{ update.status_milestone }}</strong>
+                                                <time datetime="{{ update.logged_at|date('c') }}">
+                                                    {{ update.logged_at|date('M d, Y - H:i') }}
+                                                </time>
+                                            </div>
+                                            <p>{{ update.detailed_message|nl2br }}</p>
+                                        </li>
+                                    {% endfor %}
+                                </ol>
+                            {% endif %}
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        </div>
+    </main>
+{% endblock %}

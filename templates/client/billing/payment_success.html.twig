@@ -1,0 +1,43 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Payment Receipt | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/client_checkout.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="client-checkout-page">
+        <section class="client-checkout-card client-receipt-card" aria-labelledby="receipt-title">
+            <header class="client-checkout-header">
+                <h1 id="receipt-title">Payment Successful</h1>
+            </header>
+            <div class="client-checkout-body">
+                <p class="client-receipt-message">
+                    Your transaction has been securely recorded in the Apex Marine database.
+                </p>
+                <div class="client-receipt-details">
+                    <div>
+                        <span>Receipt Generated</span>
+                        <strong>{{ receipt_generated_at|date('F j, Y, g:i A') }}</strong>
+                    </div>
+                    <div>
+                        <span>Reference ID</span>
+                        <strong class="client-receipt-reference">{{ formatted_reference }}</strong>
+                    </div>
+                </div>
+                <div class="client-receipt-actions no-print">
+                    <button type="button" class="client-checkout-button client-checkout-button-cancel" onclick="window.print()">
+                        Print
+                    </button>
+                    <a href="{{ path('client_status') }}" class="client-checkout-button client-checkout-button-primary">
+                        Dashboard
+                    </a>
+                </div>
+                <p class="client-checkout-disclaimer">
+                    Simulated transaction receipt.
+                </p>
+            </div>
+        </section>
+    </main>
+{% endblock %}

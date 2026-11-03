@@ -1,0 +1,270 @@
+.client-checkout-page {
+    display: grid;
+    min-height: 100vh;
+    place-items: center;
+    padding: 24px;
+    color: #a3b6c8;
+    background:
+        linear-gradient(rgba(46, 107, 156, .045) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(46, 107, 156, .045) 1px, transparent 1px),
+        #081c2d;
+    background-size: 32px 32px;
+    font: 13px/1.6 'Cascadia Code', 'Courier New', monospace;
+}
+
+.client-checkout-card {
+    width: min(100%, 520px);
+    overflow: hidden;
+    border: 1px solid rgba(163, 182, 200, .27);
+    border-radius: 12px;
+    background: rgba(3, 10, 17, .96);
+    box-shadow: 0 24px 70px rgba(0, 0, 0, .45);
+}
+
+.client-checkout-header {
+    display: grid;
+    justify-items: center;
+    gap: 12px;
+    padding: 25px 22px;
+    border-bottom: 1px solid rgba(163, 182, 200, .18);
+    text-align: center;
+}
+
+.client-checkout-header h1 {
+    margin: 0;
+    color: #70d7fa;
+    font: 800 clamp(16px, 3vw, 21px)/1.35 Montserrat, Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.client-checkout-badge {
+    padding: 5px 9px;
+    border-radius: 4px;
+    background: #ffc857;
+    color: #081c2d;
+    font: 700 9px/1.4 Montserrat, Arial, sans-serif;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.client-receipt-badge {
+    background: rgba(16, 185, 129, .16);
+    color: #68e0ae;
+}
+
+.client-checkout-body {
+    display: grid;
+    gap: 22px;
+    padding: clamp(20px, 5vw, 30px);
+}
+
+.client-checkout-total {
+    display: grid;
+    gap: 5px;
+    text-align: center;
+}
+
+.client-checkout-total > span {
+    color: #91a8bd;
+    font-size: 11px;
+}
+
+.client-checkout-total > strong {
+    color: #68e0ae;
+    font: 800 clamp(28px, 6vw, 37px)/1.2 Montserrat, Arial, sans-serif;
+    overflow-wrap: anywhere;
+}
+
+.client-checkout-total p {
+    margin: 7px 0 0;
+    color: #91a8bd;
+    font-size: 11px;
+}
+
+.client-checkout-form {
+    display: grid;
+    gap: 16px;
+}
+
+.client-checkout-label {
+    display: grid;
+    gap: 7px;
+    color: #a3b6c8;
+    font: 700 10px/1.5 Montserrat, Arial, sans-serif;
+    letter-spacing: .4px;
+    text-transform: uppercase;
+}
+
+.client-checkout-control {
+    width: 100%;
+    min-height: 44px;
+    padding: 10px 12px;
+    border: 1px solid rgba(163, 182, 200, .25);
+    border-radius: 6px;
+    background: #101923;
+    color: #f7faff;
+    color-scheme: dark;
+    font: 13px/1.5 'Cascadia Code', 'Courier New', monospace;
+}
+
+.client-checkout-control:focus-visible,
+.client-checkout-button:focus-visible {
+    outline: 2px solid #70d7fa;
+    outline-offset: 3px;
+}
+
+.client-checkout-help {
+    color: #8199ae;
+    font: 10px/1.5 'Cascadia Code', 'Courier New', monospace;
+    letter-spacing: 0;
+    text-transform: none;
+}
+
+.client-checkout-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    padding: 10px 14px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font: 700 10px/1.4 Montserrat, Arial, sans-serif;
+    text-align: center;
+    text-decoration: none;
+    text-transform: uppercase;
+    transition: background-color .18s ease, border-color .18s ease, color .18s ease, transform .18s ease;
+}
+
+.client-checkout-button:hover {
+    transform: translateY(-1px);
+}
+
+.client-checkout-button-primary {
+    background: #0ba5df;
+    color: #081c2d;
+    cursor: pointer;
+}
+
+.client-checkout-button-primary:hover {
+    background: #48c8f2;
+}
+
+.client-checkout-button-cancel {
+    border-color: rgba(163, 182, 200, .32);
+    background: transparent;
+    color: #a3b6c8;
+}
+
+.client-checkout-button-cancel:hover {
+    background: rgba(163, 182, 200, .08);
+    color: #fff;
+}
+
+.client-checkout-disclaimer {
+    margin: -7px 0 0;
+    color: #8199ae;
+    font-size: 10px;
+    text-align: center;
+}
+
+.client-receipt-details {
+    display: grid;
+    gap: 15px;
+    margin: 0;
+    padding: 18px;
+    border: 1px solid rgba(163, 182, 200, .16);
+    border-radius: 7px;
+    background: rgba(255, 255, 255, .025);
+}
+
+.client-receipt-details > div {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(163, 182, 200, .14);
+}
+
+.client-receipt-details > div:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+}
+
+.client-receipt-details span {
+    color: #91a8bd;
+    font: 700 10px/1.5 Montserrat, Arial, sans-serif;
+    text-transform: uppercase;
+}
+
+.client-receipt-details strong {
+    color: #fff;
+    font-size: 10px;
+    text-align: right;
+    overflow-wrap: anywhere;
+}
+
+.client-receipt-details .client-receipt-reference {
+    color: #70d7fa;
+    font: 700 17px/1.3 'Cascadia Code', 'Courier New', monospace;
+}
+
+.client-receipt-message {
+    margin: 0;
+    color: #91a8bd;
+    text-align: center;
+}
+
+.client-receipt-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.client-receipt-actions > * {
+    flex: 1 1 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .client-checkout-button {
+        transition: none;
+    }
+}
+
+@media print {
+    .no-print {
+        display: none !important;
+    }
+
+    .client-checkout-page {
+        display: block;
+        min-height: 0;
+        padding: 0;
+        background: #fff !important;
+        color: #000 !important;
+    }
+
+    .client-checkout-card {
+        width: 100%;
+        border-color: #198754 !important;
+        background: #fff !important;
+        box-shadow: none;
+    }
+
+    .client-checkout-header h1,
+    .client-checkout-total > strong,
+    .client-receipt-details strong,
+    .client-receipt-details .client-receipt-reference {
+        color: #000 !important;
+    }
+
+    .client-receipt-details {
+        border-color: #dee2e6 !important;
+        background: #f8f9fa !important;
+    }
+
+    .client-receipt-details span,
+    .client-receipt-message,
+    .client-checkout-disclaimer {
+        color: #495057 !important;
+    }
+}

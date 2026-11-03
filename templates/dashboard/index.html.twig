@@ -8,7 +8,11 @@
 {% block body_class %}app-layout{% endblock %}
 
 {% block body %}
-{% include 'partials/topbar.html.twig' with { brand: sidebar.brand, logo_path: sidebar.logo_path } only %}
+{% include 'partials/topbar.html.twig' with {
+    brand: sidebar.brand,
+    logo_path: sidebar.logo_path,
+    account_name: engineer_name|default(null)
+} only %}
 <div class="dashboard-shell">
     {% include 'partials/sidebar.html.twig' with { sidebar: sidebar } only %}
 

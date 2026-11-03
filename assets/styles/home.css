@@ -17,7 +17,7 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1440px;
     margin-inline: auto;
     padding-inline: clamp(18px, 3vw, 44px);
 }
@@ -26,11 +26,13 @@
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 460px;
-    padding-block: clamp(64px, 7vw, 100px);
+    min-height: 560px;
+    padding-block: clamp(88px, 9vw, 132px);
     overflow: hidden;
     text-align: center;
-    background: radial-gradient(ellipse at 50% 15%, #174365 0%, #0e2b49 65%, #0a2037 100%);
+    background:
+        linear-gradient(180deg, rgba(8, 29, 49, .72), rgba(8, 29, 49, .84)),
+        url("../images/1st.jpg") center 48% / cover no-repeat;
     border-bottom: 1px solid var(--home-border);
 }
 
@@ -45,6 +47,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    animation: home-intro .65s ease-out both;
 }
 
 .home-page .home-pill {
@@ -76,9 +79,9 @@
 }
 
 .dashboard-workspace main.homepage-main .home-hero-title {
-    max-width: 1000px;
-    margin: 24px 0 20px;
-    font: 800 clamp(30px, 3.4vw, 52px)/1.15 Montserrat, Arial, sans-serif;
+    max-width: 1180px;
+    margin: 28px 0 24px;
+    font: 800 clamp(34px, 4vw, 60px)/1.15 Montserrat, Arial, sans-serif;
     letter-spacing: -1px;
     text-transform: uppercase;
     overflow-wrap: break-word;
@@ -105,8 +108,8 @@
 }
 
 .home-page .home-hero-description {
-    max-width: 700px;
-    margin-bottom: 30px;
+    max-width: 760px;
+    margin-bottom: 36px;
     color: #c5d4e2;
     font-size: 15px;
 }
@@ -117,7 +120,7 @@
     align-items: center;
     gap: 14px;
     max-width: 100%;
-    padding: 14px 22px;
+    padding: 16px 26px;
     border-radius: 6px;
     background: var(--home-accent);
     color: #fff;
@@ -126,11 +129,13 @@
     line-height: 1.4;
     letter-spacing: 1px;
     text-transform: uppercase;
-    transition: background-color .2s ease;
+    transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 
 .home-page .home-button:hover {
+    transform: translateY(-2px);
     background: #078ec2;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .2);
 }
 
 .home-page .home-button svg,
@@ -142,7 +147,7 @@
 
 .home-page .home-section {
     position: relative;
-    padding-block: clamp(48px, 5vw, 76px);
+    padding-block: clamp(72px, 7vw, 104px);
     overflow: hidden;
     border-bottom: 1px solid var(--home-border);
 }
@@ -164,8 +169,8 @@
 }
 
 .home-page .home-section-heading {
-    max-width: 800px;
-    margin: 0 auto 36px;
+    max-width: 960px;
+    margin: 0 auto 48px;
     text-align: center;
 }
 
@@ -180,8 +185,8 @@
 }
 
 .home-page .home-section-title {
-    margin: 16px 0;
-    font-size: clamp(24px, 2.7vw, 38px);
+    margin: 18px 0;
+    font-size: clamp(28px, 3vw, 44px);
     font-weight: 800;
     line-height: 1.2;
     letter-spacing: -.6px;
@@ -190,7 +195,7 @@
 
 .home-page .home-grid {
     display: grid;
-    gap: 24px;
+    gap: clamp(24px, 2.5vw, 36px);
 }
 
 .home-page .home-grid-two {
@@ -208,11 +213,12 @@
     border: 1px solid var(--home-border);
     border-radius: 14px;
     background: rgba(255, 255, 255, .045);
+    transition: transform .22s ease, border-color .22s ease, background-color .22s ease, box-shadow .22s ease;
 }
 
 .home-page .home-card,
 .home-page .home-feature-card {
-    padding: clamp(22px, 2.8vw, 38px);
+    padding: clamp(28px, 3.2vw, 48px);
 }
 
 .home-page .home-card-top {
@@ -261,12 +267,6 @@
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    transition: border-color .2s ease, background-color .2s ease;
-}
-
-.home-page .home-service-card:hover {
-    border-color: rgba(11, 165, 223, .55);
-    background: rgba(255, 255, 255, .07);
 }
 
 .home-page .home-service-image {
@@ -274,7 +274,7 @@
     display: grid;
     place-items: center;
     width: 100%;
-    min-height: 170px;
+    min-height: 220px;
     aspect-ratio: 16 / 9;
     overflow: hidden;
     border-bottom: 1px solid var(--home-border);
@@ -285,6 +285,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform .35s ease;
 }
 
 .home-page .home-service-image-placeholder {
@@ -306,7 +307,7 @@
     display: flex;
     flex-direction: column;
     flex: 1;
-    padding: 24px;
+    padding: 30px;
 }
 
 .home-page .home-service-title {
@@ -333,6 +334,7 @@
 .home-page .home-learn-more svg {
     width: 16px;
     height: 16px;
+    transition: transform .2s ease;
 }
 
 .home-page .home-feature-card {
@@ -344,6 +346,37 @@
 .home-page .home-feature-body {
     min-width: 0;
     padding-top: 3px;
+}
+
+@keyframes home-intro {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@media (hover: hover) {
+    .home-page .home-card:hover,
+    .home-page .home-feature-card:hover,
+    .home-page .home-service-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(11, 165, 223, .55);
+        background-color: rgba(255, 255, 255, .07);
+        box-shadow: 0 14px 30px rgba(0, 0, 0, .18);
+    }
+
+    .home-page .home-service-card:hover .home-service-image img {
+        transform: scale(1.04);
+    }
+
+    .home-page .home-service-card:hover .home-learn-more svg,
+    .home-page .home-button:hover svg {
+        transform: translateX(3px);
+    }
+}
+
+.home-page .home-service-card:focus-visible {
+    border-color: rgba(11, 165, 223, .75);
+    background-color: rgba(255, 255, 255, .07);
+    box-shadow: 0 0 0 3px rgba(11, 165, 223, .18);
 }
 
 @media (min-width: 641px) and (max-width: 1100px) {
@@ -359,8 +392,8 @@
 
 @media (max-width: 640px) {
     .home-page .home-hero {
-        min-height: 420px;
-        padding-block: 54px;
+        min-height: 480px;
+        padding-block: 64px;
     }
 
     .dashboard-workspace main.homepage-main .home-hero-title {
@@ -379,7 +412,7 @@
     }
 
     .home-page .home-section-heading {
-        margin-bottom: 28px;
+        margin-bottom: 36px;
     }
 
     .home-page .home-feature-card {
@@ -404,8 +437,26 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .home-page .home-hero-content {
+        animation: none;
+    }
+
     .home-page .home-button,
-    .home-page .home-service-card {
+    .home-page .home-card,
+    .home-page .home-feature-card,
+    .home-page .home-service-card,
+    .home-page .home-service-image img,
+    .home-page .home-learn-more svg {
         transition: none;
+    }
+
+    .home-page .home-button:hover,
+    .home-page .home-card:hover,
+    .home-page .home-feature-card:hover,
+    .home-page .home-service-card:hover,
+    .home-page .home-service-card:hover .home-service-image img,
+    .home-page .home-service-card:hover .home-learn-more svg,
+    .home-page .home-button:hover svg {
+        transform: none;
     }
 }

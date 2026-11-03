@@ -1,0 +1,144 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% block title %}Field Operations | {{ configuration.sidebar.brand }}{% endblock %}
+{% block meta_description %}Manage assigned field operations and report updates to clients.{% endblock %}
+{% block main_class %}engineer-main{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/engineer_operations.css') }}">
+{% endblock %}
+
+{% block page_content %}
+    <div class="engineer-operations-page">
+        <div class="engineer-glow engineer-glow-blue" aria-hidden="true"></div>
+        <div class="engineer-glow engineer-glow-ocean" aria-hidden="true"></div>
+
+        <div class="engineer-content">
+            <header class="engineer-page-heading">
+                <div>
+                    <p class="engineer-eyebrow">Field Operations</p>
+                    <h1>Active Deployment Protocol</h1>
+                    <p>Review assigned technical interventions and log updates directly to the client timeline.</p>
+                </div>
+                <section class="engineer-metrics" aria-label="Assignment metrics">
+                    <div><strong>{{ total_tasks }}</strong><span>Assigned</span></div>
+                    <div><strong>{{ pending_tasks }}</strong><span>En Route</span></div>
+                    <div><strong>{{ in_progress_tasks }}</strong><span>Active</span></div>
+                </section>
+            </header>
+
+            {% for message in app.flashes('success') %}
+                <div class="engineer-alert engineer-alert-success" role="status">
+                    {{ message }}
+                    <button type="button" class="engineer-alert-close" data-engineer-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('warning') %}
+                <div class="engineer-alert engineer-alert-warning" role="alert">
+                    {{ message }}
+                    <button type="button" class="engineer-alert-close" data-engineer-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="engineer-alert engineer-alert-danger" role="alert">
+                    {{ message }}
+                    <button type="button" class="engineer-alert-close" data-engineer-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+
+            {% if load_error %}
+                <div class="engineer-alert engineer-alert-danger" role="alert">
+                    Unable to load your assignments right now. Please try again later.
+                </div>
+            {% elseif tasks is empty %}
+                <section class="engineer-empty">
+                    <span class="engineer-empty-icon" aria-hidden="true">✓</span>
+                    <h2>No Active Assignments</h2>
+                    <p>You are currently cleared of all tasks. Stand by for deployment orders.</p>
+                </section>
+            {% else %}
+                <section class="engineer-task-grid" aria-label="Assigned field operations">
+                    {% for task in tasks %}
+                        <article class="engineer-task-card">
+                            <header class="engineer-task-header">
+                                <span class="engineer-request-id">REQ-{{ '%04d'|format(task.request_id) }}</span>
+                                {% if task.status == 'in_progress' %}
+                                    <span class="engineer-task-status is-active"><span></span> On Site / Active</span>
+                                {% else %}
+                                    <span class="engineer-task-status is-en-route"><span></span> En Route</span>
+                                {% endif %}
+                            </header>
+
+                            <h2>{{ task.vessel_name }}</h2>
+                            <p class="engineer-company">{{ task.company|default('Private Client') }}</p>
+                            <p class="engineer-description">{{ task.description|nl2br }}</p>
+
+                            <footer class="engineer-task-footer">
+                                <div>
+                                    <span>Time Logged</span>
+                                    <time datetime="{{ task.requested_at|date('c') }}">{{ task.requested_at|date('M d, Y - H:i') }}</time>
+                                </div>
+                                <button type="button" class="engineer-button engineer-button-outline"
+                                        data-engineer-open-log
+                                        data-request-id="{{ task.request_id }}"
+                                        data-vessel="{{ task.vessel_name }}"
+                                        data-status="{{ task.status }}">
+                                    Update Log
+                                </button>
+                            </footer>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        </div>
+
+        <div class="engineer-modal" data-engineer-modal aria-hidden="true">
+            <section class="engineer-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="engineer-modal-title">
+                <header class="engineer-modal-header">
+                    <h2 id="engineer-modal-title">Submit Operations Log</h2>
+                    <button type="button" class="engineer-modal-close" data-engineer-close aria-label="Close">&times;</button>
+                </header>
+                <form method="post" action="{{ path('engineer_operations') }}">
+                    <div class="engineer-modal-body">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token('engineer_task_update') }}">
+                        <input type="hidden" name="action" value="update_task_status">
+                        <input type="hidden" name="request_id" data-engineer-request-id>
+
+                        <div class="engineer-target">
+                            <span>Target Vessel</span>
+                            <strong data-engineer-vessel></strong>
+                        </div>
+
+                        <label class="engineer-label" for="engineer-status">
+                            New Operational Status
+                            <select id="engineer-status" name="new_status" class="engineer-control" required>
+                                <option value="deployed">Deployed (En Route)</option>
+                                <option value="acknowledged">Acknowledged (Reviewed)</option>
+                                <option value="pending">Pending (Awaiting Action)</option>
+                                <option value="in_progress">In Progress (On Site)</option>
+                                <option value="resolved">Resolved / Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                            </select>
+                        </label>
+
+                        <label class="engineer-label" for="engineer-milestone">
+                            Status Milestone (Short Summary)
+                            <input id="engineer-milestone" type="text" name="milestone" class="engineer-control"
+                                   placeholder="e.g. Engineer Arrived on Site" required>
+                        </label>
+
+                        <label class="engineer-label" for="engineer-details">
+                            Detailed Log Message (Visible to Client)
+                            <textarea id="engineer-details" name="details" rows="4" class="engineer-control"
+                                      placeholder="Provide technical details regarding the current state of repairs..." required></textarea>
+                        </label>
+                    </div>
+                    <footer class="engineer-modal-footer">
+                        <button type="button" class="engineer-button engineer-button-outline" data-engineer-close>Cancel</button>
+                        <button type="submit" class="engineer-button engineer-button-primary">Transmit Update</button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+    </div>
+{% endblock %}

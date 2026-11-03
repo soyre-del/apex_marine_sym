@@ -1,0 +1,51 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Active Ops | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/active_operations.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="active-ops-page">
+        <div class="active-ops-container">
+            <a href="{{ path('app_dashboard') }}" class="btn btn-outline-info active-ops-back">&larr; Return to Matrix</a>
+            <h1 class="active-ops-title">Active Operations Tracker</h1>
+
+            {% for message in app.flashes('success') %}
+                <div class="alert alert-success active-ops-alert active-ops-alert-success" role="status">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="alert alert-danger active-ops-alert active-ops-alert-danger" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                </div>
+            {% endfor %}
+
+            {% if operations_load_error %}
+                <div class="alert alert-danger active-ops-alert active-ops-alert-danger" role="alert">
+                    Unable to load active operations right now. Please try again later.
+                </div>
+            {% elseif operations is empty %}
+                <div class="card glass-card active-ops-empty">
+                    <h2>No Active Deployments</h2>
+                    <p>All personnel are currently on standby or pending assignment.</p>
+                </div>
+            {% else %}
+                <div class="row g-4 active-ops-grid">
+                    {% for operation in operations %}
+                        <div class="col-md-6 col-xl-4">
+                            {% include 'admin/active_operations/_operation_card.html.twig' with {
+                                operation: operation,
+                                statuses: statuses
+                            } only %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </div>
+
+        {% include 'admin/active_operations/_resolve_warning_modal.html.twig' %}
+    </main>
+{% endblock %}

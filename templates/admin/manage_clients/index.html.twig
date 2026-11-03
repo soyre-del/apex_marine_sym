@@ -1,0 +1,250 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Client Registry | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/manage_clients.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="clients-page">
+        <nav class="clients-nav" aria-label="Client management navigation">
+            <div class="clients-nav-inner">
+                <div class="clients-brand">
+                    <span class="clients-system-pill">CLIENT_DB</span>
+                    <strong>Apex Marine</strong>
+                </div>
+                <a href="{{ path('admin_dashboard') }}" class="clients-button clients-button-outline">
+                    &larr; Back to Matrix
+                </a>
+            </div>
+        </nav>
+
+        <div class="clients-content">
+            {% for message in app.flashes('success') %}
+                <div class="clients-alert clients-alert-success" role="status">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                    <button type="button" class="clients-alert-close" data-clients-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('warning') %}
+                <div class="clients-alert clients-alert-warning" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                    <button type="button" class="clients-alert-close" data-clients-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="clients-alert clients-alert-danger" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                    <button type="button" class="clients-alert-close" data-clients-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+
+            {% if clients_load_error %}
+                <div class="clients-alert clients-alert-danger" role="alert">
+                    Unable to load the client roster. Check that the required database tables and columns are available.
+                </div>
+            {% endif %}
+
+            <section class="clients-roster" aria-labelledby="clients-title">
+                <header class="clients-roster-heading">
+                    <div>
+                        <h1 id="clients-title">Client Authorization Roster</h1>
+                        <p>Manage access levels and monitor organizational dispatch metrics.</p>
+                    </div>
+                    <button type="button" class="clients-button clients-button-info" data-clients-open="addClientModal">
+                        <span aria-hidden="true">+</span> Register New Client
+                    </button>
+                </header>
+
+                <div class="clients-table-wrap">
+                    <table class="clients-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Account &amp; Organization</th>
+                                <th scope="col">Contact Information</th>
+                                <th scope="col" class="clients-center">Dispatch Metrics</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="clients-right">Command</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for client in clients %}
+                                <tr{% if not client.is_active %} class="is-suspended"{% endif %}>
+                                    <td>
+                                        <strong class="clients-name">{{ client.full_name }}</strong>
+                                        {% if client.latest_company %}
+                                            <span class="clients-company">{{ client.latest_company }}</span>
+                                        {% else %}
+                                            <span class="clients-muted">No Company Logged</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <span class="clients-email">{{ client.email }}</span>
+                                        {% if client.latest_contact_person %}
+                                            <span class="clients-contact">POC: {{ client.latest_contact_person }}</span>
+                                        {% endif %}
+                                        {% if client.latest_contact_phone %}
+                                            <span class="clients-phone">&#9742; {{ client.latest_contact_phone }}</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="clients-center">
+                                        {% if client.active_dispatches > 0 %}
+                                            <span class="clients-active-ops">{{ client.active_dispatches }} Active Ops</span>
+                                        {% else %}
+                                            <span class="clients-muted clients-zero-ops">0 Active Ops</span>
+                                        {% endif %}
+                                        <span class="clients-total">{{ client.total_dispatches }} Total Lifetime</span>
+                                    </td>
+                                    <td>
+                                        {% if client.is_active %}
+                                            <span class="clients-status clients-status-active">Active</span>
+                                        {% else %}
+                                            <span class="clients-status clients-status-suspended">Suspended</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="clients-right">
+                                        <div class="clients-actions">
+                                            <button type="button" class="clients-button clients-button-small clients-button-edit"
+                                                    data-clients-edit
+                                                    data-id="{{ client.user_id }}"
+                                                    data-name="{{ client.full_name }}"
+                                                    data-email="{{ client.email }}">
+                                                Edit
+                                            </button>
+
+                                            <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-inline-form">
+                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                                                <input type="hidden" name="action" value="toggle_status">
+                                                <input type="hidden" name="client_id" value="{{ client.user_id }}">
+                                                <input type="hidden" name="new_status" value="{{ client.is_active ? '0' : '1' }}">
+                                                {% if client.is_active %}
+                                                    <button type="button" class="clients-button clients-button-small clients-button-suspend"
+                                                            data-clients-toggle data-status="0" data-name="{{ client.full_name }}">
+                                                        Suspend
+                                                    </button>
+                                                {% else %}
+                                                    <button type="button" class="clients-button clients-button-small clients-button-restore"
+                                                            data-clients-toggle data-status="1" data-name="{{ client.full_name }}">
+                                                        Restore
+                                                    </button>
+                                                {% endif %}
+                                            </form>
+
+                                            <button type="button" class="clients-button clients-button-small clients-button-purge"
+                                                    data-clients-purge data-id="{{ client.user_id }}" data-name="{{ client.full_name }}">
+                                                Purge
+                                            </button>
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="5" class="clients-empty">No client profiles detected in the sector.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        <div class="clients-modal" id="addClientModal" aria-hidden="true">
+            <section class="clients-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="addClientTitle">
+                <header class="clients-modal-header">
+                    <h2 id="addClientTitle">Initialize Profile</h2>
+                    <button type="button" class="clients-modal-close" data-clients-close aria-label="Close">&times;</button>
+                </header>
+                <form action="{{ path('admin_manage_clients') }}" method="post">
+                    <div class="clients-modal-body">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                        <input type="hidden" name="action" value="add_client">
+                        <label class="clients-label">Organization / Contact Name
+                            <input type="text" name="client_name" required class="clients-control" autocomplete="name">
+                        </label>
+                        <label class="clients-label">Secure Email
+                            <input type="email" name="client_email" required class="clients-control" autocomplete="email">
+                        </label>
+                        <label class="clients-label">Temporary Password
+                            <input type="password" name="client_password" required minlength="8" class="clients-control"
+                                   placeholder="Min 8 characters" autocomplete="new-password">
+                        </label>
+                    </div>
+                    <footer class="clients-modal-footer">
+                        <button type="button" class="clients-button clients-button-outline" data-clients-close>Cancel</button>
+                        <button type="submit" class="clients-button clients-button-info">Grant System Access</button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+
+        <div class="clients-modal" id="editClientModal" aria-hidden="true">
+            <section class="clients-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="editClientTitle">
+                <header class="clients-modal-header">
+                    <h2 id="editClientTitle">Modify Profile</h2>
+                    <button type="button" class="clients-modal-close" data-clients-close aria-label="Close">&times;</button>
+                </header>
+                <form action="{{ path('admin_manage_clients') }}" method="post">
+                    <div class="clients-modal-body">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                        <input type="hidden" name="action" value="edit_client">
+                        <input type="hidden" name="client_id" id="edit_client_id">
+                        <label class="clients-label">Organization / Contact Name
+                            <input type="text" name="edit_name" id="edit_name" required class="clients-control" autocomplete="name">
+                        </label>
+                        <label class="clients-label">Secure Email
+                            <input type="email" name="edit_email" id="edit_email" required class="clients-control" autocomplete="email">
+                        </label>
+                        <label class="clients-label">Reset Password (Optional)
+                            <input type="password" name="edit_password" minlength="8" class="clients-control"
+                                   placeholder="Leave blank to keep current" autocomplete="new-password">
+                        </label>
+                    </div>
+                    <footer class="clients-modal-footer">
+                        <button type="button" class="clients-button clients-button-outline" data-clients-close>Cancel</button>
+                        <button type="submit" class="clients-button clients-button-info">Save Modifications</button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+
+        <div class="clients-modal" id="purgeClientModal" aria-hidden="true">
+            <section class="clients-modal-dialog clients-modal-danger" role="dialog" aria-modal="true" aria-labelledby="purgeClientTitle">
+                <header class="clients-modal-header">
+                    <h2 id="purgeClientTitle">Critical: Purge Account?</h2>
+                    <button type="button" class="clients-modal-close" data-clients-close aria-label="Close">&times;</button>
+                </header>
+                <div class="clients-modal-body clients-modal-confirm">
+                    <p>
+                        This permanently deletes <strong id="purge_client_name_display"></strong>'s account.
+                        Related dispatch records may also be deleted if the database has cascading deletion configured.
+                        This cannot be undone.
+                    </p>
+                    <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-modal-footer">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                        <input type="hidden" name="action" value="hard_delete_client">
+                        <input type="hidden" name="client_id" id="purge_user_id">
+                        <button type="button" class="clients-button clients-button-outline" data-clients-close>Cancel</button>
+                        <button type="submit" class="clients-button clients-button-purge">Execute Purge</button>
+                    </form>
+                </div>
+            </section>
+        </div>
+
+        <div class="clients-modal" id="statusToggleModal" aria-hidden="true">
+            <section class="clients-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="statusToggleTitle">
+                <header class="clients-modal-header">
+                    <h2 id="statusToggleTitle">Confirm Action</h2>
+                    <button type="button" class="clients-modal-close" data-clients-close aria-label="Close">&times;</button>
+                </header>
+                <div class="clients-modal-body clients-modal-confirm">
+                    <p id="statusToggleMessage">Are you sure?</p>
+                    <div class="clients-modal-footer">
+                        <button type="button" class="clients-button clients-button-outline" data-clients-close>Cancel</button>
+                        <button type="button" class="clients-button clients-button-info" id="confirmToggleBtn">Proceed</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,170 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Admin Config | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/admin.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="admin-page" data-failed-action="{{ failed_action }}">
+        <nav class="admin-nav" aria-label="Admin navigation">
+            <div class="admin-nav-inner">
+                <div class="admin-brand">
+                    <span class="admin-system-pill"><span></span>SYS_CONFIG</span>
+                    <strong>Apex Marine</strong>
+                </div>
+                <div class="admin-nav-actions">
+                    <span class="admin-identity">ID: <strong>{{ admin_name }}</strong></span>
+                    <a href="{{ path('admin_active_operations') }}" class="admin-nav-link admin-nav-success">Active Ops</a>
+                    <a href="{{ path('admin_pending_dispatch') }}" class="admin-nav-link admin-nav-info">Pending Dispatches</a>
+                    <a href="{{ path('admin_billing') }}" class="admin-nav-link admin-nav-info">Billing</a>
+                    <a href="{{ path('app_home') }}" class="admin-nav-link admin-nav-info">Public</a>
+                </div>
+            </div>
+        </nav>
+
+        <div class="admin-content">
+            <header class="admin-heading">
+                <p class="admin-eyebrow">System Administration</p>
+                <h1>Central Command Terminal</h1>
+                <p>Execute administrative overrides, manage personnel, and dispatch resources.</p>
+            </header>
+
+            {% if system_message %}
+                <div class="admin-alert admin-alert-{{ message_type }}" role="{{ message_type == 'danger' ? 'alert' : 'status' }}">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ system_message }}
+                    <button type="button" class="admin-alert-close" data-alert-dismiss aria-label="Dismiss">&times;</button>
+                </div>
+            {% endif %}
+
+            {% if dashboard_load_error %}
+                <div class="admin-alert admin-alert-danger" role="alert">
+                    Some dashboard records could not be loaded. Check the configured database tables and try again.
+                </div>
+            {% endif %}
+
+            <section class="admin-metrics" aria-label="Dashboard metrics">
+                <article class="admin-metric-card admin-metric-warning">
+                    <h2>Pending Dispatches</h2>
+                    <strong class="admin-metric-value">{{ metrics.pending_dispatches }}</strong>
+                    <div class="admin-metric-footer">
+                        <span>Awaiting assignment</span>
+                        <a href="{{ path('admin_pending_dispatch') }}" class="admin-action-link">Assign Tasks &rarr;</a>
+                    </div>
+                </article>
+                <article class="admin-metric-card admin-metric-info">
+                    <h2>Registered Clients</h2>
+                    <strong class="admin-metric-value">{{ metrics.total_clients }}</strong>
+                    <div class="admin-metric-footer">
+                        <span>Active organizational profiles</span>
+                        <a href="{{ path('admin_manage_clients') }}" class="admin-action-link">Manage &rarr;</a>
+                    </div>
+                </article>
+                <article class="admin-metric-card admin-metric-success">
+                    <h2>Engineer Status</h2>
+                    <div class="admin-engineer-counts">
+                        <div>
+                            <strong>{{ metrics.available_engineers }}</strong>
+                            <span>Available</span>
+                        </div>
+                        <div>
+                            <strong>{{ metrics.deployed_engineers }}</strong>
+                            <span>Deployed</span>
+                        </div>
+                    </div>
+                    <div class="admin-metric-footer">
+                        <span>Live deployment metrics</span>
+                        <a href="{{ path('admin_active_operations') }}" class="admin-action-link">Track Ops &rarr;</a>
+                    </div>
+                </article>
+            </section>
+
+            <section class="admin-roster" aria-labelledby="roster-heading">
+                <div class="admin-roster-heading">
+                    <h2 id="roster-heading">
+                        <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                        Engineer Roster Management
+                    </h2>
+                    <button type="button" class="admin-button admin-button-outline" data-modal-open="addEngineerModal">
+                        <span aria-hidden="true">+</span> Register Personnel
+                    </button>
+                </div>
+
+                <div class="admin-table-wrap">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th scope="col">Personnel Name</th>
+                                <th scope="col">Comms (Email)</th>
+                                <th scope="col">Specialty</th>
+                                <th scope="col">Status</th>
+                                <th scope="col" class="admin-command-column">Command</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% if engineers is empty %}
+                                <tr><td colspan="5" class="admin-empty-row">No engineers found in the database.</td></tr>
+                            {% else %}
+                                {% for engineer in engineers %}
+                                    <tr{% if not engineer.is_active %} class="is-suspended"{% endif %}>
+                                        <td class="admin-name">{{ engineer.full_name }}</td>
+                                        <td>{{ engineer.email }}</td>
+                                        <td class="admin-specialty">{{ engineer.specialty }}</td>
+                                        <td>
+                                            {% if not engineer.is_active %}
+                                                <span class="admin-status admin-status-danger">Suspended</span>
+                                            {% elseif engineer.current_status == 'available' %}
+                                                <span class="admin-status admin-status-success">Available</span>
+                                            {% elseif engineer.current_status == 'deployed' %}
+                                                <span class="admin-status admin-status-neutral">Deployed</span>
+                                            {% else %}
+                                                <span class="admin-status admin-status-warning">On Leave</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="admin-command-column">
+                                            <div class="admin-row-actions">
+                                                <button
+                                                    type="button"
+                                                    class="admin-button admin-button-edit"
+                                                    data-edit-engineer
+                                                    data-id="{{ engineer.user_id }}"
+                                                    data-name="{{ engineer.full_name }}"
+                                                    data-email="{{ engineer.email }}"
+                                                    data-specialty="{{ engineer.specialty }}"
+                                                    data-status="{{ engineer.current_status }}"
+                                                >Edit</button>
+                                                {% if engineer.is_active %}
+                                                    <button
+                                                        type="button"
+                                                        class="admin-button admin-button-danger"
+                                                        data-delete-engineer
+                                                        data-id="{{ engineer.user_id }}"
+                                                        data-name="{{ engineer.full_name }}"
+                                                    >Revoke</button>
+                                                {% else %}
+                                                    <form action="{{ path('admin_dashboard') }}" method="post" class="admin-inline-form" data-confirm-restore>
+                                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+                                                        <input type="hidden" name="action" value="restore_engineer">
+                                                        <input type="hidden" name="user_id" value="{{ engineer.user_id }}">
+                                                        <button type="submit" class="admin-button admin-button-restore">Restore</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            {% endif %}
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </div>
+
+        {% include 'admin/_engineer_modals.html.twig' with {
+            specialties: specialties,
+            statuses: statuses,
+            old_post: old_post
+        } only %}
+    </main>
+{% endblock %}

@@ -18,7 +18,7 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 1200px;
+    max-width: 1440px;
     margin-inline: auto;
     padding-inline: clamp(18px, 3vw, 44px);
 }
@@ -27,10 +27,14 @@
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 350px;
-    padding-block: clamp(54px, 6vw, 80px);
+    min-height: 420px;
+    padding-block: clamp(68px, 7vw, 100px);
     text-align: center;
     background: radial-gradient(ellipse at 50% 0, #174365, #081c2d 75%);
+}
+
+.service-page .service-hero .service-container {
+    animation: service-intro .65s ease-out both;
 }
 
 .service-page .service-pill {
@@ -100,7 +104,7 @@
 .service-page .service-section,
 .service-page .service-cta {
     position: relative;
-    padding-block: clamp(48px, 5vw, 76px);
+    padding-block: clamp(64px, 7vw, 100px);
     border-bottom: 1px solid var(--service-border);
     scroll-margin-top: 24px;
 }
@@ -151,12 +155,6 @@
     border-radius: 14px;
     background: rgba(255, 255, 255, .025);
     transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
-}
-
-.service-page .service-discipline-card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(11, 165, 223, .4);
-    box-shadow: 0 12px 24px rgba(0, 0, 0, .13);
 }
 
 .service-page .service-discipline-icon {
@@ -227,6 +225,7 @@
     width: 100%;
     height: 100%;
     object-fit: cover;
+    transition: transform .45s ease;
 }
 
 .service-page .service-image-placeholder {
@@ -340,6 +339,7 @@
     border: 1px solid var(--service-border);
     border-radius: 12px;
     background: #081c2d;
+    transition: border-color .2s ease, background-color .2s ease;
 }
 
 .service-page .service-subheading {
@@ -390,6 +390,7 @@
     color: var(--service-accent);
     font-size: 24px;
     font-weight: 700;
+    transition: transform .22s ease, border-color .22s ease, box-shadow .22s ease;
 }
 
 .service-page .service-step-number-caution {
@@ -443,17 +444,20 @@
     letter-spacing: 1px;
     line-height: 1.4;
     text-transform: uppercase;
-    transition: background-color .2s ease, border-color .2s ease;
+    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 
 .service-page .service-button:hover {
+    transform: translateY(-2px);
     background: #078ec2;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
 }
 
 .service-page .service-button svg {
     flex-shrink: 0;
     width: 20px;
     height: 20px;
+    transition: transform .2s ease;
 }
 
 .service-page .service-button-outline {
@@ -464,6 +468,40 @@
 .service-page .service-button-outline:hover {
     border-color: var(--service-accent);
     background: rgba(11, 165, 223, .1);
+}
+
+@media (hover: hover) {
+    .service-page .service-discipline-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(11, 165, 223, .5);
+        background-color: rgba(255, 255, 255, .055);
+        box-shadow: 0 12px 26px rgba(0, 0, 0, .16);
+    }
+
+    .service-page .service-image:hover img {
+        transform: scale(1.035);
+    }
+
+    .service-page .service-step:hover .service-step-number {
+        transform: translateY(-3px);
+        border-color: rgba(11, 165, 223, .5);
+        box-shadow: 0 8px 22px rgba(0, 0, 0, .18);
+    }
+
+    .service-page .service-button:hover svg {
+        transform: translateX(3px);
+    }
+}
+
+.service-page .service-button:focus-visible,
+.service-page .service-discipline-card:focus-within {
+    outline: 2px solid rgba(11, 165, 223, .8);
+    outline-offset: 3px;
+}
+
+@keyframes service-intro {
+    from { opacity: 0; transform: translateY(14px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 @media (min-width: 1200px) {
@@ -548,12 +586,24 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+    .service-page .service-hero .service-container {
+        animation: none;
+    }
+
     .service-page .service-discipline-card,
-    .service-page .service-button {
+    .service-page .service-image img,
+    .service-page .service-note,
+    .service-page .service-step-number,
+    .service-page .service-button,
+    .service-page .service-button svg {
         transition: none;
     }
 
-    .service-page .service-discipline-card:hover {
+    .service-page .service-discipline-card:hover,
+    .service-page .service-button:hover,
+    .service-page .service-step:hover .service-step-number,
+    .service-page .service-button:hover svg,
+    .service-page .service-image:hover img {
         transform: none;
     }
 }

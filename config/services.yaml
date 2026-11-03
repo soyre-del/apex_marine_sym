@@ -19,6 +19,50 @@ services:
     # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
+        exclude:
+            - '../src/Controller/admin/'
+            - '../src/Controller/client/'
+            - '../src/Controller/engineer/'
+
+    App\Controller\admin\active_ops:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\admin\admin:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\admin\billing:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\admin\manage_clients:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\admin\pending_dispatch:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\client\billing\billing:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\client\billing\checkout:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\client\payment_success:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\client\status:
+        autowire: true
+        autoconfigure: true
+
+    App\Controller\engineer\eng:
+        autowire: true
+        autoconfigure: true
 
     # add more service definitions when explicit configuration is needed
     # please note that last definitions always *replace* previous ones

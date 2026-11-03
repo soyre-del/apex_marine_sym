@@ -1,0 +1,211 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Pending Assignments | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/pending_dispatch.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="pending-page">
+        <nav class="pending-nav" aria-label="Pending dispatch navigation">
+            <div class="pending-nav-inner">
+                <div class="pending-nav-heading">
+                    <a href="{{ path('admin_dashboard') }}" class="pending-button pending-button-outline">&larr; Back to Matrix</a>
+                    <h1>Task Assignment</h1>
+                </div>
+                <span class="pending-engineer-count">
+                    Active Available Engineers: <strong>{{ available_engineers|length }}</strong>
+                </span>
+            </div>
+        </nav>
+
+        <div class="pending-content">
+            {% for message in app.flashes('success') %}
+                <div class="pending-alert pending-alert-success" role="status">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                    <button type="button" class="pending-alert-close" data-pending-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('warning') %}
+                <div class="pending-alert pending-alert-warning" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                    <button type="button" class="pending-alert-close" data-pending-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="pending-alert pending-alert-danger" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                    <button type="button" class="pending-alert-close" data-pending-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+
+            {% if load_error %}
+                <div class="pending-alert pending-alert-danger" role="alert">
+                    Unable to load pending dispatches or available engineers. Check the configured database tables and try again.
+                </div>
+            {% endif %}
+
+            <header class="pending-intro">
+                <h2>Awaiting Deployment</h2>
+                <p>Engineers are matched to each client's requested discipline. Select a matching engineer to deploy.</p>
+            </header>
+
+            {% if load_error %}
+            {% elseif pending_requests is empty %}
+                <section class="pending-empty">
+                    <span aria-hidden="true" class="pending-empty-icon">✓</span>
+                    <h2>Sector Clear</h2>
+                    <p>No pending dispatches detected in the system.</p>
+                    <a href="{{ path('admin_dashboard') }}" class="pending-button pending-button-outline">Return to Dashboard</a>
+                </section>
+            {% else %}
+                <section class="pending-grid" aria-label="Pending dispatch requests">
+                    {% for dispatch in pending_requests %}
+                        <article class="pending-card{% if dispatch.is_urgent %} is-urgent{% endif %}">
+                            <header class="pending-card-heading">
+                                <div>
+                                    <span class="pending-request-badge">REQ-{{ '%04d'|format(dispatch.request_id) }}</span>
+                                    {% if dispatch.is_urgent %}
+                                        <span class="pending-urgent-badge">Critical</span>
+                                    {% endif %}
+                                    <h3>{{ dispatch.vessel_name|default('Unknown Vessel') }}</h3>
+                                    <span class="pending-muted">IMO: {{ dispatch.imo_number|default('N/A') }} | {{ dispatch.vessel_type|default('N/A') }}</span>
+                                </div>
+                                <time class="pending-requested-at" datetime="{{ dispatch.requested_at|date('c') }}">
+                                    Requested<br>{{ dispatch.requested_at|date('M d, H:i') }}
+                                </time>
+                            </header>
+
+                            <dl class="pending-details">
+                                <div>
+                                    <dt>Client / Company</dt>
+                                    <dd>{{ dispatch.client_name|default('Unlinked') }}</dd>
+                                    {% if dispatch.company %}
+                                        <dd class="pending-muted">{{ dispatch.company }}</dd>
+                                    {% endif %}
+                                </div>
+                                <div>
+                                    <dt>On-Site Contact</dt>
+                                    <dd>{{ dispatch.contact_person|default('N/A') }}</dd>
+                                    <dd class="pending-accent">{{ dispatch.contact_phone|default('') }}</dd>
+                                </div>
+                                <div>
+                                    <dt>Location Hub</dt>
+                                    <dd class="pending-accent">
+                                        {{ dispatch.port_name|default('Unknown') }}
+                                        {% if dispatch.hub_name %}({{ dispatch.hub_name }}){% endif %}
+                                    </dd>
+                                </div>
+                                <div>
+                                    <dt>Discipline Required</dt>
+                                    <dd class="pending-warning-text">{{ dispatch.service_type }}</dd>
+                                </div>
+                                <div class="pending-description">
+                                    <dt>Fault Description</dt>
+                                    <dd>{{ dispatch.description|nl2br }}</dd>
+                                    {% if dispatch.attachment_path %}
+                                        <dd>
+                                            <a href="{{ asset(dispatch.attachment_path) }}" target="_blank" rel="noopener noreferrer"
+                                               class="pending-attachment">
+                                                View Attached Diagnostic
+                                            </a>
+                                        </dd>
+                                    {% endif %}
+                                </div>
+                            </dl>
+
+                            <div class="pending-card-actions">
+                                <button type="button"
+                                        class="pending-button pending-button-deploy{% if dispatch.is_urgent %} pending-button-danger{% endif %}"
+                                        data-pending-assignment
+                                        data-request="{{ dispatch.request_id }}"
+                                        data-vessel="{{ dispatch.vessel_name|default('Unknown Vessel') }}"
+                                        data-service="{{ dispatch.service_type }}">
+                                    View Matching Engineers &amp; Deploy
+                                </button>
+
+                                <template id="engineers-for-{{ dispatch.request_id }}">
+                                    {% for engineer in matching_engineers[dispatch.request_id] %}
+                                        <form method="post" action="{{ path('admin_pending_dispatch') }}" class="pending-engineer-option">
+                                            <input type="hidden" name="csrf_token" value="{{ csrf_token('pending_dispatch') }}">
+                                            <input type="hidden" name="action" value="assign_engineer">
+                                            <input type="hidden" name="request_id" value="{{ dispatch.request_id }}">
+                                            <input type="hidden" name="engineer_id" value="{{ engineer.user_id }}">
+                                            <strong>{{ engineer.full_name }}</strong>
+                                            <span>{{ engineer.specialty }}</span>
+                                            <button type="submit" class="pending-button pending-button-warning">
+                                                Deploy {{ engineer.full_name }}
+                                            </button>
+                                        </form>
+                                    {% else %}
+                                        <p class="pending-no-match">
+                                            No available engineers match this discipline. Deployment will be available when a matching specialist is available.
+                                        </p>
+                                    {% endfor %}
+                                </template>
+
+                                <div class="pending-secondary-actions">
+                                    <form action="{{ path('admin_pending_dispatch') }}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('pending_dispatch') }}">
+                                        <input type="hidden" name="action" value="update_task_status">
+                                        <input type="hidden" name="request_id" value="{{ dispatch.request_id }}">
+                                        <input type="hidden" name="new_status" value="cancelled">
+                                        <button type="button" class="pending-button pending-button-outline-danger"
+                                                data-pending-task-action="terminate"
+                                                data-vessel="{{ dispatch.vessel_name|default('Unknown Vessel') }}">
+                                            Terminate Task
+                                        </button>
+                                    </form>
+                                    <form action="{{ path('admin_pending_dispatch') }}" method="post">
+                                        <input type="hidden" name="csrf_token" value="{{ csrf_token('pending_dispatch') }}">
+                                        <input type="hidden" name="action" value="update_task_status">
+                                        <input type="hidden" name="request_id" value="{{ dispatch.request_id }}">
+                                        <input type="hidden" name="new_status" value="resolved">
+                                        <button type="button" class="pending-button pending-button-outline-success"
+                                                data-pending-task-action="resolve"
+                                                data-vessel="{{ dispatch.vessel_name|default('Unknown Vessel') }}">
+                                            Finish / Resolve
+                                        </button>
+                                    </form>
+                                </div>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        </div>
+
+        <div class="pending-modal" id="assignModal" aria-hidden="true">
+            <section class="pending-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="assignModalTitle">
+                <header class="pending-modal-header">
+                    <h2 id="assignModalTitle">Authorize Deployment</h2>
+                    <button type="button" class="pending-modal-close" data-pending-close aria-label="Close">&times;</button>
+                </header>
+                <div class="pending-modal-body">
+                    <p class="pending-modal-description">
+                        Assign an engineer to <strong id="modalVesselName"></strong>.
+                        Requested discipline: <strong id="modalReqSpecialty"></strong>.
+                    </p>
+                    <div id="matchingEngineers" aria-live="polite"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="pending-modal" id="taskActionModal" aria-hidden="true">
+            <section class="pending-modal-dialog" id="taskActionContent" role="dialog" aria-modal="true" aria-labelledby="taskActionTitle">
+                <header class="pending-modal-header">
+                    <h2 id="taskActionTitle">Confirm Action</h2>
+                    <button type="button" class="pending-modal-close" data-pending-close aria-label="Close">&times;</button>
+                </header>
+                <div class="pending-modal-body pending-confirm-body">
+                    <p id="taskActionMessage">Are you sure?</p>
+                    <div class="pending-modal-actions">
+                        <button type="button" class="pending-button pending-button-outline" data-pending-close>Cancel</button>
+                        <button type="button" class="pending-button pending-button-info" id="confirmTaskActionBtn">Proceed</button>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+{% endblock %}

@@ -1,0 +1,52 @@
+<article class="card glass-card active-ops-card">
+    <div class="active-ops-card-heading">
+        <h2>{{ operation.vessel_name }}</h2>
+        <span class="badge bg-brand-ocean active-ops-request-id">REQ-{{ '%04d'|format(operation.request_id) }}</span>
+    </div>
+    <p class="text-info active-ops-assigned">Assigned: <strong>{{ operation.eng_name }}</strong></p>
+
+    <form action="{{ path('admin_active_operations') }}" method="post" class="active-ops-form">
+        <input type="hidden" name="_token" value="{{ csrf_token('active_operation_' ~ operation.request_id) }}">
+        <input type="hidden" name="action" value="add_update">
+        <input type="hidden" name="request_id" value="{{ operation.request_id }}">
+        <input type="hidden" name="engineer_id" value="{{ operation.engineer_id }}">
+
+        <label class="visually-hidden" for="milestone-{{ operation.request_id }}">Milestone</label>
+        <input
+            id="milestone-{{ operation.request_id }}"
+            type="text"
+            name="milestone"
+            class="form-control active-ops-control"
+            placeholder="Milestone (e.g., Arrived, Part Replaced, Fixed)"
+            required
+        >
+
+        <label class="visually-hidden" for="message-{{ operation.request_id }}">Detailed message</label>
+        <textarea
+            id="message-{{ operation.request_id }}"
+            name="detailed_message"
+            class="form-control active-ops-control"
+            placeholder="Detailed diagnostic or action log..."
+            rows="2"
+            required
+        ></textarea>
+
+        <div class="d-flex active-ops-form-actions">
+            <label class="visually-hidden" for="status-{{ operation.request_id }}">Operation status</label>
+            <select id="status-{{ operation.request_id }}" name="new_status" class="form-select active-ops-control active-ops-status">
+                {% for status in statuses %}
+                    {% set label = {
+                        pending: 'Pending (Awaiting Action)',
+                        acknowledged: 'Acknowledged (Reviewed)',
+                        deployed: 'Deployed (En Route)',
+                        in_progress: 'In Progress (Working)',
+                        resolved: 'Resolved (Finish Task)',
+                        cancelled: 'Cancelled'
+                    }[status] %}
+                    <option value="{{ status }}"{% if operation.status == status %} selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="btn btn-info active-ops-submit">Post Log</button>
+        </div>
+    </form>
+</article>

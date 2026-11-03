@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Secure Checkout | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/client_checkout.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="client-checkout-page">
+        <section class="client-checkout-card" aria-labelledby="checkout-title">
+            <header class="client-checkout-header">
+                <h1 id="checkout-title">Apex Marine Payment Gateway</h1>
+                <span class="client-checkout-badge">Simulated Environment</span>
+            </header>
+
+            <div class="client-checkout-body">
+                <div class="client-checkout-total">
+                    <span>Total Due</span>
+                    <strong>{{ invoice.currency }} {{ invoice.amount|number_format(2, '.', ',') }}</strong>
+                    <p>
+                        Service Request REQ-{{ '%04d'|format(invoice.request_id) }}<br>
+                        Vessel: {{ invoice.vessel_name }}
+                    </p>
+                </div>
+
+                <form method="post" action="{{ path('client_checkout') }}" class="client-checkout-form">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token('client_checkout') }}">
+                    <input type="hidden" name="invoice_id" value="{{ invoice_id }}">
+
+                    <label class="client-checkout-label" for="checkout-payment-method">
+                        Payment Method
+                        <select id="checkout-payment-method" name="payment_method" class="client-checkout-control" required>
+                            <option value="Bank Transfer">Direct Bank Transfer</option>
+                            <option value="Credit Card">Credit/Debit Card</option>
+                            <option value="GCash">GCash / E-Wallet</option>
+                            <option value="Cash">Cash to Engineer</option>
+                        </select>
+                    </label>
+
+                    <label class="client-checkout-label" for="checkout-reference">
+                        Account / Reference Number (Optional)
+                        <input id="checkout-reference" type="text" name="reference_number"
+                               class="client-checkout-control" maxlength="100"
+                               placeholder="e.g. 1234-5678-9000">
+                        <span class="client-checkout-help">Leave blank to auto-generate a transaction ID.</span>
+                    </label>
+
+                    <button type="submit" class="client-checkout-button client-checkout-button-primary">
+                        Confirm &amp; Submit Payment
+                    </button>
+                    <a href="{{ path('client_status') }}" class="client-checkout-button client-checkout-button-cancel">
+                        Cancel
+                    </a>
+                </form>
+
+                <p class="client-checkout-disclaimer">
+                    This is a simulated payment flow and does not charge a real payment method.
+                </p>
+            </div>
+        </section>
+    </main>
+{% endblock %}

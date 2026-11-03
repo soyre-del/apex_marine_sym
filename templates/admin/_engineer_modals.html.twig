@@ -1,0 +1,96 @@
+<div class="admin-modal" id="addEngineerModal" aria-hidden="true">
+    <section class="admin-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="addEngineerTitle">
+        <header class="admin-modal-header">
+            <h2 id="addEngineerTitle">Deploy New Engineer</h2>
+            <button type="button" class="admin-modal-close" data-modal-dismiss aria-label="Close">&times;</button>
+        </header>
+        <div class="admin-modal-body">
+            <form action="{{ path('admin_dashboard') }}" method="post" class="admin-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+                <input type="hidden" name="action" value="add_engineer">
+
+                <label>Full Name
+                    <input type="text" name="eng_name" required value="{{ old_post.eng_name|default('') }}" placeholder="Operative Designation">
+                </label>
+                <label>Secure Email
+                    <input type="email" name="eng_email" required value="{{ old_post.eng_email|default('') }}" placeholder="engineer@apexmarine.com.ph">
+                </label>
+                <label>Access Code (Password)
+                    <input type="password" name="eng_password" required minlength="8" placeholder="At least 8 characters">
+                </label>
+                <label>Technical Discipline
+                    <select name="eng_specialty" required>
+                        <option value=""{% if old_post.eng_specialty|default('') == '' %} selected{% endif %} disabled>Assign Role...</option>
+                        {% for specialty in specialties %}
+                            <option value="{{ specialty }}"{% if old_post.eng_specialty|default('') == specialty %} selected{% endif %}>{{ specialty }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Initial Status
+                    <select name="eng_status">
+                        {% for status in statuses %}
+                            <option value="{{ status }}"{% if old_post.eng_status|default('available') == status %} selected{% endif %}>{{ status|replace({'_': ' '})|title }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button type="submit" class="admin-button admin-button-primary">Initialize Profile</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+<div class="admin-modal" id="editEngineerModal" aria-hidden="true">
+    <section class="admin-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="editEngineerTitle">
+        <header class="admin-modal-header">
+            <h2 id="editEngineerTitle">Edit Engineer Profile</h2>
+            <button type="button" class="admin-modal-close" data-modal-dismiss aria-label="Close">&times;</button>
+        </header>
+        <div class="admin-modal-body">
+            <form action="{{ path('admin_dashboard') }}" method="post" class="admin-form">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+                <input type="hidden" name="action" value="edit_engineer">
+                <input type="hidden" name="user_id" id="edit_user_id" value="{{ old_post.user_id|default('') }}">
+
+                <label>Full Name
+                    <input type="text" name="eng_name" id="edit_eng_name" required value="{{ old_post.eng_name|default('') }}">
+                </label>
+                <label>Secure Email
+                    <input type="email" name="eng_email" id="edit_eng_email" required value="{{ old_post.eng_email|default('') }}">
+                </label>
+                <label>Update Access Code
+                    <input type="password" name="eng_password" minlength="8" placeholder="Leave blank to keep current code">
+                </label>
+                <label>Technical Discipline
+                    <select name="eng_specialty" id="edit_eng_specialty" required>
+                        {% for specialty in specialties %}
+                            <option value="{{ specialty }}"{% if old_post.eng_specialty|default('') == specialty %} selected{% endif %}>{{ specialty }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <label>Current Status
+                    <select name="eng_status" id="edit_eng_status">
+                        {% for status in statuses %}
+                            <option value="{{ status }}"{% if old_post.eng_status|default('available') == status %} selected{% endif %}>{{ status|replace({'_': ' '})|title }}</option>
+                        {% endfor %}
+                    </select>
+                </label>
+                <button type="submit" class="admin-button admin-button-primary">Update Profile</button>
+            </form>
+        </div>
+    </section>
+</div>
+
+<div class="admin-modal" id="deleteEngineerModal" aria-hidden="true">
+    <section class="admin-modal-dialog admin-modal-confirm" role="dialog" aria-modal="true" aria-labelledby="deleteEngineerTitle">
+        <div class="admin-confirm-icon" aria-hidden="true">!</div>
+        <h2 id="deleteEngineerTitle">Revoke Operative Access?</h2>
+        <p>This will deactivate <strong id="delete_eng_name_display"></strong>'s account and set their status to 'On Leave'.</p>
+        <form action="{{ path('admin_dashboard') }}" method="post" class="admin-confirm-actions">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+            <input type="hidden" name="action" value="delete_engineer">
+            <input type="hidden" name="user_id" id="delete_user_id">
+            <button type="button" class="admin-button admin-button-cancel" data-modal-dismiss>Cancel</button>
+            <button type="submit" class="admin-button admin-button-danger">Confirm Revoke</button>
+        </form>
+    </section>
+</div>

@@ -124,6 +124,16 @@ button:focus-visible {
     height: 16px;
 }
 
+.header-account {
+    color: var(--muted-color);
+    font-size: 12px;
+}
+
+.header-account strong {
+    margin-left: 4px;
+    color: var(--text-color);
+}
+
 .login-button {
     background: transparent;
 }

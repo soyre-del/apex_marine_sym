@@ -1,0 +1,94 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}My Billing | Apex Marine{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/client_billing.css') }}">
+{% endblock %}
+
+{% block body %}
+    <main class="client-billing-page">
+        <div class="client-billing-container">
+            <header class="client-billing-header">
+                <div class="client-billing-heading">
+                    <a href="{{ path('app_home') }}" class="client-billing-button client-billing-button-outline">&larr; Home</a>
+                    <a href="{{ path('client_status') }}" class="client-billing-button client-billing-button-outline">Operations</a>
+                    <h1>Billing &amp; Payments</h1>
+                </div>
+                <div class="client-billing-identity">
+                    <span>Client:</span> <strong>{{ client_name }}</strong>
+                </div>
+            </header>
+
+            {% if unpaid_count > 0 %}
+                <div class="client-billing-notice" role="status">
+                    <span class="client-billing-notice-icon" aria-hidden="true">!</span>
+                    ACTION REQUIRED: You have {{ unpaid_count }} pending invoice(s) for completed operations.
+                    Please process payment to clear your account.
+                </div>
+            {% endif %}
+
+            {% for message in app.flashes('success') %}
+                <div class="client-billing-alert client-billing-alert-success" role="status">
+                    {{ message }}
+                    <button type="button" class="client-billing-alert-close" data-billing-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="client-billing-alert client-billing-alert-danger" role="alert">
+                    {{ message }}
+                    <button type="button" class="client-billing-alert-close" data-billing-alert-close aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+
+            {% if invoices_load_error %}
+                <div class="client-billing-alert client-billing-alert-danger" role="alert">
+                    Unable to load your billing records. Please try again later.
+                </div>
+            {% elseif invoices is empty %}
+                <section class="client-billing-empty">
+                    <h2>No billing records found.</h2>
+                </section>
+            {% else %}
+                <section class="client-billing-grid" aria-label="Your invoices">
+                    {% for invoice in invoices %}
+                        <article class="client-invoice-card">
+                            {% if invoice.payment_status == 'paid' %}
+                                <span class="client-invoice-ribbon client-invoice-ribbon-paid">Payment Done</span>
+                            {% else %}
+                                <span class="client-invoice-ribbon client-invoice-ribbon-unpaid">Payment Needed</span>
+                            {% endif %}
+
+                            <div class="client-invoice-body">
+                                <span class="client-invoice-id">INV-{{ '%05d'|format(invoice.invoice_id) }}</span>
+                                <h2>{{ invoice.currency }} {{ invoice.amount|number_format(2, '.', ',') }}</h2>
+
+                                <ul class="client-invoice-details">
+                                    <li><strong>Vessel:</strong> {{ invoice.vessel_name }}</li>
+                                    <li><strong>Job Ref:</strong> REQ-{{ '%04d'|format(invoice.request_id) }}</li>
+                                    <li><strong>Issued:</strong> {{ invoice.created_at|date('M d, Y') }}</li>
+                                    {% if invoice.payment_status == 'paid' %}
+                                        <li><strong class="client-invoice-paid-label">Method:</strong> {{ invoice.payment_method|default('N/A') }}</li>
+                                        <li><strong class="client-invoice-paid-label">Txn Ref:</strong> {{ invoice.reference_number|default('N/A') }}</li>
+                                    {% endif %}
+                                </ul>
+
+                                {% if invoice.payment_status == 'unpaid' %}
+                                    <a href="{{ path('client_checkout', {invoice_id: invoice.invoice_id}) }}"
+                                       class="client-billing-button client-billing-button-pay">
+                                        Secure Checkout &rarr;
+                                    </a>
+                                {% else %}
+                                    <button type="button" class="client-billing-button client-billing-button-settled" disabled>
+                                        <span aria-hidden="true">✓</span> Settled
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% endif %}
+        </div>
+
+    </main>
+{% endblock %}
