@@ -7,7 +7,7 @@
         linear-gradient(rgba(46, 107, 156, .06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .06) 1px, transparent 1px);
     background-size: 32px 32px;
-    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-family: Inter, Arial, sans-serif;
 }
 
 .active-ops-container {
@@ -37,7 +37,7 @@
     border: 1px solid rgba(11, 165, 223, .55);
     border-radius: 6px;
     color: #70d7fa;
-    font: 700 11px/1.5 Montserrat, Arial, sans-serif;
+    font: 700 11px/1.5 Inter, Arial, sans-serif;
     letter-spacing: .8px;
     text-decoration: none;
     text-transform: uppercase;
@@ -51,7 +51,7 @@
 .active-ops-title {
     margin: 0 0 28px;
     color: #fff;
-    font: 800 clamp(24px, 3vw, 34px)/1.2 Montserrat, Arial, sans-serif;
+    font: 800 clamp(24px, 3vw, 34px)/1.2 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -89,7 +89,7 @@
     min-width: 0;
     margin: 0;
     color: #fff;
-    font: 800 17px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 17px/1.4 Inter, Arial, sans-serif;
     overflow-wrap: anywhere;
     text-transform: uppercase;
 }
@@ -130,7 +130,7 @@
     background: rgba(4, 20, 34, .85);
     color: #f7faff;
     color-scheme: dark;
-    font: 12px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 12px/1.5 Inter, Arial, sans-serif;
 }
 
 .active-ops-control::placeholder {
@@ -160,7 +160,7 @@ textarea.active-ops-control {
     flex: 0 0 auto;
     padding: 10px 18px;
     color: #081c2d;
-    font: 700 11px/1.5 Montserrat, Arial, sans-serif;
+    font: 700 11px/1.5 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -171,7 +171,7 @@ textarea.active-ops-control {
 .active-ops-empty h2 {
     margin: 0 0 12px;
     color: #fff;
-    font: 800 19px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 19px/1.4 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -239,7 +239,7 @@ textarea.active-ops-control {
 .active-ops-modal .modal-title {
     margin: 0;
     color: #36bef1;
-    font: 800 15px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 15px/1.4 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -257,7 +257,7 @@ textarea.active-ops-control {
 
 .active-ops-modal .btn-close::before {
     content: '\00d7';
-    font: 28px/1 Arial, sans-serif;
+    font: 28px/1 Inter, Arial, sans-serif;
 }
 
 .active-ops-modal .modal-body {

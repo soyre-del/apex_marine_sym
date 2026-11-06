@@ -16,7 +16,7 @@
     padding-block: clamp(52px, 6vw, 84px);
     background: #0e2b49;
     color: var(--contact-heading);
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
 }
 
 .contact-page::before {
@@ -65,7 +65,7 @@
 
 .dashboard-workspace main.contact-main .contact-title {
     margin: 0 0 16px;
-    font: 800 clamp(28px, 3.5vw, 44px)/1.2 Montserrat, Arial, sans-serif;
+    font: 800 clamp(28px, 3.5vw, 44px)/1.2 Inter, Arial, sans-serif;
     letter-spacing: -.7px;
     text-transform: uppercase;
     overflow-wrap: break-word;
@@ -75,7 +75,7 @@
     max-width: 670px;
     margin: 0;
     color: var(--contact-muted);
-    font: 14px/1.8 'Cascadia Code', 'Courier New', monospace;
+    font: 14px/1.8 Inter, Arial, sans-serif;
 }
 
 .contact-page .contact-columns {
@@ -157,7 +157,7 @@
 .contact-page .contact-phone {
     display: block;
     margin-top: 4px;
-    font: 13px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.6 Inter, Arial, sans-serif;
     overflow-wrap: anywhere;
 }
 
@@ -253,7 +253,7 @@
     gap: 8px;
     margin: 8px 0 0;
     color: #65dcac;
-    font: 700 12px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 700 12px/1.6 Inter, Arial, sans-serif;
 }
 
 .contact-page .contact-online::before {
@@ -300,7 +300,7 @@
     padding: 14px 16px;
     border: 1px solid var(--contact-border);
     border-radius: 8px;
-    font: 13px/1.7 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.7 Inter, Arial, sans-serif;
     overflow-wrap: anywhere;
 }
 
@@ -359,7 +359,7 @@
     background: rgba(8, 28, 45, .8);
     color: var(--contact-heading);
     color-scheme: dark;
-    font: 13px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.5 Inter, Arial, sans-serif;
     transition: border-color .2s ease, box-shadow .2s ease;
 }
 
@@ -424,7 +424,7 @@
     display: block;
     margin-top: 7px;
     color: #ffb4b4;
-    font: 12px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 12px/1.6 Inter, Arial, sans-serif;
 }
 
 .contact-page .contact-phone-group {
@@ -482,7 +482,7 @@
 .contact-page .contact-file-hint {
     margin: 8px 0 0;
     color: var(--contact-muted);
-    font: 11px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 11px/1.6 Inter, Arial, sans-serif;
 }
 
 .contact-page .contact-submit,
@@ -496,7 +496,7 @@
     border: 1px solid transparent;
     border-radius: 8px;
     color: #fff;
-    font: 700 12px/1.5 Montserrat, Arial, sans-serif;
+    font: 700 12px/1.5 Inter, Arial, sans-serif;
     letter-spacing: 1px;
     text-align: center;
     text-transform: uppercase;
@@ -534,7 +534,7 @@
 .contact-page .contact-clearance p {
     margin: 10px 0 18px;
     color: var(--contact-muted);
-    font: 13px/1.7 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.7 Inter, Arial, sans-serif;
 }
 
 .contact-page .contact-auth-actions {

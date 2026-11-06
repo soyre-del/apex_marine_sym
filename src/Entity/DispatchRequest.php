@@ -12,8 +12,8 @@ class DispatchRequest
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column]
-    private ?int $id = null;
+    #[ORM\Column(name: 'request_id')]
+    private ?int $requestId = null;
 
     #[ORM\Column(length: 255)]
     private ?string $vesselName = null;
@@ -60,9 +60,29 @@ class DispatchRequest
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $etaDate = null;
 
-    public function getId(): ?int
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, columnDefinition: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]
+    private \DateTimeImmutable $requestedAt;
+
+    public function __construct()
     {
-        return $this->id;
+        $this->requestedAt = new \DateTimeImmutable();
+    }
+
+    public function getRequestId(): ?int
+    {
+        return $this->requestId;
+    }
+
+    public function getRequestedAt(): \DateTimeImmutable
+    {
+        return $this->requestedAt;
+    }
+
+    public function setRequestedAt(\DateTimeImmutable $requestedAt): static
+    {
+        $this->requestedAt = $requestedAt;
+
+        return $this;
     }
 
     public function getVesselName(): ?string

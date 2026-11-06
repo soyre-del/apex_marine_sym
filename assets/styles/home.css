@@ -9,7 +9,7 @@
     --home-muted: #a3b6c8;
     --home-border: rgba(163, 182, 200, .18);
     color: var(--home-heading);
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
     background: #0e2b49;
 }
 
@@ -81,7 +81,7 @@
 .dashboard-workspace main.homepage-main .home-hero-title {
     max-width: 1180px;
     margin: 28px 0 24px;
-    font: 800 clamp(34px, 4vw, 60px)/1.15 Montserrat, Arial, sans-serif;
+    font: 800 clamp(34px, 4vw, 60px)/1.15 Inter, Arial, sans-serif;
     letter-spacing: -1px;
     text-transform: uppercase;
     overflow-wrap: break-word;
@@ -102,7 +102,7 @@
 .home-page .home-feature-description {
     margin: 0;
     color: var(--home-muted);
-    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-family: Inter, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.8;
 }
@@ -248,7 +248,7 @@
 
 .home-page .home-card-number {
     color: #7c96ad;
-    font: 700 14px 'Cascadia Code', 'Courier New', monospace;
+    font: 700 14px Inter, Arial, sans-serif;
     letter-spacing: 2px;
 }
 
@@ -291,7 +291,7 @@
 .home-page .home-service-image-placeholder {
     padding: 20px;
     color: #a3b6c8;
-    font: 12px/1.8 'Cascadia Code', 'Courier New', monospace;
+    font: 12px/1.8 Inter, Arial, sans-serif;
     text-align: center;
 }
 

@@ -9,7 +9,7 @@
         linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
     background-size: 30px 30px;
-    font: 13px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.6 Inter, Arial, sans-serif;
 }
 
 .dashboard-workspace main.engineer-main {
@@ -59,7 +59,7 @@
 .engineer-eyebrow {
     margin: 0 0 6px;
     color: #ffc857;
-    font: 700 9px/1.5 Montserrat, Arial, sans-serif;
+    font: 700 9px/1.5 Inter, Arial, sans-serif;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
@@ -67,7 +67,7 @@
 .engineer-page-heading h1 {
     margin: 0 0 8px;
     color: #fff;
-    font: 800 clamp(23px, 3vw, 34px)/1.2 Montserrat, Arial, sans-serif;
+    font: 800 clamp(23px, 3vw, 34px)/1.2 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -115,7 +115,7 @@
 
 .engineer-metrics span {
     color: #91a8bd;
-    font: 700 8px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 8px/1.4 Inter, Arial, sans-serif;
     letter-spacing: .5px;
     text-transform: uppercase;
 }
@@ -210,7 +210,7 @@
     display: inline-flex;
     align-items: center;
     gap: 7px;
-    font: 700 9px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 9px/1.4 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -241,7 +241,7 @@
 .engineer-task-card h2 {
     margin: 0 0 4px;
     color: #fff;
-    font: 800 18px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 18px/1.4 Inter, Arial, sans-serif;
     overflow-wrap: anywhere;
 }
 
@@ -274,7 +274,7 @@
 
 .engineer-task-footer > div span {
     color: #91a8bd;
-    font: 700 8px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 8px/1.4 Inter, Arial, sans-serif;
     letter-spacing: .6px;
     text-transform: uppercase;
 }
@@ -292,7 +292,7 @@
     padding: 8px 12px;
     border: 1px solid transparent;
     border-radius: 6px;
-    font: 700 9px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 9px/1.4 Inter, Arial, sans-serif;
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
@@ -351,7 +351,7 @@
 .engineer-empty h2 {
     margin: 0 0 7px;
     color: #fff;
-    font: 800 17px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 17px/1.4 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -403,7 +403,7 @@
 .engineer-modal-header h2 {
     margin: 0;
     color: #ffc857;
-    font: 800 14px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 14px/1.4 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -429,21 +429,21 @@
 
 .engineer-target span {
     color: #91a8bd;
-    font: 700 8px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 8px/1.4 Inter, Arial, sans-serif;
     letter-spacing: .8px;
     text-transform: uppercase;
 }
 
 .engineer-target strong {
     color: #fff;
-    font: 800 17px/1.4 Montserrat, Arial, sans-serif;
+    font: 800 17px/1.4 Inter, Arial, sans-serif;
 }
 
 .engineer-label {
     display: grid;
     gap: 7px;
     color: #a3b6c8;
-    font: 700 9px/1.5 Montserrat, Arial, sans-serif;
+    font: 700 9px/1.5 Inter, Arial, sans-serif;
     letter-spacing: .5px;
     text-transform: uppercase;
 }
@@ -457,7 +457,7 @@
     background: #081622;
     color: #f7faff;
     color-scheme: dark;
-    font: 12px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 12px/1.5 Inter, Arial, sans-serif;
 }
 
 .engineer-control::placeholder {

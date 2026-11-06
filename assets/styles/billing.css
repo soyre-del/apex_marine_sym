@@ -7,7 +7,7 @@
         linear-gradient(rgba(46, 107, 156, .06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .06) 1px, transparent 1px);
     background-size: 32px 32px;
-    font: 13px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.6 Inter, Arial, sans-serif;
 }
 
 .billing-container {
@@ -44,7 +44,7 @@
 .billing-modal-header h2 {
     margin: 0;
     color: #fff;
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
     font-weight: 800;
     text-transform: uppercase;
 }
@@ -61,7 +61,7 @@
     padding: 8px 13px;
     border: 1px solid transparent;
     border-radius: 6px;
-    font: 700 11px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 11px/1.4 Inter, Arial, sans-serif;
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;
@@ -183,7 +183,7 @@
 
 .billing-metric span,
 .billing-section h2 {
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
     font-size: 12px;
     font-weight: 700;
     letter-spacing: .8px;
@@ -192,7 +192,7 @@
 
 .billing-metric strong {
     color: #fff;
-    font: 800 clamp(21px, 2.5vw, 30px)/1.2 Montserrat, Arial, sans-serif;
+    font: 800 clamp(21px, 2.5vw, 30px)/1.2 Inter, Arial, sans-serif;
     overflow-wrap: anywhere;
 }
 
@@ -264,7 +264,7 @@
 
 .billing-table th {
     color: #a3b6c8;
-    font: 700 10px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 10px/1.4 Inter, Arial, sans-serif;
     letter-spacing: .7px;
     text-transform: uppercase;
 }
@@ -325,7 +325,7 @@
     padding: 5px 9px;
     border: 1px solid transparent;
     border-radius: 5px;
-    font: 700 10px/1.2 Montserrat, Arial, sans-serif;
+    font: 700 10px/1.2 Inter, Arial, sans-serif;
     text-transform: uppercase;
 }
 
@@ -462,7 +462,7 @@
     background: #030d16;
     color: #f7faff;
     color-scheme: dark;
-    font: 13px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.5 Inter, Arial, sans-serif;
 }
 
 .billing-modal-footer {

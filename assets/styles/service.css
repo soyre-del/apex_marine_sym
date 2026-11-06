@@ -11,7 +11,7 @@
     --service-caution: #e7b254;
     color: var(--service-heading);
     background: #0e2b49;
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
 }
 
 .service-page .service-container {
@@ -63,7 +63,7 @@
 
 .dashboard-workspace main.service-main .service-title {
     margin: 22px 0 20px;
-    font: 800 clamp(30px, 3.6vw, 52px)/1.15 Montserrat, Arial, sans-serif;
+    font: 800 clamp(30px, 3.6vw, 52px)/1.15 Inter, Arial, sans-serif;
     letter-spacing: -1px;
     text-transform: uppercase;
     overflow-wrap: break-word;
@@ -90,7 +90,7 @@
 .service-page .service-cta-description,
 .service-page .service-section-heading > p {
     color: var(--service-muted);
-    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-family: Inter, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.8;
 }
@@ -361,7 +361,7 @@
 
 .service-page .service-detail-list strong {
     color: var(--service-heading);
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
 }
 
 .service-page .service-process-grid {

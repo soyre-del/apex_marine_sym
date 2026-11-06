@@ -6,7 +6,7 @@
         linear-gradient(rgba(46, 107, 156, .055) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .055) 1px, transparent 1px);
     background-size: 32px 32px;
-    font: 13px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.6 Inter, Arial, sans-serif;
 }
 
 .pending-nav {
@@ -40,7 +40,7 @@
 .pending-empty h2,
 .pending-modal-header h2 {
     color: #fff;
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
     font-weight: 800;
     text-transform: uppercase;
 }
@@ -75,7 +75,7 @@
     padding: 8px 13px;
     border: 1px solid transparent;
     border-radius: 6px;
-    font: 700 10px/1.4 Montserrat, Arial, sans-serif;
+    font: 700 10px/1.4 Inter, Arial, sans-serif;
     text-align: center;
     text-decoration: none;
     text-transform: uppercase;

@@ -11,7 +11,7 @@
     --about-caution: #e7b254;
     color: var(--about-heading);
     background: #0e2b49;
-    font-family: Montserrat, Arial, sans-serif;
+    font-family: Inter, Arial, sans-serif;
 }
 
 .about-page .about-container {
@@ -74,7 +74,7 @@
 
 .dashboard-workspace main.about-main .about-title {
     margin: 22px 0 20px;
-    font: 800 clamp(30px, 3.6vw, 52px)/1.15 Montserrat, Arial, sans-serif;
+    font: 800 clamp(30px, 3.6vw, 52px)/1.15 Inter, Arial, sans-serif;
     letter-spacing: -1px;
     text-transform: uppercase;
     overflow-wrap: break-word;
@@ -92,7 +92,7 @@
 .about-page .about-cta-description,
 .about-page .about-section-heading > p {
     color: var(--about-muted);
-    font-family: 'Cascadia Code', 'Courier New', monospace;
+    font-family: Inter, Arial, sans-serif;
     font-size: 14px;
     line-height: 1.8;
 }
@@ -132,7 +132,7 @@
 
 .about-page .about-stat-label {
     color: var(--about-muted);
-    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 11px/1.5 Inter, Arial, sans-serif;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
@@ -221,7 +221,7 @@
 
 .about-page .about-certifications span {
     color: var(--about-accent);
-    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 11px/1.5 Inter, Arial, sans-serif;
     letter-spacing: 1px;
     text-transform: uppercase;
 }
@@ -260,7 +260,7 @@
     height: 100%;
     padding: 24px 24px 100px;
     color: var(--about-muted);
-    font: 13px/1.8 'Cascadia Code', 'Courier New', monospace;
+    font: 13px/1.8 Inter, Arial, sans-serif;
     text-align: center;
 }
 
@@ -286,7 +286,7 @@
 
 .about-page .about-heritage-caption span {
     color: var(--about-caution);
-    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 11px/1.5 Inter, Arial, sans-serif;
 }
 
 .about-page .about-hub-list {
@@ -566,7 +566,7 @@
 .about-page .about-hub-description {
     display: block;
     color: var(--about-muted);
-    font: 11px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 11px/1.5 Inter, Arial, sans-serif;
 }
 
 .about-page .about-map-legend {
@@ -583,7 +583,7 @@
     border-radius: 6px;
     background: rgba(8, 28, 45, .9);
     color: var(--about-muted);
-    font: 10px/1.5 'Cascadia Code', 'Courier New', monospace;
+    font: 10px/1.5 Inter, Arial, sans-serif;
     letter-spacing: .6px;
     text-transform: uppercase;
     pointer-events: none;
@@ -601,7 +601,7 @@
 .about-page .about-map-caption {
     margin-top: 12px;
     color: var(--about-muted);
-    font: 11px/1.6 'Cascadia Code', 'Courier New', monospace;
+    font: 11px/1.6 Inter, Arial, sans-serif;
     text-align: center;
 }
 
@@ -658,7 +658,7 @@
 
 .about-page .about-card-number {
     color: #7c96ad;
-    font: 700 14px 'Cascadia Code', 'Courier New', monospace;
+    font: 700 14px Inter, Arial, sans-serif;
     letter-spacing: 2px;
 }
 
