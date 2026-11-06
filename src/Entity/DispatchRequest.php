@@ -15,53 +15,61 @@ class DispatchRequest
     #[ORM\Column(name: 'request_id')]
     private ?int $requestId = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
     private ?string $vesselName = null;
 
-    #[ORM\Column(length: 7)]
+    #[ORM\Column(length: 50)]
     private ?string $imoNumber = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
     private ?string $vesselType = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
     private ?string $contactPerson = null;
 
     #[ORM\Column(length: 50)]
     private ?string $contactPhone = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(length: 100)]
     private ?string $serviceType = null;
 
-    #[ORM\Column]
-    private ?bool $isUrgent = null;
+    #[ORM\Column(nullable: true, options: ['default' => 0])]
+    private ?bool $isUrgent = false;
 
     #[ORM\Column(type: Types::TEXT)]
     private ?string $description = null;
 
-    #[ORM\Column(length: 100, nullable: true)]
+    #[ORM\Column(length: 255, nullable: true)]
     private ?string $attachmentPath = null;
 
-    #[ORM\Column]
-    private ?int $clientId = null;
+    #[ORM\ManyToOne(targetEntity: ClientProfile::class)]
+    #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'client_id', nullable: false, onDelete: 'RESTRICT')]
+    private ?ClientProfile $client = null;
 
-    #[ORM\Column(length: 255, nullable: true)]
+    #[ORM\Column(length: 100, nullable: true)]
     private ?string $company = null;
 
-    #[ORM\Column]
-    private ?int $locationId = null;
+    #[ORM\ManyToOne(targetEntity: ServiceLocation::class)]
+    #[ORM\JoinColumn(name: 'location_id', referencedColumnName: 'location_id', nullable: false, onDelete: 'RESTRICT')]
+    private ?ServiceLocation $location = null;
 
-    #[ORM\Column(length: 50)]
-    private ?string $status = null;
+    #[ORM\Column(
+        type: 'string',
+        length: 20,
+        nullable: true,
+        options: ['default' => 'pending'],
+        columnDefinition: "ENUM('pending','acknowledged','deployed','in_progress','resolved','cancelled') DEFAULT 'pending'",
+    )]
+    private ?string $status = 'pending';
 
-    #[ORM\Column]
-    private ?bool $isActive = null;
+    #[ORM\Column(nullable: true, options: ['default' => 1])]
+    private ?bool $isActive = true;
 
     #[ORM\Column(type: Types::DATE_MUTABLE)]
     private ?\DateTimeInterface $etaDate = null;
 
-    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, columnDefinition: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]
-    private \DateTimeImmutable $requestedAt;
+    #[ORM\Column(type: Types::DATETIME_IMMUTABLE, nullable: true, columnDefinition: 'TIMESTAMP DEFAULT CURRENT_TIMESTAMP')]
+    private ?\DateTimeImmutable $requestedAt;
 
     public function __construct()
     {
@@ -73,7 +81,7 @@ class DispatchRequest
         return $this->requestId;
     }
 
-    public function getRequestedAt(): \DateTimeImmutable
+    public function getRequestedAt(): ?\DateTimeImmutable
     {
         return $this->requestedAt;
     }
@@ -162,7 +170,7 @@ class DispatchRequest
         return $this->isUrgent;
     }
 
-    public function setIsUrgent(bool $isUrgent): static
+    public function setIsUrgent(?bool $isUrgent): static
     {
         $this->isUrgent = $isUrgent;
 
@@ -193,14 +201,14 @@ class DispatchRequest
         return $this;
     }
 
-    public function getClientId(): ?int
+    public function getClient(): ?ClientProfile
     {
-        return $this->clientId;
+        return $this->client;
     }
 
-    public function setClientId(int $clientId): static
+    public function setClient(?ClientProfile $client): static
     {
-        $this->clientId = $clientId;
+        $this->client = $client;
 
         return $this;
     }
@@ -210,21 +218,21 @@ class DispatchRequest
         return $this->company;
     }
 
-    public function setCompany(string $company): static
+    public function setCompany(?string $company): static
     {
         $this->company = $company;
 
         return $this;
     }
 
-    public function getLocationId(): ?int
+    public function getLocation(): ?ServiceLocation
     {
-        return $this->locationId;
+        return $this->location;
     }
 
-    public function setLocationId(int $locationId): static
+    public function setLocation(?ServiceLocation $location): static
     {
-        $this->locationId = $locationId;
+        $this->location = $location;
 
         return $this;
     }
@@ -246,7 +254,7 @@ class DispatchRequest
         return $this->isActive;
     }
 
-    public function setIsActive(bool $isActive): static
+    public function setIsActive(?bool $isActive): static
     {
         $this->isActive = $isActive;
 
