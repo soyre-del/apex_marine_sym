@@ -15,10 +15,15 @@ final class PageConfiguration
     public function build(string $section = 'home'): array
     {
         $pages = [
+            'dashboard' => [
+                'label' => 'Dashboard',
+                'title' => 'Operations Dashboard',
+                'description' => 'Your Apex Marine workspace for operations, services, and support.',
+            ],
             'home' => [
                 'label' => 'Home',
                 'title' => 'Home',
-                'description' => 'Apex Marine provides marine engineering, vessel maintenance, and worldwide operations support.',
+                'description' => 'Marine engineering, vessel maintenance, and worldwide operations support from Apex Marine.',
             ],
             'about' => [
                 'label' => 'About',
@@ -42,7 +47,7 @@ final class PageConfiguration
         foreach ($pages as $key => $page) {
             $items[] = [
                 'label' => $page['label'],
-                'href' => $this->router->generate('app_' . $key),
+                'href' => $this->router->generate($key === 'dashboard' ? 'app_dashboard' : 'app_' . $key),
                 'current' => $key === $section,
             ];
         }

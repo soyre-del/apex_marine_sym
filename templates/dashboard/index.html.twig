@@ -11,7 +11,7 @@
 {% include 'partials/topbar.html.twig' with {
     brand: sidebar.brand,
     logo_path: sidebar.logo_path,
-    account_name: engineer_name|default(null)
+    account_name: app.user ? app.user.fullName : null
 } only %}
 <div class="dashboard-shell">
     {% include 'partials/sidebar.html.twig' with { sidebar: sidebar } only %}

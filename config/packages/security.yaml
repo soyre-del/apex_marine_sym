@@ -1,6 +1,7 @@
 security:
     password_hashers:
-        App\Entity\User: 'auto'
+        App\Entity\User:
+                algorithm: 'auto'
 
     providers:
         app_user_provider:
@@ -16,7 +17,13 @@ security:
         main:
             lazy: true
             provider: app_user_provider
-
+            custom_authenticator: App\Security\LoginAuthenticator
+            logout:
+                path: app_logout
+            remember_me:
+                secret: '%kernel.secret%'
+                lifetime: 604800
+                path: /
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
 
@@ -26,7 +33,7 @@ security:
     # Note: Only the *first* matching rule is applied
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
-        # - { path: ^/profile, roles: ROLE_USER }
+        - { path: ^/dashboard, roles: ROLE_USER }
 
 when@test:
     security:

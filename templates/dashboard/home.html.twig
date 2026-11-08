@@ -1,0 +1,115 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% block title %}{{ configuration.dashboard.title }} | {{ configuration.sidebar.brand }}{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+{% endblock %}
+{% block main_class %}dashboard-main{% endblock %}
+
+{% block page_content %}
+    <div class="operations-dashboard">
+        <header class="dashboard-welcome">
+            <div class="dashboard-welcome-copy">
+                <span class="dashboard-eyebrow">Apex Marine / Operations Portal</span>
+                <h1>Good day{% if app.user and app.user.fullName %}, {{ app.user.fullName|split(' ')|first }}{% endif %}</h1>
+                <p>Your workspace for marine operations, service information, and support.</p>
+            </div>
+            {% if is_granted('ROLE_ADMIN') %}
+                <a class="dashboard-primary-action" href="{{ path('admin_dashboard') }}">Open admin command <span aria-hidden="true">&rarr;</span></a>
+            {% elseif is_granted('ROLE_ENGINEER') %}
+                <a class="dashboard-primary-action" href="{{ path('engineer_operations') }}">View my assignments <span aria-hidden="true">&rarr;</span></a>
+            {% elseif is_granted('ROLE_CLIENT') %}
+                <a class="dashboard-primary-action" href="{{ path('client_status') }}">Track my operations <span aria-hidden="true">&rarr;</span></a>
+            {% else %}
+                <a class="dashboard-primary-action" href="{{ path('app_contact') }}">Request service <span aria-hidden="true">&rarr;</span></a>
+            {% endif %}
+        </header>
+
+        <section class="dashboard-section" aria-labelledby="dashboard-links-heading">
+            <header class="dashboard-section-heading">
+                <div>
+                    <span class="dashboard-eyebrow">Your workspace</span>
+                    <h2 id="dashboard-links-heading">Quick access</h2>
+                </div>
+                <p>Pick up where you need to be.</p>
+            </header>
+
+            <div class="dashboard-cards">
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a class="dashboard-card" href="{{ path('admin_active_operations') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">01</span>
+                        <span class="dashboard-card-content"><strong>Active operations</strong><span>Review in-progress work and monitor deployments.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('admin_pending_dispatch') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">02</span>
+                        <span class="dashboard-card-content"><strong>Pending dispatches</strong><span>Review new service requests and assign resources.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('admin_manage_clients') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">03</span>
+                        <span class="dashboard-card-content"><strong>Client directory</strong><span>Manage client profiles and account access.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('admin_billing') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">04</span>
+                        <span class="dashboard-card-content"><strong>Billing</strong><span>Review invoices and payment activity.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                {% elseif is_granted('ROLE_ENGINEER') %}
+                    <a class="dashboard-card" href="{{ path('engineer_operations') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">01</span>
+                        <span class="dashboard-card-content"><strong>My field operations</strong><span>Review assignments and report job progress.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('app_service') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">02</span>
+                        <span class="dashboard-card-content"><strong>Service capabilities</strong><span>Browse engineering disciplines and service coverage.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                {% elseif is_granted('ROLE_CLIENT') %}
+                    <a class="dashboard-card" href="{{ path('client_status') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">01</span>
+                        <span class="dashboard-card-content"><strong>My operations</strong><span>Track dispatch requests and view the latest updates.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('client_billing') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">02</span>
+                        <span class="dashboard-card-content"><strong>Billing &amp; payments</strong><span>Review invoices and manage outstanding payments.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('app_contact') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">03</span>
+                        <span class="dashboard-card-content"><strong>Request service</strong><span>Contact operations to discuss your vessel's needs.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                {% else %}
+                    <a class="dashboard-card" href="{{ path('app_service') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">01</span>
+                        <span class="dashboard-card-content"><strong>Marine services</strong><span>Explore engineering, repairs, and preventative maintenance.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('app_about') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">02</span>
+                        <span class="dashboard-card-content"><strong>About Apex Marine</strong><span>Meet our team and learn about our global service network.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('app_contact') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">03</span>
+                        <span class="dashboard-card-content"><strong>Contact operations</strong><span>Talk to our team about repairs and dispatch requests.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                {% endif %}
+            </div>
+        </section>
+
+        <aside class="dashboard-support">
+            <span class="dashboard-support-mark" aria-hidden="true">APEX</span>
+            <div>
+                <strong>Need a hand?</strong>
+                <p>Our operations team is ready to help you find the right support for your vessel.</p>
+            </div>
+            <a href="{{ path('app_contact') }}">Contact our team <span aria-hidden="true">&rarr;</span></a>
+        </aside>
+    </div>
+{% endblock %}

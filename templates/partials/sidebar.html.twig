@@ -7,29 +7,36 @@
     <nav class="sidebar-nav" aria-label="Main navigation">
         <ul class="sidebar-nav-list">
             {% for item in sidebar.items %}
-                <li class="sidebar-nav-item">
-                    <a class="sidebar-link" href="{{ item.href }}" {% if item.current %}aria-current="page"{% endif %}>
-                        <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            {% if item.label == 'Home' %}
-                                <path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/>
-                            {% elseif item.label == 'About' %}
-                                <circle cx="12" cy="12" r="9"/>
-                                <path d="M12 11v6M12 7h.01"/>
-                            {% elseif item.label == 'Service' %}
-                                <path d="M14.5 6.5a5 5 0 0 0-6.7 6.7L3 18a2.1 2.1 0 0 0 3 3l4.8-4.8a5 5 0 0 0 6.7-6.7l-3 3-3-3 3-3Z"/>
-                            {% elseif item.label == 'Field Operations' %}
-                                <path d="M3 12h18l-2 8H5l-2-8ZM7 12V6h10v6m-7-6V3h4v3M5 20l-2 2m16-2 2 2"/>
-                            {% elseif item.label == 'Contact' %}
-                                <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1V11.5A8.5 8.5 0 0 1 11.5 3h1a8.5 8.5 0 0 1 8.5 8.5Z"/>
-                                <path d="M7 9h10M7 13h6"/>
-                            {% endif %}
-                        </svg>
-                        <span class="sidebar-label">{{ item.label }}</span>
-                        <svg class="sidebar-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-                            <path d="m9 6 6 6-6 6"/>
-                        </svg>
-                    </a>
-                </li>
+                {% if item.label != 'Dashboard' or is_granted('ROLE_USER') %}
+                    <li class="sidebar-nav-item">
+                        <a class="sidebar-link" href="{{ item.href }}" {% if item.current %}aria-current="page"{% endif %}>
+                            <svg class="sidebar-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                {% if item.label == 'Dashboard' %}
+                                    <rect x="3" y="3" width="8" height="8" rx="1"/>
+                                    <rect x="13" y="3" width="8" height="5" rx="1"/>
+                                    <rect x="13" y="10" width="8" height="11" rx="1"/>
+                                    <rect x="3" y="13" width="8" height="8" rx="1"/>
+                                {% elseif item.label == 'Home' %}
+                                    <path d="m3 10 9-7 9 7M5 9v11h14V9M9 20v-7h6v7"/>
+                                {% elseif item.label == 'About' %}
+                                    <circle cx="12" cy="12" r="9"/>
+                                    <path d="M12 11v6M12 7h.01"/>
+                                {% elseif item.label == 'Service' %}
+                                    <path d="M14.5 6.5a5 5 0 0 0-6.7 6.7L3 18a2.1 2.1 0 0 0 3 3l4.8-4.8a5 5 0 0 0 6.7-6.7l-3 3-3-3 3-3Z"/>
+                                {% elseif item.label == 'Field Operations' %}
+                                    <path d="M3 12h18l-2 8H5l-2-8ZM7 12V6h10v6m-7-6V3h4v3M5 20l-2 2m16-2 2 2"/>
+                                {% elseif item.label == 'Contact' %}
+                                    <path d="M21 11.5a8.5 8.5 0 0 1-8.5 8.5H4l-1 1V11.5A8.5 8.5 0 0 1 11.5 3h1a8.5 8.5 0 0 1 8.5 8.5Z"/>
+                                    <path d="M7 9h10M7 13h6"/>
+                                {% endif %}
+                            </svg>
+                            <span class="sidebar-label">{{ item.label }}</span>
+                            <svg class="sidebar-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                                <path d="m9 6 6 6-6 6"/>
+                            </svg>
+                        </a>
+                    </li>
+                {% endif %}
             {% endfor %}
         </ul>
     </nav>

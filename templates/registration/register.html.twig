@@ -1,0 +1,27 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Create Account | Apex Marine{% endblock %}
+
+{% block body %}
+    <main class="registration-page">
+        <section class="registration-card" aria-labelledby="registration-heading">
+            <a class="registration-brand" href="{{ path('app_home') }}">Apex Marine</a>
+            <p class="registration-eyebrow">Operations portal</p>
+            <h1 id="registration-heading">Create your account</h1>
+            <p class="registration-intro">Register to access your Apex Marine workspace.</p>
+
+            {{ form_errors(registrationForm) }}
+
+            {{ form_start(registrationForm, {attr: {class: 'registration-form'}}) }}
+                {{ form_row(registrationForm.fullName, {label: 'Full name'}) }}
+                {{ form_row(registrationForm.email, {label: 'Email address'}) }}
+                {{ form_row(registrationForm.plainPassword, {label: 'Password'}) }}
+                {{ form_row(registrationForm.agreeTerms, {label: 'I agree to the terms'}) }}
+
+                <button type="submit">Create account</button>
+            {{ form_end(registrationForm) }}
+
+            <p class="registration-login">Already have an account? <a href="{{ path('app_login') }}">Log in</a></p>
+        </section>
+    </main>
+{% endblock %}

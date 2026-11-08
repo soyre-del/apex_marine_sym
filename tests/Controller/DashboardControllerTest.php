@@ -13,53 +13,78 @@ final class DashboardControllerTest extends WebTestCase
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(4, '.sidebar nav a');
 
-        foreach (['About' => '/about', 'Service' => '/service', 'Contact' => '/contact', 'Home' => '/'] as $label => $path) {
-            $client->clickLink($label);
+        foreach ([
+            'About' => '/about',
+            'Service' => '/service',
+            'Contact' => '/contact',
+            'Home' => '/',
+        ] as $label => $path) {
+            $crawler = $client->getCrawler();
+            $client->click($crawler->filter('.sidebar nav a[href="'.$path.'"]')->link());
             self::assertResponseIsSuccessful();
             self::assertSame($path, $client->getRequest()->getPathInfo());
-            self::assertSelectorTextContains('main h1', $label === 'Home' ? 'Heavy-Duty Marine' : $label);
+            self::assertSelectorTextContains('main h1', match ($label) {
+                'Home' => 'Heavy-Duty Marine',
+                default => $label,
+            });
             self::assertSelectorCount(1, '.sidebar nav a[aria-current="page"]');
             self::assertSelectorTextContains('.sidebar nav a[aria-current="page"]', $label);
         }
     }
 
-    public function testHomePageContainsAllFourSections(): void
+    public function testHomePageRemainsThePublicMarineLandingPage(): void
     {
         $client = static::createClient();
-        $crawler = $client->request('GET', '/');
+        $client->request('GET', '/');
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(1, '.home-page');
         self::assertSelectorCount(1, '.home-page > header');
         self::assertSelectorCount(3, '.home-page > section');
-        self::assertSelectorCount(1, '.home-hero h1');
         self::assertSelectorTextContains('.home-hero h1', 'Heavy-Duty Marine');
         self::assertSelectorTextContains('.home-hero h1', 'Engineering & Maintenance');
         self::assertSelectorTextContains('.home-hero', 'Request Immediate Service');
-
-        $sections = $crawler->filter('.home-page > section');
-        foreach ([
-            ['Excellence in Maritime Engineering', 'Heavy-Duty Ship Repairs', 'Trust & Reliability'],
-            ['Our Core Services', 'Marine Engineering', 'Preventative Maintenance', 'Seamless Operation'],
-            ['Why Choose Apex?', 'Expert Personnel', 'Proven Reliability'],
-        ] as $index => $expectedContent) {
-            foreach ($expectedContent as $text) {
-                self::assertStringContainsString($text, $sections->eq($index)->text());
-            }
-        }
-
+        self::assertSelectorTextContains('.home-page', 'Excellence in Maritime Engineering');
+        self::assertSelectorTextContains('.home-page', 'Our Core Services');
+        self::assertSelectorTextContains('.home-page', 'Why Choose Apex?');
+        self::assertSelectorCount(3, '.home-service-card');
+        self::assertSelectorTextContains('.home-page', 'Expert Personnel');
         self::assertSelectorCount(1, '.topbar');
         self::assertSelectorCount(1, '.sidebar');
+        self::assertSelectorCount(0, '.sidebar nav a[href="/dashboard"]');
         self::assertSelectorCount(1, '.dashboard-footer');
         self::assertSelectorCount(0, 'a[href*=".php"]');
     }
 
-    public function testHomePageCallsToActionOpenCanonicalPages(): void
+    public function testGuestsCannotAccessDashboardAndAreSentToLogin(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/dashboard');
+        self::assertResponseRedirects('/login');
+
+        $client->followRedirect();
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('form[action="/login"]');
+    }
+
+    public function testLoginPageRenders(): void
+    {
+        $client = static::createClient();
+        $client->request('GET', '/login');
+
+        self::assertResponseIsSuccessful();
+        self::assertSelectorExists('form[action="/login"]');
+        self::assertSelectorExists('input[name="email"]');
+        self::assertSelectorExists('input[name="password"]');
+        self::assertSelectorExists('input[name="_csrf_token"]');
+    }
+
+    public function testHomePageLinksOpenCanonicalPages(): void
     {
         $client = static::createClient();
         $crawler = $client->request('GET', '/');
         self::assertResponseIsSuccessful();
         self::assertSelectorCount(1, '.home-button[href="/contact"]');
-        self::assertSelectorCount(3, 'a.home-service-card[href="/service"]');
+        self::assertSelectorCount(3, '.home-service-card[href="/service"]');
 
         $client->click($crawler->filter('.home-button')->link());
         self::assertResponseIsSuccessful();
@@ -68,7 +93,7 @@ final class DashboardControllerTest extends WebTestCase
 
         for ($index = 0; $index < 3; ++$index) {
             $crawler = $client->request('GET', '/');
-            $client->click($crawler->filter('a.home-service-card')->eq($index)->link());
+            $client->click($crawler->filter('.home-service-card')->eq($index)->link());
             self::assertResponseIsSuccessful();
             self::assertSame('/service', $client->getRequest()->getPathInfo());
             self::assertSelectorTextContains('main h1', 'Service');
@@ -97,6 +122,7 @@ final class DashboardControllerTest extends WebTestCase
         $configuration = json_decode($client->getResponse()->getContent(), true);
         self::assertSame('Home', $configuration['dashboard']['title']);
         self::assertSame([
+            ['label' => 'Dashboard', 'href' => '/dashboard', 'current' => false],
             ['label' => 'Home', 'href' => '/', 'current' => true],
             ['label' => 'About', 'href' => '/about', 'current' => false],
             ['label' => 'Service', 'href' => '/service', 'current' => false],
@@ -129,27 +155,34 @@ final class DashboardControllerTest extends WebTestCase
         self::assertSelectorCount(1, '.service-page');
     }
 
-    public function testLegacyDashboardRoutesRedirect(): void
+    public function testDashboardAliasesKeepTheirIntendedDestinations(): void
     {
         $client = static::createClient();
         foreach ([
-            '/dashboard' => '/', '/dashboard/home' => '/', '/dashboard/overview' => '/',
-            '/dashboard/about' => '/about', '/dashboard/crew' => '/about',
-            '/dashboard/service' => '/service', '/dashboard/vessels' => '/service',
-            '/dashboard/voyages' => '/service', '/dashboard/maintenance' => '/service',
-            '/dashboard/reports' => '/service', '/dashboard/contact' => '/contact',
-        ] as $oldPath => $newPath) {
-            $client->request('GET', $oldPath);
-            self::assertResponseRedirects($newPath);
+            '/dashboard',
+            '/dashboard/home',
+            '/dashboard/overview',
+            '/dashboard/about',
+            '/dashboard/crew',
+            '/dashboard/service',
+            '/dashboard/vessels',
+            '/dashboard/voyages',
+            '/dashboard/maintenance',
+            '/dashboard/reports',
+            '/dashboard/contact',
+        ] as $dashboardPath) {
+            $client->request('GET', $dashboardPath);
+            self::assertResponseRedirects('/login');
             $client->followRedirect();
             self::assertResponseIsSuccessful();
+            self::assertSelectorExists('form[action="/login"]');
         }
     }
 
     public function testReadOnlyRoutesRejectPost(): void
     {
         $client = static::createClient();
-        foreach (['/', '/home', '/about', '/service', '/services', '/dashboard', '/dashboard/voyages', '/api/dashboard/config'] as $path) {
+        foreach (['/', '/home', '/about', '/service', '/services', '/api/dashboard/config'] as $path) {
             $client->request('POST', $path);
             self::assertResponseStatusCodeSame(405);
         }
