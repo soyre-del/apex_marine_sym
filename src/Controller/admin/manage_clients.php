@@ -156,13 +156,24 @@ final class manage_clients extends AbstractController
                 return $this->redirectToRoute('admin_manage_clients');
             }
 
-            $this->connection->insert('users', [
-                'full_name' => $name,
-                'email' => $email,
-                'password_hash' => password_hash($password, PASSWORD_DEFAULT),
-                'role' => 'client',
-                'is_active' => 1,
-            ]);
+            $this->connection->transactional(function (Connection $connection) use ($name, $email, $password): void {
+                $connection->insert('users', [
+                    'full_name' => $name,
+                    'email' => $email,
+                    'password_hash' => password_hash($password, PASSWORD_DEFAULT),
+                    'role' => 'client',
+                    'is_active' => 1,
+                ]);
+
+                $clientId = $connection->lastInsertId();
+                if ($clientId === false || $clientId === '0') {
+                    throw new \RuntimeException('The database did not return the new client ID.');
+                }
+
+                $connection->insert('client_profiles', [
+                    'client_id' => $clientId,
+                ]);
+            });
         } catch (DBALException $exception) {
             $this->logger->error('Unable to create a client account.', ['exception' => $exception]);
             $this->addFlash('danger', 'Unable to create the client account. Please try again later.');
@@ -300,10 +311,41 @@ final class manage_clients extends AbstractController
         }
 
         try {
-            $deleted = $this->connection->delete('users', [
-                'user_id' => $clientId,
-                'role' => 'client',
-            ]);
+            $clientExists = $this->connection->fetchOne(
+                "SELECT user_id FROM users WHERE user_id = ? AND role = 'client'",
+                [$clientId],
+            );
+            if (!$clientExists) {
+                $this->addFlash('danger', 'Client account was not found.');
+
+                return $this->redirectToRoute('admin_manage_clients');
+            }
+
+            $hasDispatches = (int) $this->connection->fetchOne(
+                'SELECT COUNT(*) FROM dispatch_requests WHERE client_id = ?',
+                [$clientId],
+            ) > 0;
+            $hasInvoices = (int) $this->connection->fetchOne(
+                'SELECT COUNT(*) FROM invoices WHERE client_id = ?',
+                [$clientId],
+            ) > 0;
+            if ($hasDispatches || $hasInvoices) {
+                $this->addFlash(
+                    'warning',
+                    'This client has dispatch or invoice records and cannot be purged. Suspend the account to revoke access without deleting its history.',
+                );
+
+                return $this->redirectToRoute('admin_manage_clients');
+            }
+
+            $deleted = $this->connection->transactional(function (Connection $connection) use ($clientId): int {
+                $connection->delete('client_profiles', ['client_id' => $clientId]);
+
+                return $connection->delete('users', [
+                    'user_id' => $clientId,
+                    'role' => 'client',
+                ]);
+            });
         } catch (DBALException $exception) {
             $this->logger->error('Unable to permanently delete a client account.', [
                 'client_id' => $clientId,
@@ -325,7 +367,7 @@ final class manage_clients extends AbstractController
 
         $this->addFlash(
             'success',
-            'Client account and any dependent records configured for cascading deletion were permanently erased.',
+            'Client account permanently erased.',
         );
 
         return $this->redirectToRoute('admin_manage_clients');

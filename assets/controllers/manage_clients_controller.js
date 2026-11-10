@@ -1,6 +1,12 @@
-const clientsPage = document.querySelector('.clients-page');
+const initializedPages = new WeakSet();
 
-if (clientsPage) {
+function initManageClients() {
+    const clientsPage = document.querySelector('.clients-page');
+    if (!clientsPage || initializedPages.has(clientsPage)) {
+        return;
+    }
+    initializedPages.add(clientsPage);
+
     let activeModal = null;
     let lastFocusedElement = null;
     let pendingToggleForm = null;
@@ -30,17 +36,21 @@ if (clientsPage) {
         lastFocusedElement?.focus();
     };
 
-    document.querySelectorAll('[data-clients-open]').forEach((button) => {
-        button.addEventListener('click', () => {
+    clientsPage.querySelectorAll('[data-clients-open]').forEach((button) => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
             openModal(document.getElementById(button.dataset.clientsOpen), button);
         });
     });
 
-    document.querySelectorAll('[data-clients-close]').forEach((button) => {
-        button.addEventListener('click', closeModal);
+    clientsPage.querySelectorAll('[data-clients-close]').forEach((button) => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeModal();
+        });
     });
 
-    document.querySelectorAll('.clients-modal').forEach((modal) => {
+    clientsPage.querySelectorAll('.clients-modal').forEach((modal) => {
         modal.addEventListener('click', (event) => {
             if (event.target === modal) {
                 closeModal();
@@ -48,25 +58,37 @@ if (clientsPage) {
         });
     });
 
-    document.querySelectorAll('[data-clients-edit]').forEach((button) => {
-        button.addEventListener('click', () => {
-            document.getElementById('edit_client_id').value = button.dataset.id ?? '';
-            document.getElementById('edit_name').value = button.dataset.name ?? '';
-            document.getElementById('edit_email').value = button.dataset.email ?? '';
+    clientsPage.querySelectorAll('[data-clients-edit]').forEach((button) => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('edit_client_id');
+            const editName = document.getElementById('edit_name');
+            const editEmail = document.getElementById('edit_email');
+
+            if (editId) editId.value = button.dataset.id ?? '';
+            if (editName) editName.value = button.dataset.name ?? '';
+            if (editEmail) editEmail.value = button.dataset.email ?? '';
+
             openModal(document.getElementById('editClientModal'), button);
         });
     });
 
-    document.querySelectorAll('[data-clients-purge]').forEach((button) => {
-        button.addEventListener('click', () => {
-            document.getElementById('purge_user_id').value = button.dataset.id ?? '';
-            document.getElementById('purge_client_name_display').textContent = button.dataset.name ?? '';
+    clientsPage.querySelectorAll('[data-clients-purge]').forEach((button) => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const purgeId = document.getElementById('purge_user_id');
+            const purgeDisplay = document.getElementById('purge_client_name_display');
+
+            if (purgeId) purgeId.value = button.dataset.id ?? '';
+            if (purgeDisplay) purgeDisplay.textContent = button.dataset.name ?? '';
+
             openModal(document.getElementById('purgeClientModal'), button);
         });
     });
 
-    document.querySelectorAll('[data-clients-toggle]').forEach((button) => {
-        button.addEventListener('click', () => {
+    clientsPage.querySelectorAll('[data-clients-toggle]').forEach((button) => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
             pendingToggleForm = button.closest('form');
             const isSuspending = button.dataset.status === '0';
             const clientName = button.dataset.name ?? 'this client';
@@ -74,30 +96,45 @@ if (clientsPage) {
             const message = document.getElementById('statusToggleMessage');
             const confirmButton = document.getElementById('confirmToggleBtn');
 
-            title.textContent = isSuspending ? 'Suspend Account' : 'Restore Account';
-            title.classList.toggle('clients-text-danger', isSuspending);
-            title.classList.toggle('clients-text-success', !isSuspending);
-            message.textContent = isSuspending
-                ? `Suspending ${clientName} revokes their login access immediately. Proceed?`
-                : `Reactivate the account for ${clientName}? They will regain system access.`;
-            confirmButton.textContent = isSuspending ? 'Suspend' : 'Restore';
-            confirmButton.classList.toggle('clients-button-warning', isSuspending);
-            confirmButton.classList.toggle('clients-button-success', !isSuspending);
+            if (title) {
+                title.textContent = isSuspending ? 'Suspend Account' : 'Restore Account';
+                title.classList.toggle('clients-text-danger', isSuspending);
+                title.classList.toggle('clients-text-success', !isSuspending);
+            }
+            if (message) {
+                message.textContent = isSuspending
+                    ? `Suspending ${clientName} revokes their login access immediately. Proceed?`
+                    : `Reactivate the account for ${clientName}? They will regain system access.`;
+            }
+            if (confirmButton) {
+                confirmButton.textContent = isSuspending ? 'Suspend' : 'Restore';
+                confirmButton.classList.toggle('clients-button-warning', isSuspending);
+                confirmButton.classList.toggle('clients-button-success', !isSuspending);
+            }
             openModal(document.getElementById('statusToggleModal'), button);
         });
     });
 
-    document.getElementById('confirmToggleBtn')?.addEventListener('click', () => {
+    clientsPage.querySelector('#confirmToggleBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
         pendingToggleForm?.requestSubmit();
     });
 
-    document.querySelectorAll('[data-clients-alert-close]').forEach((button) => {
+    clientsPage.querySelectorAll('[data-clients-alert-close]').forEach((button) => {
         button.addEventListener('click', () => button.closest('.clients-alert')?.remove());
     });
 
-    document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+    clientsPage.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape' && activeModal) {
             closeModal();
         }
     });
 }
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initManageClients);
+} else {
+    initManageClients();
+}
+document.addEventListener('turbo:load', initManageClients);
+document.addEventListener('turbo:render', initManageClients);

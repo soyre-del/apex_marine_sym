@@ -7,8 +7,8 @@ use Doctrine\DBAL\DriverManager;
 use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Bundle\FrameworkBundle\KernelBrowser;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
-use Symfony\Component\BrowserKit\Cookie;
 use Symfony\Component\Filesystem\Filesystem;
+use Symfony\Component\Security\Core\User\InMemoryUser;
 
 final class ActiveOperationsControllerTest extends WebTestCase
 {
@@ -106,7 +106,7 @@ final class ActiveOperationsControllerTest extends WebTestCase
         $client = $this->createClientWithDatabase();
         $client->request('GET', '/admin/active-operations');
 
-        self::assertResponseStatusCodeSame(403);
+        self::assertResponseRedirects('/login');
     }
 
     public static function terminalStatuses(): iterable
@@ -118,11 +118,13 @@ final class ActiveOperationsControllerTest extends WebTestCase
     private function createAdminClient(): KernelBrowser
     {
         $client = $this->createClientWithDatabase();
-        $session = static::getContainer()->get('session.factory')->createSession();
+        $user = new InMemoryUser('test-admin', 'test-password', ['ROLE_ADMIN']);
+        $client->loginUser($user);
+
+        $session = $client->getSession();
         $session->set('user_id', 99);
         $session->set('role', 'admin');
         $session->save();
-        $client->getCookieJar()->set(new Cookie($session->getName(), $session->getId()));
 
         return $client;
     }
@@ -131,7 +133,6 @@ final class ActiveOperationsControllerTest extends WebTestCase
     {
         $client = static::createClient();
         $client->disableReboot();
-        $client->catchExceptions(false);
 
         $this->testDirectory = sys_get_temp_dir().'/apex-active-ops-test-'.bin2hex(random_bytes(8));
         (new Filesystem())->mkdir($this->testDirectory);

@@ -217,8 +217,7 @@
                 <div class="clients-modal-body clients-modal-confirm">
                     <p>
                         This permanently deletes <strong id="purge_client_name_display"></strong>'s account.
-                        Related dispatch records may also be deleted if the database has cascading deletion configured.
-                        This cannot be undone.
+                        Accounts with dispatch or invoice history cannot be purged; suspend them to preserve their records.
                     </p>
                     <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-modal-footer">
                         <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
@@ -247,4 +246,5 @@
             </section>
         </div>
     </main>
+
 {% endblock %}

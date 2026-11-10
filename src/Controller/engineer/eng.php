@@ -45,10 +45,16 @@ final class eng extends AbstractController
         }
 
         if ($request->isMethod('POST')) {
+            $action = $request->request->get('action');
+            if ($action === 'edit_own_update') {
+                return $this->editOwnUpdate($request, $engineerId);
+            }
+
             return $this->updateTask($request, $engineerId);
         }
 
         $tasks = [];
+        $myUpdates = [];
         $loadError = false;
         try {
             $tasks = $this->connection->fetchAllAssociative(<<<'SQL'
@@ -66,6 +72,21 @@ final class eng extends AbstractController
                 WHERE dep.engineer_id = ?
                     AND dep.deployment_status <> 'completed'
                 ORDER BY r.requested_at DESC
+                SQL, [$engineerId]);
+
+            $myUpdates = $this->connection->fetchAllAssociative(<<<'SQL'
+                SELECT
+                    ou.update_id,
+                    ou.request_id,
+                    ou.status_milestone,
+                    ou.detailed_message,
+                    ou.logged_at,
+                    r.vessel_name
+                FROM operation_updates ou
+                JOIN dispatch_requests r ON ou.request_id = r.request_id
+                WHERE ou.updater_id = ?
+                ORDER BY ou.logged_at DESC
+                LIMIT 8
                 SQL, [$engineerId]);
         } catch (DBALException $exception) {
             $this->logger->error('Unable to retrieve engineer assignments.', [
@@ -99,6 +120,7 @@ final class eng extends AbstractController
             'configuration' => $configuration,
             'engineer_name' => $session->get('full_name', 'Engineer'),
             'tasks' => $tasks,
+            'my_updates' => $myUpdates,
             'total_tasks' => count($tasks),
             'pending_tasks' => $pendingTasks,
             'in_progress_tasks' => $inProgressTasks,
@@ -167,6 +189,7 @@ final class eng extends AbstractController
 
                 $connection->insert('operation_updates', [
                     'request_id' => $requestId,
+                    'updater_id' => $engineerId,
                     'status_milestone' => trim($milestone),
                     'detailed_message' => trim($details),
                 ]);
@@ -209,6 +232,48 @@ final class eng extends AbstractController
         }
 
         $this->addFlash('success', 'Operational log updated successfully.');
+
+        return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
+    }
+
+    private function editOwnUpdate(Request $request, int $engineerId): Response
+    {
+        $form = $request->request->all();
+        $token = $form['csrf_token'] ?? null;
+        if (!is_string($token) || !$this->isCsrfTokenValid('engineer_edit_update', $token)) {
+            $this->addFlash('danger', 'Security validation failed.');
+
+            return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
+        }
+
+        $updateId = filter_var($form['update_id'] ?? null, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
+        $milestone = trim((string) ($form['milestone'] ?? ''));
+        $details = trim((string) ($form['details'] ?? ''));
+
+        if ($updateId === false || $milestone === '' || $details === '') {
+            $this->addFlash('warning', 'Please provide a valid milestone and detailed message.');
+
+            return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
+        }
+
+        try {
+            $affected = $this->connection->update('operation_updates', [
+                'status_milestone' => $milestone,
+                'detailed_message' => $details,
+            ], [
+                'update_id' => $updateId,
+                'updater_id' => $engineerId,
+            ]);
+
+            if ($affected > 0) {
+                $this->addFlash('success', 'Your operational log entry has been updated successfully.');
+            } else {
+                $this->addFlash('warning', 'Log entry not found or unauthorized.');
+            }
+        } catch (DBALException $exception) {
+            $this->logger->error('Unable to update operational log entry.', ['exception' => $exception]);
+            $this->addFlash('danger', 'System error while updating log.');
+        }
 
         return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
     }

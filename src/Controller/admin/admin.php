@@ -64,6 +64,9 @@ final class admin extends AbstractController
         $oldPost = $session->remove('admin_old_post') ?? [];
         $failedAction = $session->remove('admin_failed_action') ?? '';
         $metrics = [
+            'total_users' => 'ERR',
+            'total_staff' => 'ERR',
+            'total_records' => 'ERR',
             'pending_dispatches' => 'ERR',
             'total_clients' => 'ERR',
             'available_engineers' => 'ERR',
@@ -74,7 +77,7 @@ final class admin extends AbstractController
 
         try {
             try {
-                $metrics['pending_dispatches'] = $this->connection->fetchOne(
+                $metrics['pending_dispatches'] = (int) $this->connection->fetchOne(
                     "SELECT COUNT(*) FROM dispatch_requests WHERE status = 'pending' AND is_active = 1"
                 );
             } catch (DBALException $exception) {
@@ -82,8 +85,20 @@ final class admin extends AbstractController
                 $metrics['pending_dispatches'] = 0;
             }
 
-            $metrics['total_clients'] = $this->connection->fetchOne(
+            $metrics['total_clients'] = (int) $this->connection->fetchOne(
                 "SELECT COUNT(*) FROM users WHERE role = 'client' AND is_active = 1"
+            );
+
+            $metrics['total_users'] = (int) $this->connection->fetchOne(
+                "SELECT COUNT(*) FROM users WHERE is_active = 1"
+            );
+
+            $metrics['total_staff'] = (int) $this->connection->fetchOne(
+                "SELECT COUNT(*) FROM users WHERE role = 'engineer' AND is_active = 1"
+            );
+
+            $metrics['total_records'] = (int) $this->connection->fetchOne(
+                "SELECT COUNT(*) FROM dispatch_requests"
             );
 
             $engineerStats = $this->connection->fetchAssociative(<<<'SQL'
@@ -107,6 +122,9 @@ final class admin extends AbstractController
         } catch (DBALException $exception) {
             $this->logger->error('Unable to retrieve admin dashboard data.', ['exception' => $exception]);
             $metrics = [
+                'total_users' => 'ERR',
+                'total_staff' => 'ERR',
+                'total_records' => 'ERR',
                 'pending_dispatches' => 'ERR',
                 'total_clients' => 'ERR',
                 'available_engineers' => 'ERR',

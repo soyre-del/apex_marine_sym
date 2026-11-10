@@ -57,7 +57,14 @@ final class LoginAuthenticator extends AbstractLoginFormAuthenticator
             return new RedirectResponse($targetPath);
         }
 
-        return new RedirectResponse($this->urlGenerator->generate('app_dashboard'));
+        // Role-based redirect after login
+        $role = $user instanceof User ? $user->getRole() : null;
+
+        return match ($role) {
+            'admin'    => new RedirectResponse($this->urlGenerator->generate('admin_dashboard')),
+            'engineer' => new RedirectResponse($this->urlGenerator->generate('engineer_operations')),
+            default    => new RedirectResponse($this->urlGenerator->generate('app_dashboard')),
+        };
     }
 
     protected function getLoginUrl(Request $request): string

@@ -1,6 +1,10 @@
-const pendingPage = document.querySelector('.pending-page');
+function initPendingDispatch() {
+    const pendingPage = document.querySelector('.pending-page');
+    if (!pendingPage || pendingPage.dataset.pendingInitialized === 'true') {
+        return;
+    }
+    pendingPage.dataset.pendingInitialized = 'true';
 
-if (pendingPage) {
     let activeModal = null;
     let lastFocusedElement = null;
     let pendingTaskForm = null;
@@ -31,22 +35,28 @@ if (pendingPage) {
     };
 
     document.querySelectorAll('[data-pending-assignment]').forEach((button) => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
             const requestId = button.dataset.request;
             const template = document.getElementById(`engineers-for-${requestId}`);
             if (!template) {
                 return;
             }
 
-            document.getElementById('modalVesselName').textContent = button.dataset.vessel ?? '';
-            document.getElementById('modalReqSpecialty').textContent = button.dataset.service ?? '';
-            document.getElementById('matchingEngineers').replaceChildren(template.content.cloneNode(true));
+            const vesselEl = document.getElementById('modalVesselName');
+            const specialtyEl = document.getElementById('modalReqSpecialty');
+            const matchEl = document.getElementById('matchingEngineers');
+
+            if (vesselEl) vesselEl.textContent = button.dataset.vessel ?? '';
+            if (specialtyEl) specialtyEl.textContent = button.dataset.service ?? '';
+            if (matchEl) matchEl.replaceChildren(template.content.cloneNode(true));
             openModal(document.getElementById('assignModal'), button);
         });
     });
 
     document.querySelectorAll('[data-pending-task-action]').forEach((button) => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
             pendingTaskForm = button.closest('form');
             const terminating = button.dataset.pendingTaskAction === 'terminate';
             const vesselName = button.dataset.vessel ?? 'this vessel';
@@ -55,25 +65,35 @@ if (pendingPage) {
             const confirmButton = document.getElementById('confirmTaskActionBtn');
             const modal = document.getElementById('taskActionContent');
 
-            title.textContent = terminating ? 'Terminate Task' : 'Resolve Task';
-            message.textContent = terminating
-                ? `Are you sure you want to terminate the request for ${vesselName}?`
-                : `Confirm that the dispatch for ${vesselName} has been resolved out-of-band.`;
-            confirmButton.textContent = terminating ? 'Terminate' : 'Resolve';
-            confirmButton.classList.toggle('pending-button-danger', terminating);
-            confirmButton.classList.toggle('pending-button-success', !terminating);
-            modal.classList.toggle('is-danger', terminating);
-            modal.classList.toggle('is-success', !terminating);
+            if (title) title.textContent = terminating ? 'Terminate Task' : 'Resolve Task';
+            if (message) {
+                message.textContent = terminating
+                    ? `Are you sure you want to terminate the request for ${vesselName}?`
+                    : `Confirm that the dispatch for ${vesselName} has been resolved out-of-band.`;
+            }
+            if (confirmButton) {
+                confirmButton.textContent = terminating ? 'Terminate' : 'Resolve';
+                confirmButton.classList.toggle('pending-button-danger', terminating);
+                confirmButton.classList.toggle('pending-button-success', !terminating);
+            }
+            if (modal) {
+                modal.classList.toggle('is-danger', terminating);
+                modal.classList.toggle('is-success', !terminating);
+            }
             openModal(document.getElementById('taskActionModal'), button);
         });
     });
 
-    document.getElementById('confirmTaskActionBtn')?.addEventListener('click', () => {
+    document.getElementById('confirmTaskActionBtn')?.addEventListener('click', (e) => {
+        e.preventDefault();
         pendingTaskForm?.requestSubmit();
     });
 
     document.querySelectorAll('[data-pending-close]').forEach((button) => {
-        button.addEventListener('click', closeModal);
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeModal();
+        });
     });
 
     document.querySelectorAll('.pending-modal').forEach((modal) => {
@@ -89,8 +109,16 @@ if (pendingPage) {
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && activeModal) {
             closeModal();
         }
     });
 }
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPendingDispatch);
+} else {
+    initPendingDispatch();
+}
+document.addEventListener('turbo:load', initPendingDispatch);
+document.addEventListener('turbo:render', initPendingDispatch);

@@ -1,6 +1,10 @@
-const adminPage = document.querySelector('.admin-page');
+function initAdminPage() {
+    const adminPage = document.querySelector('.admin-page');
+    if (!adminPage || adminPage.dataset.adminModalsInitialized === 'true') {
+        return;
+    }
+    adminPage.dataset.adminModalsInitialized = 'true';
 
-if (adminPage) {
     let activeModal = null;
     let lastFocusedElement = null;
 
@@ -28,13 +32,21 @@ if (adminPage) {
     };
 
     document.querySelectorAll('[data-modal-open]').forEach((button) => {
-        button.addEventListener('click', () => {
-            openModal(document.getElementById(button.dataset.modalOpen), button);
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = button.dataset.modalOpen;
+            const targetModal = document.getElementById(targetId);
+            if (targetModal) {
+                openModal(targetModal, button);
+            }
         });
     });
 
     document.querySelectorAll('[data-modal-dismiss]').forEach((button) => {
-        button.addEventListener('click', closeModal);
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            closeModal();
+        });
     });
 
     document.querySelectorAll('.admin-modal').forEach((modal) => {
@@ -46,20 +58,33 @@ if (adminPage) {
     });
 
     document.querySelectorAll('[data-edit-engineer]').forEach((button) => {
-        button.addEventListener('click', () => {
-            document.getElementById('edit_user_id').value = button.dataset.id ?? '';
-            document.getElementById('edit_eng_name').value = button.dataset.name ?? '';
-            document.getElementById('edit_eng_email').value = button.dataset.email ?? '';
-            document.getElementById('edit_eng_specialty').value = button.dataset.specialty ?? '';
-            document.getElementById('edit_eng_status').value = button.dataset.status ?? 'available';
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const editId = document.getElementById('edit_user_id');
+            const editName = document.getElementById('edit_eng_name');
+            const editEmail = document.getElementById('edit_eng_email');
+            const editSpecialty = document.getElementById('edit_eng_specialty');
+            const editStatus = document.getElementById('edit_eng_status');
+
+            if (editId) editId.value = button.dataset.id ?? '';
+            if (editName) editName.value = button.dataset.name ?? '';
+            if (editEmail) editEmail.value = button.dataset.email ?? '';
+            if (editSpecialty) editSpecialty.value = button.dataset.specialty ?? '';
+            if (editStatus) editStatus.value = button.dataset.status ?? 'available';
+
             openModal(document.getElementById('editEngineerModal'), button);
         });
     });
 
     document.querySelectorAll('[data-delete-engineer]').forEach((button) => {
-        button.addEventListener('click', () => {
-            document.getElementById('delete_user_id').value = button.dataset.id ?? '';
-            document.getElementById('delete_eng_name_display').textContent = button.dataset.name ?? '';
+        button.addEventListener('click', (e) => {
+            e.preventDefault();
+            const delId = document.getElementById('delete_user_id');
+            const delDisplay = document.getElementById('delete_eng_name_display');
+
+            if (delId) delId.value = button.dataset.id ?? '';
+            if (delDisplay) delDisplay.textContent = button.dataset.name ?? '';
+
             openModal(document.getElementById('deleteEngineerModal'), button);
         });
     });
@@ -73,11 +98,11 @@ if (adminPage) {
     });
 
     document.querySelectorAll('[data-alert-dismiss]').forEach((button) => {
-        button.addEventListener('click', () => button.closest('.admin-alert')?.remove());
+        button.addEventListener('click', () => button.closest('.admin-alert, .adm-alert')?.remove());
     });
 
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape') {
+        if (event.key === 'Escape' && activeModal) {
             closeModal();
         }
     });
@@ -89,3 +114,11 @@ if (adminPage) {
         openModal(document.getElementById('editEngineerModal'));
     }
 }
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initAdminPage);
+} else {
+    initAdminPage();
+}
+document.addEventListener('turbo:load', initAdminPage);
+document.addEventListener('turbo:render', initAdminPage);

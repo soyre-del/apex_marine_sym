@@ -189,10 +189,20 @@
                             {{ ui.field_error('attachment', errors) }}
                         </div>
                         <div class="contact-form-row contact-field">
-                            <label class="contact-field-label" for="description">Request Details</label>
+                            <label class="contact-field-label" for="description">
+                                Request Details
+                                <span id="char-counter" style="float: right; font-size: 0.75rem; color: #a3b6c8; font-weight: normal;">0 / 10,000</span>
+                            </label>
                             <textarea class="contact-input" id="description" name="description" rows="4" maxlength="10000" placeholder="Provide details about the required maintenance or repair..." required{% if errors.description is defined %} aria-invalid="true" aria-describedby="description_error"{% endif %}>{{ values.description }}</textarea>
                             {{ ui.field_error('description', errors) }}
                         </div>
+
+                        {# Dynamic Form Manipulation Notice #}
+                        <div id="urgent-notice" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f6bc4c; font-size: 0.85rem;">
+                            <strong>⚡ PRIORITY DISPATCH ENGAGED:</strong> This request will be marked critical and escalated immediately to the active on-duty engineering unit.
+                        </div>
+
+                        <div id="file-info" style="display: none; padding: 8px 12px; border-radius: 6px; margin-bottom: 1rem; background: rgba(11, 165, 223, 0.12); border: 1px solid rgba(11, 165, 223, 0.3); color: #0ba5df; font-size: 0.82rem;"></div>
 
                         {% if can_submit %}
                             <button class="contact-submit" type="submit">{{ ui.icon('send') }}Submit Request</button>
@@ -219,4 +229,74 @@
             </div>
         </div>
     </div>
+
+    <script>
+    (function () {
+        function initContactForm() {
+            var urgentCheckbox = document.getElementById('urgent');
+            var urgentNotice   = document.getElementById('urgent-notice');
+            var formCard       = document.querySelector('.contact-form-card');
+            var descTextarea   = document.getElementById('description');
+            var charCounter    = document.getElementById('char-counter');
+            var fileInput      = document.getElementById('attachment');
+            var fileInfo       = document.getElementById('file-info');
+
+            // 1. Dynamic Urgent State Manipulation
+            function updateUrgentState() {
+                if (!urgentCheckbox) return;
+                var isUrgent = urgentCheckbox.checked;
+                if (urgentNotice) urgentNotice.style.display = isUrgent ? 'block' : 'none';
+                if (formCard) {
+                    if (isUrgent) {
+                        formCard.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, .5), 0 12px 40px rgba(0, 0, 0, .4)';
+                    } else {
+                        formCard.style.boxShadow = '';
+                    }
+                }
+            }
+            if (urgentCheckbox) {
+                urgentCheckbox.addEventListener('change', updateUrgentState);
+                updateUrgentState();
+            }
+
+            // 2. Dynamic Character Counter
+            function updateCharCount() {
+                if (!descTextarea || !charCounter) return;
+                var len = descTextarea.value.length;
+                charCounter.textContent = len.toLocaleString() + ' / 10,000';
+                if (len > 9000) {
+                    charCounter.style.color = '#ef4444';
+                } else {
+                    charCounter.style.color = '#a3b6c8';
+                }
+            }
+            if (descTextarea) {
+                descTextarea.addEventListener('input', updateCharCount);
+                updateCharCount();
+            }
+
+            // 3. Dynamic File Upload Info Display
+            if (fileInput && fileInfo) {
+                fileInput.addEventListener('change', function () {
+                    if (fileInput.files && fileInput.files[0]) {
+                        var file = fileInput.files[0];
+                        var sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+                        fileInfo.textContent = '📎 Attached: ' + file.name + ' (' + sizeMb + ' MB)';
+                        fileInfo.style.display = 'block';
+                    } else {
+                        fileInfo.style.display = 'none';
+                    }
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initContactForm);
+        } else {
+            initContactForm();
+        }
+        document.addEventListener('turbo:load', initContactForm);
+        document.addEventListener('turbo:render', initContactForm);
+    })();
+    </script>
 {% endblock %}

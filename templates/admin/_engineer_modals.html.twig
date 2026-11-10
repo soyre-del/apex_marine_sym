@@ -5,8 +5,8 @@
             <button type="button" class="admin-modal-close" data-modal-dismiss aria-label="Close">&times;</button>
         </header>
         <div class="admin-modal-body">
-            <form action="{{ path('admin_dashboard') }}" method="post" class="admin-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+            <form action="{{ path('admin_dashboard') }}" method="post" class="admin-form" data-turbo="false">
+                <input type="hidden" name="csrf_token" value="{{ adminCsrfToken }}">
                 <input type="hidden" name="action" value="add_engineer">
 
                 <label>Full Name
@@ -46,8 +46,8 @@
             <button type="button" class="admin-modal-close" data-modal-dismiss aria-label="Close">&times;</button>
         </header>
         <div class="admin-modal-body">
-            <form action="{{ path('admin_dashboard') }}" method="post" class="admin-form">
-                <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+            <form action="{{ path('admin_dashboard') }}" method="post" class="admin-form" data-turbo="false">
+                <input type="hidden" name="csrf_token" value="{{ adminCsrfToken }}">
                 <input type="hidden" name="action" value="edit_engineer">
                 <input type="hidden" name="user_id" id="edit_user_id" value="{{ old_post.user_id|default('') }}">
 
@@ -85,8 +85,8 @@
         <div class="admin-confirm-icon" aria-hidden="true">!</div>
         <h2 id="deleteEngineerTitle">Revoke Operative Access?</h2>
         <p>This will deactivate <strong id="delete_eng_name_display"></strong>'s account and set their status to 'On Leave'.</p>
-        <form action="{{ path('admin_dashboard') }}" method="post" class="admin-confirm-actions">
-            <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_engineers') }}">
+        <form action="{{ path('admin_dashboard') }}" method="post" class="admin-confirm-actions" data-turbo="false">
+            <input type="hidden" name="csrf_token" value="{{ adminCsrfToken }}">
             <input type="hidden" name="action" value="delete_engineer">
             <input type="hidden" name="user_id" id="delete_user_id">
             <button type="button" class="admin-button admin-button-cancel" data-modal-dismiss>Cancel</button>
