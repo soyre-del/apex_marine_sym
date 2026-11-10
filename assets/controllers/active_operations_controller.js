@@ -58,5 +58,6 @@ if (modal) {
         if (event.key === 'Escape' && modal.classList.contains('show')) {
             closeModal();
         }
+        
     });
 }

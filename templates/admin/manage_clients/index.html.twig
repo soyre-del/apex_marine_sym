@@ -7,6 +7,7 @@
 {% endblock %}
 
 {% block body %}
+    {% set clientCsrfToken = csrf_token('admin_clients') %}
     <main class="clients-page">
         <nav class="clients-nav" aria-label="Client management navigation">
             <div class="clients-nav-inner">
@@ -113,8 +114,8 @@
                                                 Edit
                                             </button>
 
-                                            <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-inline-form">
-                                                <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                                            <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-inline-form" data-turbo="false">
+                                                <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
                                                 <input type="hidden" name="action" value="toggle_status">
                                                 <input type="hidden" name="client_id" value="{{ client.user_id }}">
                                                 <input type="hidden" name="new_status" value="{{ client.is_active ? '0' : '1' }}">
@@ -155,9 +156,9 @@
                     <h2 id="addClientTitle">Initialize Profile</h2>
                     <button type="button" class="clients-modal-close" data-clients-close aria-label="Close">&times;</button>
                 </header>
-                <form action="{{ path('admin_manage_clients') }}" method="post">
+                <form action="{{ path('admin_manage_clients') }}" method="post" data-turbo="false">
                     <div class="clients-modal-body">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                        <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
                         <input type="hidden" name="action" value="add_client">
                         <label class="clients-label">Organization / Contact Name
                             <input type="text" name="client_name" required class="clients-control" autocomplete="name">
@@ -184,9 +185,9 @@
                     <h2 id="editClientTitle">Modify Profile</h2>
                     <button type="button" class="clients-modal-close" data-clients-close aria-label="Close">&times;</button>
                 </header>
-                <form action="{{ path('admin_manage_clients') }}" method="post">
+                <form action="{{ path('admin_manage_clients') }}" method="post" data-turbo="false">
                     <div class="clients-modal-body">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                        <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
                         <input type="hidden" name="action" value="edit_client">
                         <input type="hidden" name="client_id" id="edit_client_id">
                         <label class="clients-label">Organization / Contact Name
@@ -219,8 +220,8 @@
                         This permanently deletes <strong id="purge_client_name_display"></strong>'s account.
                         Accounts with dispatch or invoice history cannot be purged; suspend them to preserve their records.
                     </p>
-                    <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-modal-footer">
-                        <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clients') }}">
+                    <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-modal-footer" data-turbo="false">
+                        <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
                         <input type="hidden" name="action" value="hard_delete_client">
                         <input type="hidden" name="client_id" id="purge_user_id">
                         <button type="button" class="clients-button clients-button-outline" data-clients-close>Cancel</button>
