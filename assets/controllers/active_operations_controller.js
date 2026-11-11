@@ -1,6 +1,10 @@
-const modal = document.getElementById('resolveWarningModal');
+function initActiveOperations() {
+    const modal = document.getElementById('resolveWarningModal');
+    if (!modal || modal.dataset.opsInitialized === 'true') {
+        return;
+    }
+    modal.dataset.opsInitialized = 'true';
 
-if (modal) {
     let pendingForm = null;
     let confirmedForm = null;
     const proceedButton = document.getElementById('confirmResolveBtn');
@@ -58,6 +62,13 @@ if (modal) {
         if (event.key === 'Escape' && modal.classList.contains('show')) {
             closeModal();
         }
-        
     });
 }
+
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initActiveOperations);
+} else {
+    initActiveOperations();
+}
+document.addEventListener('turbo:load', initActiveOperations);
+document.addEventListener('turbo:render', initActiveOperations);

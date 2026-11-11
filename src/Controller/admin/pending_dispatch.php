@@ -29,7 +29,16 @@ final class pending_dispatch extends AbstractController
             ? filter_var($identity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($adminId === false || $session->get('role') !== 'admin') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $adminId = $user->getUserId();
+            $session->set('user_id', $adminId);
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($adminId === false || $role !== 'admin') {
             throw $this->createAccessDeniedException('Administrator access is required.');
         }
 
@@ -42,6 +51,24 @@ final class pending_dispatch extends AbstractController
         $loadError = false;
 
         try {
+            // Ensure any dispatch_requests accidentally linked to a non-client user are reassigned to a client account
+            $defaultClientId = $this->connection->fetchOne(
+                "SELECT user_id FROM users WHERE role = 'client' ORDER BY is_active DESC, user_id ASC LIMIT 1"
+            );
+            if ($defaultClientId !== false && $defaultClientId !== null) {
+                $cid = (int) $defaultClientId;
+                $hasProfile = $this->connection->fetchOne('SELECT client_id FROM client_profiles WHERE client_id = ? LIMIT 1', [$cid]);
+                if ($hasProfile === false || $hasProfile === null) {
+                    $this->connection->insert('client_profiles', ['client_id' => $cid, 'company_name' => 'Apex Fleet Partner']);
+                }
+                $this->connection->executeStatement(<<<'SQL'
+                    UPDATE dispatch_requests d
+                    JOIN users u ON d.client_id = u.user_id
+                    SET d.client_id = ?
+                    WHERE u.role <> 'client'
+                    SQL, [$cid]);
+            }
+
             $pendingRequests = $this->connection->fetchAllAssociative(<<<'SQL'
                 SELECT
                     d.request_id,
@@ -57,12 +84,12 @@ final class pending_dispatch extends AbstractController
                     d.eta_date,
                     d.requested_at,
                     d.attachment_path,
-                    u.full_name AS client_name,
+                    TRIM(CONCAT_WS(' ', NULLIF(u.first_name, ''), NULLIF(u.middle_name, ''), NULLIF(u.surname, ''))) AS client_name,
                     u.email AS client_email,
                     l.port_name,
                     h.hub_name
                 FROM dispatch_requests d
-                LEFT JOIN users u ON d.client_id = u.user_id
+                LEFT JOIN users u ON d.client_id = u.user_id AND u.role = 'client'
                 LEFT JOIN service_locations l ON d.location_id = l.location_id
                 LEFT JOIN operational_hubs h ON l.hub_id = h.hub_id
                 WHERE d.status IN ('pending', 'acknowledged') AND d.is_active = 1
@@ -70,7 +97,10 @@ final class pending_dispatch extends AbstractController
                 SQL);
 
             $availableEngineers = $this->connection->fetchAllAssociative(<<<'SQL'
-                SELECT u.user_id, u.full_name, ep.specialty
+                SELECT
+                    u.user_id,
+                    TRIM(CONCAT_WS(' ', NULLIF(u.first_name, ''), NULLIF(u.middle_name, ''), NULLIF(u.surname, ''))) AS full_name,
+                    ep.specialty
                 FROM users u
                 JOIN engineer_profiles ep ON u.user_id = ep.engineer_id
                 WHERE ep.current_status = 'available'
@@ -82,7 +112,7 @@ final class pending_dispatch extends AbstractController
                         WHERE dep.engineer_id = ep.engineer_id
                             AND dep.deployment_status <> 'completed'
                     )
-                ORDER BY ep.specialty ASC, u.full_name ASC
+                ORDER BY ep.specialty ASC, u.first_name ASC, u.surname ASC
                 SQL);
         } catch (DBALException $exception) {
             $this->logger->error('Unable to retrieve pending dispatch assignments.', [
@@ -95,13 +125,25 @@ final class pending_dispatch extends AbstractController
 
         $matchingEngineers = [];
         foreach ($pendingRequests as $dispatch) {
-            $matchingEngineers[$dispatch['request_id']] = array_values(array_filter(
+            $matched = array_values(array_filter(
                 $availableEngineers,
                 fn (array $engineer): bool => $this->sameDiscipline(
                     (string) $dispatch['service_type'],
                     (string) $engineer['specialty'],
                 ),
             ));
+
+            // Prioritize Chief Engineers at the top of the deployment roster as universal problem solvers
+            usort($matched, function (array $a, array $b): int {
+                $isChiefA = str_contains(strtolower((string) $a['specialty']), 'chief engineer') ? 1 : 0;
+                $isChiefB = str_contains(strtolower((string) $b['specialty']), 'chief engineer') ? 1 : 0;
+                if ($isChiefA !== $isChiefB) {
+                    return $isChiefB <=> $isChiefA;
+                }
+                return strcmp((string) $a['full_name'], (string) $b['full_name']);
+            });
+
+            $matchingEngineers[$dispatch['request_id']] = $matched;
         }
 
         return $this->render('admin/pending_dispatch/index.html.twig', [
@@ -116,7 +158,7 @@ final class pending_dispatch extends AbstractController
     {
         $form = $request->request->all();
         $action = $form['action'] ?? null;
-        $token = $form['csrf_token'] ?? null;
+        $token = $form['csrf_token'] ?? $form['_token'] ?? $form['_csrf_token'] ?? null;
 
         if (!is_string($action) || !in_array($action, ['assign_engineer', 'update_task_status'], true)) {
             return $this->redirectToRoute('admin_pending_dispatch');
@@ -144,10 +186,14 @@ final class pending_dispatch extends AbstractController
             return $this->redirectToRoute('admin_pending_dispatch');
         }
 
+        $engineer = null;
+
         try {
             $this->connection->transactional(function (Connection $connection) use (
                 $requestId,
                 $engineerId,
+                $adminId,
+                &$engineer,
             ): void {
                 $dispatch = $connection->fetchAssociative(
                     "SELECT request_id, service_type
@@ -179,14 +225,39 @@ final class pending_dispatch extends AbstractController
                 }
 
                 if (!$this->sameDiscipline((string) $dispatch['service_type'], (string) $engineer['specialty'])) {
-                    throw new \DomainException('The selected engineer does not match the requested discipline.');
+                    throw new \DomainException('The selected engineer is not qualified for this discipline. Only the Chief Engineer possesses universal clearance across all problem domains.');
                 }
 
-                $connection->insert('deployments', [
-                    'request_id' => $requestId,
-                    'engineer_id' => $engineerId,
-                    'deployment_status' => 'en_route',
-                ]);
+                $validAdminId = $connection->fetchOne(
+                    'SELECT user_id FROM users WHERE user_id = ? LIMIT 1',
+                    [$adminId],
+                );
+                if ($validAdminId === false || $validAdminId === null) {
+                    $validAdminId = $connection->fetchOne(
+                        "SELECT user_id FROM users WHERE role = 'admin' ORDER BY user_id ASC LIMIT 1",
+                    ) ?: $engineerId;
+                }
+
+                $existingDeploymentId = $connection->fetchOne(
+                    'SELECT deployment_id FROM deployments WHERE request_id = ? LIMIT 1',
+                    [$requestId],
+                );
+
+                if ($existingDeploymentId !== false && $existingDeploymentId !== null) {
+                    $connection->executeStatement(
+                        "UPDATE deployments
+                        SET admin_id = ?, engineer_id = ?, deployment_status = 'en_route', deployed_at = CURRENT_TIMESTAMP
+                        WHERE deployment_id = ?",
+                        [(int) $validAdminId, $engineerId, (int) $existingDeploymentId],
+                    );
+                } else {
+                    $connection->insert('deployments', [
+                        'request_id' => $requestId,
+                        'admin_id' => (int) $validAdminId,
+                        'engineer_id' => $engineerId,
+                        'deployment_status' => 'en_route',
+                    ]);
+                }
 
                 $updatedRequest = $connection->executeStatement(
                     "UPDATE dispatch_requests
@@ -198,15 +269,12 @@ final class pending_dispatch extends AbstractController
                     throw new \DomainException('This request is no longer awaiting deployment.');
                 }
 
-                $updatedEngineer = $connection->update('engineer_profiles', [
-                    'current_status' => 'deployed',
-                ], [
-                    'engineer_id' => $engineerId,
-                    'current_status' => 'available',
-                ]);
-                if ($updatedEngineer !== 1) {
-                    throw new \DomainException('The selected engineer is no longer available.');
-                }
+                $connection->executeStatement(
+                    "UPDATE engineer_profiles
+                    SET current_status = 'deployed'
+                    WHERE engineer_id = ?",
+                    [$engineerId],
+                );
             });
         } catch (\DomainException $exception) {
             $this->addFlash('warning', $exception->getMessage());
@@ -224,9 +292,13 @@ final class pending_dispatch extends AbstractController
             return $this->redirectToRoute('admin_pending_dispatch');
         }
 
+        $specialty = is_array($engineer) ? (string) ($engineer['specialty'] ?? '') : '';
+        $isChief = str_contains(strtolower($specialty), 'chief engineer');
         $this->addFlash(
             'success',
-            sprintf('Deployment authorized: Matching specialist dispatched to Request #%d.', $requestId),
+            $isChief
+                ? 'Chief Engineer deployed successfully.'
+                : 'Engineer deployed successfully.',
         );
 
         return $this->redirectToRoute('admin_pending_dispatch');
@@ -237,7 +309,7 @@ final class pending_dispatch extends AbstractController
         $requestId = $this->positiveId($form['request_id'] ?? null);
         $status = $form['new_status'] ?? null;
         if ($requestId === null || !is_string($status) || !in_array($status, ['resolved', 'cancelled'], true)) {
-            $this->addFlash('warning', 'Invalid task status action.');
+            $this->addFlash('warning', 'Invalid task action.');
 
             return $this->redirectToRoute('admin_pending_dispatch');
         }
@@ -254,24 +326,20 @@ final class pending_dispatch extends AbstractController
                 'request_id' => $requestId,
                 'exception' => $exception,
             ]);
-            $this->addFlash('danger', 'CRITICAL FAULT: Unable to modify task status.');
+            $this->addFlash('danger', 'Unable to modify task status.');
 
             return $this->redirectToRoute('admin_pending_dispatch');
         }
 
         if ($updated !== 1) {
-            $this->addFlash('warning', 'This task is no longer awaiting deployment.');
+            $this->addFlash('warning', 'Task is no longer awaiting deployment.');
 
             return $this->redirectToRoute('admin_pending_dispatch');
         }
 
         $this->addFlash(
             $status === 'resolved' ? 'success' : 'warning',
-            sprintf(
-                'Task #%d has been successfully marked as %s.',
-                $requestId,
-                $status === 'resolved' ? 'Finished/Resolved' : 'Terminated/Cancelled',
-            ),
+            $status === 'resolved' ? 'Task marked as resolved.' : 'Task cancelled.',
         );
 
         return $this->redirectToRoute('admin_pending_dispatch');
@@ -279,7 +347,47 @@ final class pending_dispatch extends AbstractController
 
     private function sameDiscipline(string $requested, string $specialty): bool
     {
-        return strtolower(trim($requested)) === strtolower(trim($specialty));
+        $requested = strtolower(trim($requested));
+        $specialty = strtolower(trim($specialty));
+
+        // Chief Engineer is universally capable of fixing everything and deployable to any problem
+        if (str_contains($specialty, 'chief engineer')) {
+            return true;
+        }
+
+        // Exact match
+        if ($requested === $specialty) {
+            return true;
+        }
+
+        // Domain matching for other specialized technical roles
+        $domainKeywords = [
+            'propulsion' => ['propulsion', 'machinery', 'engine', 'shaft', 'diesel', 'turbine'],
+            'electrical' => ['electrical', 'automation', 'electronics', 'plc', 'power', 'switchboard'],
+            'hydraulic' => ['hydraulic', 'deck gear', 'deck equipment', 'winch', 'crane', 'steering'],
+            'hull' => ['hull', 'steel', 'fabricat', 'welding', 'structural', 'plate'],
+            'preventative' => ['preventative', 'maintenance', 'survey', 'overhaul', 'inspection'],
+            'consult' => ['consult', 'superintendent', 'advice', 'assessment'],
+        ];
+
+        foreach ($domainKeywords as $terms) {
+            $reqMatches = false;
+            foreach ($terms as $term) {
+                if (str_contains($requested, $term)) {
+                    $reqMatches = true;
+                    break;
+                }
+            }
+            if ($reqMatches) {
+                foreach ($terms as $term) {
+                    if (str_contains($specialty, $term)) {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        return false;
     }
 
     private function positiveId(mixed $value): ?int

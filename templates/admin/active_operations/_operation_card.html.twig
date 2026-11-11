@@ -3,7 +3,16 @@
         <h2>{{ operation.vessel_name }}</h2>
         <span class="badge bg-brand-ocean active-ops-request-id">REQ-{{ '%04d'|format(operation.request_id) }}</span>
     </div>
-    <p class="text-info active-ops-assigned">Assigned: <strong>{{ operation.eng_name }}</strong></p>
+    <p class="text-info active-ops-assigned">
+        Assigned: <strong>{{ operation.eng_name }}</strong>
+        {% if operation.specialty is defined and 'chief engineer' in operation.specialty|lower %}
+            <span style="display:inline-block; margin-left:6px; padding:2px 7px; border-radius:4px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; font-size:0.7rem; font-weight:700; text-transform:uppercase;">
+                Chief Engineer (Universal Clearance)
+            </span>
+        {% elseif operation.specialty is defined and operation.specialty %}
+            <span style="color:#a3b6c8; font-size:0.8rem;">({{ operation.specialty }})</span>
+        {% endif %}
+    </p>
 
     <form action="{{ path('admin_active_operations') }}" method="post" class="active-ops-form">
         <input type="hidden" name="_token" value="{{ csrf_token('active_operation_' ~ operation.request_id) }}">

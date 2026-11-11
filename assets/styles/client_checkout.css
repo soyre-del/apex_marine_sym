@@ -107,6 +107,22 @@
     font: 13px/1.5 Inter, Arial, sans-serif;
 }
 
+select.client-checkout-control {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    background: #101923 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%230ba5df' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E") no-repeat right 14px center;
+    background-size: 16px 16px;
+    padding-right: 40px;
+    cursor: pointer;
+}
+
+select.client-checkout-control option {
+    background-color: #081c2d;
+    color: #f7faff;
+    padding: 8px 12px;
+}
+
 .client-checkout-control:focus-visible,
 .client-checkout-button:focus-visible {
     outline: 2px solid #70d7fa;

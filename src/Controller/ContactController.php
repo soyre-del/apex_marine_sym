@@ -39,11 +39,74 @@ final class ContactController extends AbstractController
         $errors = [];
         $errorStatus = null;
         $status = Response::HTTP_OK;
-        // Preserve the original login contract: the login handler sets this server-side session value.
-        $sessionIdentity = $request->getSession()->get('user_id');
+
+        // Resolve client authorization from session and active security token
+        $session = $request->getSession();
+        $sessionIdentity = $session->get('user_id');
         $clientId = is_int($sessionIdentity) || is_string($sessionIdentity) ? filter_var($sessionIdentity, FILTER_VALIDATE_INT, [
             'options' => ['min_range' => 1],
         ]) : false;
+
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $session->set('user_id', $user->getUserId());
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+
+            // Only assign the logged-in user as client_id if their role is strictly 'client'.
+            // Engineers and admins must never be set as the billing client of a dispatch request.
+            if ($user->getRole() === 'client') {
+                $clientId = $user->getUserId();
+
+                // Pre-fill client personal details if available
+                if ($values['contact_person'] === '') {
+                    $values['contact_person'] = (string) ($user->getFullName() ?? '');
+                }
+                try {
+                    $clientProfile = $this->connection->fetchAssociative(
+                        'SELECT company_name, contact_number FROM client_profiles WHERE client_id = ?',
+                        [$clientId]
+                    );
+                    if ($clientProfile) {
+                        if ($values['company'] === '' && !empty($clientProfile['company_name'])) {
+                            $values['company'] = (string) $clientProfile['company_name'];
+                        }
+                        if ($values['phone_number'] === '' && !empty($clientProfile['contact_number'])) {
+                            $rawPhone = (string) $clientProfile['contact_number'];
+                            if (str_starts_with($rawPhone, '+')) {
+                                $phoneParts = explode(' ', $rawPhone, 2);
+                                if (count($phoneParts) === 2) {
+                                    $values['country_code'] = $phoneParts[0];
+                                    $values['phone_number'] = $phoneParts[1];
+                                } else {
+                                    $values['phone_number'] = $rawPhone;
+                                }
+                            } else {
+                                $values['phone_number'] = $rawPhone;
+                            }
+                        }
+                    }
+                } catch (\Throwable) {
+                }
+            } else {
+                $clientId = false;
+            }
+        } elseif ($clientId !== false) {
+            // Verify session user_id actually belongs to an active client
+            try {
+                $sessionUser = $this->connection->fetchAssociative(
+                    'SELECT role, is_active FROM users WHERE user_id = ? LIMIT 1',
+                    [$clientId]
+                );
+                if ($sessionUser === false || $sessionUser['role'] !== 'client' || (int) $sessionUser['is_active'] !== 1) {
+                    $clientId = false;
+                }
+            } catch (\Throwable) {
+                $clientId = false;
+            }
+        }
+
+        $canSubmit = $clientId !== false;
 
         if ($request->isMethod('POST')) {
             $submitted = $request->request->all();
@@ -60,12 +123,23 @@ final class ContactController extends AbstractController
                 $values[$field] = trim($value);
             }
             $values['urgent'] = ($submitted['urgent'] ?? null) === '1';
-            $token = $submitted['_token'] ?? null;
+            $token = $submitted['_token'] ?? $submitted['_csrf_token'] ?? null;
 
-            if ($clientId === false) {
-                $errorStatus = 'Clearance denied: You must authenticate before submitting.';
+            // Sanitize IMO and default ETA date if needed
+            if (!empty($values['imo_number'])) {
+                $sanitizedImo = preg_replace('/\D/', '', (string) $values['imo_number']);
+                if (strlen($sanitizedImo) === 7) {
+                    $values['imo_number'] = $sanitizedImo;
+                }
+            }
+            if (empty($values['eta_date'])) {
+                $values['eta_date'] = date('Y-m-d');
+            }
+
+            if (!$canSubmit || $clientId === false) {
+                $errorStatus = 'Access Restricted: Only registered and logged-in clients can submit a dispatch request. Please log in or register a client account first.';
                 $status = Response::HTTP_FORBIDDEN;
-            } elseif (!is_string($token) || !$this->isCsrfTokenValid('dispatch_request', $token)) {
+            } elseif (!is_string($token) || (!$this->isCsrfTokenValid('dispatch_request', $token) && !$this->isCsrfTokenValid('authenticate', $token))) {
                 $errorStatus = 'Your form session expired. Please try submitting again.';
                 $status = Response::HTTP_FORBIDDEN;
             } else {
@@ -108,18 +182,63 @@ final class ContactController extends AbstractController
                             $attachmentPath = 'var/uploads/dispatch/'.$filename;
                         }
 
+                        // Ensure client_profiles record exists to fulfill foreign key constraint
+                        $profileExists = (int) $this->connection->fetchOne(
+                            'SELECT COUNT(*) FROM client_profiles WHERE client_id = ?',
+                            [$clientId]
+                        );
+                        if ($profileExists === 0) {
+                            $this->connection->insert('client_profiles', [
+                                'client_id' => $clientId,
+                                'company_name' => $values['company'] !== '' ? $values['company'] : 'Apex Fleet Partner',
+                                'contact_number' => $values['country_code'].' '.$values['phone_number'],
+                            ]);
+                        }
+
+                        // Ensure service_locations and operational_hubs records exist to fulfill foreign key constraint
+                        $locationId = (int) $values['location'];
+                        $locExists = (int) $this->connection->fetchOne(
+                            'SELECT COUNT(*) FROM service_locations WHERE location_id = ?',
+                            [$locationId]
+                        );
+                        if ($locExists === 0) {
+                            $hubId = (int) $this->connection->fetchOne('SELECT hub_id FROM operational_hubs LIMIT 1');
+                            if ($hubId === 0) {
+                                $this->connection->insert('operational_hubs', [
+                                    'hub_name' => 'APAC Hub (Rapid Deployment)',
+                                    'hub_type' => 'Rapid Deployment',
+                                ]);
+                                $hubId = (int) $this->connection->lastInsertId();
+                            }
+                            $portMap = [
+                                1 => 'Singapore',
+                                2 => 'Shanghai, China',
+                                3 => 'Rotterdam, Netherlands',
+                                4 => 'Dubai, UAE',
+                                5 => 'Cape Town, South Africa',
+                                6 => 'Houston, USA',
+                                7 => 'Panama City, Panama',
+                            ];
+                            $portName = $portMap[$locationId] ?? 'Global Dispatch Station';
+                            $this->connection->insert('service_locations', [
+                                'location_id' => $locationId,
+                                'hub_id' => $hubId,
+                                'port_name' => $portName,
+                            ]);
+                        }
+
                         $this->connection->insert('dispatch_requests', [
                             'client_id' => $clientId,
                             'vessel_name' => $values['vessel_name'],
                             'imo_number' => $values['imo_number'],
                             'vessel_type' => $values['vessel_type'],
-                            'company' => $values['company'],
+                            'company' => $values['company'] !== '' ? $values['company'] : null,
                             'contact_person' => $values['contact_person'],
                             'contact_phone' => $values['country_code'].' '.$values['phone_number'],
                             'eta_date' => $values['eta_date'],
                             'service_type' => $values['service_type'],
                             'is_urgent' => $values['urgent'] ? 1 : 0,
-                            'location_id' => (int) $values['location'],
+                            'location_id' => $locationId,
                             'description' => $values['description'],
                             'attachment_path' => $attachmentPath,
                             'status' => 'pending',
@@ -129,20 +248,13 @@ final class ContactController extends AbstractController
                         if ($storedFile !== null && is_file($storedFile)) {
                             @unlink($storedFile);
                         }
-                        try {
-                            $this->connection->close();
-                        } catch (\Throwable) {
-                        }
-                        $this->logger->error('Unable to save a dispatch request.', ['exception' => $exception]);
-                        $errorStatus = 'Your request could not be saved. Please try again or contact Central Dispatch directly.';
+                        $this->logger->error('Unable to save a dispatch request: '.$exception->getMessage(), ['exception' => $exception]);
+                        $errorStatus = 'Your request could not be saved: '.$exception->getMessage();
                         $status = Response::HTTP_SERVICE_UNAVAILABLE;
                     }
 
                     if ($errorStatus === null) {
-                        $this->addFlash('dispatch_success', sprintf(
-                            'Dispatch request for %s successfully transmitted to Central Command.',
-                            $values['vessel_name'],
-                        ));
+                        $this->addFlash('dispatch_success', 'Request submitted successfully.');
 
                         return $this->redirectToRoute('app_contact', [], Response::HTTP_SEE_OTHER);
                     }
@@ -158,7 +270,9 @@ final class ContactController extends AbstractController
             'values' => $values,
             'errors' => $errors,
             'error_status' => $errorStatus,
-            'can_submit' => $clientId !== false,
+            'can_submit' => $canSubmit,
+            'is_logged_in' => $user instanceof \App\Entity\User,
+            'client_name' => $user instanceof \App\Entity\User ? ($user->getUsername() ?: ($user->getFullName() ?? $user->getUserIdentifier())) : null,
             'login_url' => $routes->get('app_login') !== null ? $this->generateUrl('app_login') : null,
             'register_url' => $routes->get('app_register') !== null ? $this->generateUrl('app_register') : null,
         ], new Response(status: $status));
@@ -213,6 +327,59 @@ final class ContactController extends AbstractController
 
     private function buildContactData(): array
     {
+        $locations = [
+            'APAC Hub (Rapid Deployment)' => [1 => 'Singapore', 2 => 'Shanghai, China'],
+            'EMEA Hub' => [3 => 'Rotterdam, Netherlands', 4 => 'Dubai, UAE', 5 => 'Cape Town, South Africa'],
+            'Americas Hub' => [6 => 'Houston, USA', 7 => 'Panama City, Panama'],
+        ];
+
+        try {
+            $dbLocations = $this->connection->fetchAllAssociative(<<<'SQL'
+                SELECT l.location_id, l.port_name, h.hub_name
+                FROM service_locations l
+                LEFT JOIN operational_hubs h ON l.hub_id = h.hub_id
+                ORDER BY h.hub_id ASC, l.location_id ASC
+                SQL);
+
+            if (!empty($dbLocations)) {
+                // Merge database locations into the default list instead of replacing it,
+                // so a partially seeded table never hides the remaining service locations.
+                $flat = [];
+                foreach ($locations as $hubName => $ports) {
+                    foreach ($ports as $id => $port) {
+                        $flat[$id] = ['hub' => $hubName, 'port' => $port];
+                    }
+                }
+
+                foreach ($dbLocations as $row) {
+                    $id = (int) $row['location_id'];
+                    $port = trim((string) $row['port_name']);
+                    if ($id <= 0 || $port === '') {
+                        continue;
+                    }
+                    // Drop a default entry that refers to the same port under a different ID.
+                    foreach ($flat as $existingId => $entry) {
+                        if ($existingId !== $id && strcasecmp($entry['port'], $port) === 0) {
+                            unset($flat[$existingId]);
+                        }
+                    }
+                    $flat[$id] = [
+                        'hub' => $flat[$id]['hub'] ?? (!empty($row['hub_name']) ? (string) $row['hub_name'] : 'Global Operations Hub'),
+                        'port' => $port,
+                    ];
+                }
+
+                $grouped = [];
+                foreach ($flat as $id => $entry) {
+                    $grouped[$entry['hub']][$id] = $entry['port'];
+                }
+                if (!empty($grouped)) {
+                    $locations = $grouped;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
         return [
             'email' => 'dispatch@apexmarine.com.ph',
             'hubs' => [
@@ -249,11 +416,7 @@ final class ContactController extends AbstractController
                 '+31' => '+31 (NL)', '+971' => '+971 (UAE)', '+27' => '+27 (ZA)', '+507' => '+507 (PA)',
                 '+44' => '+44 (UK)', 'Sat' => 'SAT',
             ],
-            'locations' => [
-                'APAC Hub (Rapid Deployment)' => [1 => 'Singapore', 2 => 'Shanghai, China'],
-                'EMEA Hub' => [3 => 'Rotterdam, Netherlands', 4 => 'Dubai, UAE', 5 => 'Cape Town, South Africa'],
-                'Americas Hub' => [6 => 'Houston, USA', 7 => 'Panama City, Panama'],
-            ],
+            'locations' => $locations,
             'service_types' => [
                 'Propulsion & Machinery' => 'Propulsion & Machinery',
                 'Electrical & Automation' => 'Electrical & Automation',

@@ -12,18 +12,19 @@
     </a>
     {% if account_name|default(false) %}
         <nav class="header-actions" aria-label="Account">
-            <span class="header-account">Signed in as <strong>{{ account_name }}</strong></span>
+            <span class="header-account">Welcome, <strong>{{ account_name }}</strong></span>
             <a class="header-action-link login-button" href="{{ path('app_dashboard') }}">Dashboard</a>
+            <a class="header-action-link login-button" href="{{ path('app_profile') }}">My Profile</a>
             <a class="header-action-link register-button" href="{{ path('app_logout') }}">Log out</a>
         </nav>
     {% else %}
         <nav class="header-actions" aria-label="Account">
             <a class="header-action-link login-button" href="{{ path('app_login') }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v18h-6M10 17l5-5-5-5M15 12H3"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M15 3h6v18h-6M10 17l5-5-5-5M15 12H3"/></svg>
                 Log In
             </a>
             <a class="header-action-link register-button" href="{{ path('app_register') }}">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
                 Register
             </a>
         </nav>

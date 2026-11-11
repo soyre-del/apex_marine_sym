@@ -30,12 +30,19 @@ final class LoginAuthenticator extends AbstractLoginFormAuthenticator
 
     public function authenticate(Request $request): Passport
     {
-        $email = $request->getPayload()->getString('email');
+        $email = CredentialSecurityPolicy::normalizeEmail($request->getPayload()->getString('email'));
+        $password = $request->getPayload()->getString('password');
         $request->getSession()->set(SecurityRequestAttributes::LAST_USERNAME, $email);
+
+        if ($email === '' || $password === '') {
+            throw new \Symfony\Component\Security\Core\Exception\CustomUserMessageAuthenticationException(
+                'Please enter both your email address and password.'
+            );
+        }
 
         return new Passport(
             new UserBadge($email),
-            new PasswordCredentials($request->getPayload()->getString('password')),
+            new PasswordCredentials($password),
             [
                 new CsrfTokenBadge('authenticate', $request->getPayload()->getString('_csrf_token')),
                 new RememberMeBadge(),
@@ -50,6 +57,8 @@ final class LoginAuthenticator extends AbstractLoginFormAuthenticator
             $session = $request->getSession();
             $session->set('user_id', $user->getUserId());
             $session->set('role', $user->getRole());
+            $session->set('username', $user->getUsername() ?: ($user->getFirstName() ?? $user->getUserIdentifier()));
+            $session->set('first_name', $user->getFirstName() ?? $user->getUserIdentifier());
             $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
         }
 

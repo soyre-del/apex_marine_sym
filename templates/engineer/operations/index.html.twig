@@ -5,6 +5,7 @@
 {% block main_class %}engineer-main{% endblock %}
 
 {% block stylesheets %}
+    {{ parent() }}
     <link rel="stylesheet" href="{{ asset('styles/engineer_operations.css') }}">
     <style>
         /* ── Engineer welcome / stat section ───────────────────────────── */
@@ -94,8 +95,8 @@
             display: flex;
             align-items: center;
             gap: .8rem;
-            background: rgba(255,255,255,.05);
-            border: 1px solid rgba(35,65,93,.8);
+            background: #0e2b49;
+            border: 1px solid #23415d;
             border-radius: 10px;
             padding: .9rem 1.1rem;
             min-width: 120px;
@@ -118,7 +119,7 @@
             width: 36px; height: 36px;
             border-radius: 8px;
             display: flex; align-items: center; justify-content: center;
-            background: rgba(255,255,255,.06);
+            background: #081c2d;
             color: var(--eng-accent, #0ba5df);
             flex-shrink: 0;
         }
@@ -161,7 +162,13 @@
             {# ── Welcome & stat section ──────────────────────────────────── #}
             <div class="eng-welcome" aria-label="Engineer overview">
                 <div class="eng-welcome-left">
-                    <p class="eng-welcome-eyebrow">Field Operations &bull; Active Deployment Protocol</p>
+                    <p class="eng-welcome-eyebrow">
+                        {% if engineer_specialty is defined and 'chief engineer' in engineer_specialty|lower %}
+                            <span style="color:#fbbf24; font-weight:700;">Chief Engineer &bull; Universal Technical Authority</span>
+                        {% else %}
+                            Field Operations &bull; Active Deployment Protocol
+                        {% endif %}
+                    </p>
                     <h1 class="eng-welcome-title">
                         Welcome, <span>{{ engineer_name }}</span>
                     </h1>
@@ -169,11 +176,25 @@
                 </div>
 
                 {# Status badge #}
-                {% if total_tasks > 0 %}
-                    <span class="eng-status-badge eng-status-badge--active">On Deployment</span>
-                {% else %}
-                    <span class="eng-status-badge eng-status-badge--idle">Standby</span>
-                {% endif %}
+                <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+                    {% if engineer_specialty is defined and 'chief engineer' in engineer_specialty|lower %}
+                        <span class="eng-status-badge" style="background:rgba(245,158,11,0.25); color:#fbbf24; border:1px solid rgba(245,158,11,0.6);">
+                            Universal Clearance (All Disciplines)
+                        </span>
+                    {% elseif engineer_specialty is defined and engineer_specialty %}
+                        <span class="eng-status-badge" style="background:rgba(11,165,223,0.15); color:#38bdf8; border:1px solid rgba(11,165,223,0.4);">
+                            {{ engineer_specialty }}
+                        </span>
+                    {% endif %}
+                    {% if total_tasks > 0 %}
+                        <span class="eng-status-badge eng-status-badge--active">On Deployment</span>
+                    {% else %}
+                        <span class="eng-status-badge eng-status-badge--idle">Standby</span>
+                    {% endif %}
+                    <a href="{{ path('app_profile') }}" class="eng-status-badge" style="background:rgba(11,165,223,0.18); color:#70d7fa; border:1px solid rgba(11,165,223,0.45); text-decoration:none;">
+                        My Profile
+                    </a>
+                </div>
 
                 {# Mini stat cards – full width row below the header text #}
                 <div class="eng-mini-stats" style="flex-basis:100%;">
@@ -254,7 +275,6 @@
                 </div>
             {% elseif tasks is empty %}
                 <section class="engineer-empty">
-                    <span class="engineer-empty-icon" aria-hidden="true">✓</span>
                     <h2>No Active Assignments</h2>
                     <p>You are currently cleared of all tasks. Stand by for deployment orders.</p>
                 </section>
@@ -310,15 +330,25 @@
                                 </div>
                                 <h3 style="font-size:1.05rem; font-weight:700; color:#f0f5ff; margin:0 0 .4rem;">{{ update.status_milestone }}</h3>
                                 <p style="font-size:.85rem; color:#a3b6c8; line-height:1.5; margin:0 0 1rem; word-break:break-word;">{{ update.detailed_message }}</p>
-                                <button type="button" class="engineer-button engineer-button-outline"
-                                        style="font-size:.8rem; padding:.45rem .9rem; border-color:rgba(11,165,223,.4); color:#0ba5df;"
-                                        data-edit-my-log
-                                        data-update-id="{{ update.update_id }}"
-                                        data-vessel="{{ update.vessel_name }}"
-                                        data-milestone="{{ update.status_milestone }}"
-                                        data-details="{{ update.detailed_message }}">
-                                    ✏️ Edit My Log
-                                </button>
+                                <div style="display:flex; gap:0.6rem; flex-wrap:wrap;">
+                                    <button type="button" class="engineer-button engineer-button-outline"
+                                            style="font-size:.8rem; padding:.45rem .9rem; border-color:rgba(11,165,223,.4); color:#0ba5df;"
+                                            data-edit-my-log
+                                            data-update-id="{{ update.update_id }}"
+                                            data-vessel="{{ update.vessel_name }}"
+                                            data-milestone="{{ update.status_milestone }}"
+                                            data-details="{{ update.detailed_message }}">
+                                        Edit My Log
+                                    </button>
+                                    <button type="button" class="engineer-button engineer-button-outline"
+                                            style="font-size:.8rem; padding:.45rem .9rem; border-color:rgba(239,68,68,.4); color:#ef4444;"
+                                            data-delete-my-log
+                                            data-update-id="{{ update.update_id }}"
+                                            data-vessel="{{ update.vessel_name }}"
+                                            data-milestone="{{ update.status_milestone }}">
+                                        Retract Log
+                                    </button>
+                                </div>
                             </article>
                         {% endfor %}
                     </div>
@@ -412,6 +442,169 @@
             </section>
         </div>
 
+        {# ── Retract / Delete Own Log Modal (Staff: Delete with Confirmation) ── #}
+        <div class="engineer-modal" id="deleteOwnUpdateModal" aria-hidden="true">
+            <section class="engineer-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="delete-update-title" style="max-width: 480px;">
+                <header class="engineer-modal-header" style="border-bottom-color: rgba(239, 68, 68, 0.3);">
+                    <h2 id="delete-update-title" style="color: #ef4444; display: flex; align-items: center; gap: 8px;">
+                        Confirm Log Retraction
+                    </h2>
+                    <button type="button" class="engineer-modal-close" data-close-delete-modal aria-label="Close">&times;</button>
+                </header>
+                <form method="post" action="{{ path('engineer_operations') }}">
+                    <div class="engineer-modal-body">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token('engineer_delete_update') }}">
+                        <input type="hidden" name="action" value="delete_own_update">
+                        <input type="hidden" name="update_id" id="delete-log-update-id">
+
+                        <p style="color: #f0f5ff; font-size: 0.95rem; margin-bottom: 0.75rem;">
+                            Are you sure you want to retract and permanently delete this operational log entry?
+                        </p>
+                        <div class="engineer-target" style="border-left: 3px solid #ef4444; background: rgba(239, 68, 68, 0.08);">
+                            <span id="delete-log-vessel" style="color: #a3b6c8; display: block; font-size: 0.8rem;"></span>
+                            <strong id="delete-log-milestone" style="color: #f87171; font-size: 0.95rem;"></strong>
+                        </div>
+                        <p style="color: #94a3b8; font-size: 0.8rem; margin-top: 0.75rem;">
+                            This action cannot be undone. The client timeline entry will be permanently removed.
+                        </p>
+                    </div>
+                    <footer class="engineer-modal-footer">
+                        <button type="button" class="engineer-button engineer-button-outline" data-close-delete-modal>Cancel</button>
+                        <button type="submit" class="engineer-button" style="background: #ef4444; border: 1px solid #dc2626; color: #fff; font-weight: 600; cursor: pointer;">Confirm Retract Log</button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+
     </div>{# /engineer-operations-page #}
 
+    <script>
+    (function () {
+        function setupEngineerModals() {
+            var page = document.querySelector('.engineer-operations-page');
+            if (!page) return;
+
+            // 1. Submit operations log modal
+            var logModal = page.querySelector('[data-engineer-modal]');
+            var logReqId = logModal ? logModal.querySelector('[data-engineer-request-id]') : null;
+            var logVessel = logModal ? logModal.querySelector('[data-engineer-vessel]') : null;
+            var logStatus = logModal ? logModal.querySelector('#engineer-status') : null;
+
+            page.querySelectorAll('[data-engineer-open-log]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (!logModal) return;
+                    if (logReqId) logReqId.value = btn.dataset.requestId || '';
+                    if (logVessel) logVessel.textContent = btn.dataset.vessel || '';
+                    if (logStatus) logStatus.value = btn.dataset.status || 'deployed';
+                    logModal.classList.add('is-open');
+                    logModal.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('engineer-modal-open');
+                };
+            });
+
+            page.querySelectorAll('[data-engineer-close]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (logModal) {
+                        logModal.classList.remove('is-open');
+                        logModal.setAttribute('aria-hidden', 'true');
+                    }
+                    document.body.classList.remove('engineer-modal-open');
+                };
+            });
+
+            // 2. Edit Own Log Modal
+            var editModal = document.getElementById('editOwnUpdateModal');
+            var editId = document.getElementById('edit-log-update-id');
+            var editVessel = document.getElementById('edit-log-vessel');
+            var editMilestone = document.getElementById('edit-log-milestone');
+            var editDetails = document.getElementById('edit-log-details');
+
+            page.querySelectorAll('[data-edit-my-log]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (!editModal) return;
+                    if (editId) editId.value = btn.dataset.updateId || '';
+                    if (editVessel) editVessel.textContent = btn.dataset.vessel || '';
+                    if (editMilestone) editMilestone.value = btn.dataset.milestone || '';
+                    if (editDetails) editDetails.value = btn.dataset.details || '';
+                    editModal.classList.add('is-open');
+                    editModal.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('engineer-modal-open');
+                };
+            });
+
+            page.querySelectorAll('[data-close-edit-modal]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (editModal) {
+                        editModal.classList.remove('is-open');
+                        editModal.setAttribute('aria-hidden', 'true');
+                    }
+                    document.body.classList.remove('engineer-modal-open');
+                };
+            });
+
+            // 3. Retract / Delete Own Log Modal
+            var delModal = document.getElementById('deleteOwnUpdateModal');
+            var delId = document.getElementById('delete-log-update-id');
+            var delVessel = document.getElementById('delete-log-vessel');
+            var delMilestone = document.getElementById('delete-log-milestone');
+
+            page.querySelectorAll('[data-delete-my-log]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (!delModal) return;
+                    if (delId) delId.value = btn.dataset.updateId || '';
+                    if (delVessel) delVessel.textContent = btn.dataset.vessel ? ('Vessel: ' + btn.dataset.vessel) : '';
+                    if (delMilestone) delMilestone.textContent = btn.dataset.milestone || '';
+                    delModal.classList.add('is-open');
+                    delModal.setAttribute('aria-hidden', 'false');
+                    document.body.classList.add('engineer-modal-open');
+                };
+            });
+
+            page.querySelectorAll('[data-close-delete-modal]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (delModal) {
+                        delModal.classList.remove('is-open');
+                        delModal.setAttribute('aria-hidden', 'true');
+                    }
+                    document.body.classList.remove('engineer-modal-open');
+                };
+            });
+
+            // Close on backdrop click
+            [logModal, editModal, delModal].forEach(function (m) {
+                if (m) {
+                    m.onclick = function (e) {
+                        if (e.target === m) {
+                            m.classList.remove('is-open');
+                            m.setAttribute('aria-hidden', 'true');
+                            document.body.classList.remove('engineer-modal-open');
+                        }
+                    };
+                }
+            });
+
+            // Close alerts
+            page.querySelectorAll('[data-engineer-alert-close]').forEach(function (btn) {
+                btn.onclick = function () {
+                    var alert = btn.closest('.engineer-alert');
+                    if (alert) alert.remove();
+                };
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupEngineerModals);
+        } else {
+            setupEngineerModals();
+        }
+        document.addEventListener('turbo:load', setupEngineerModals);
+        document.addEventListener('turbo:render', setupEngineerModals);
+    })();
+    </script>
 {% endblock %}

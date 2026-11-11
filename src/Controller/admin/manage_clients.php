@@ -29,7 +29,16 @@ final class manage_clients extends AbstractController
             ? filter_var($identity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($adminId === false || $session->get('role') !== 'admin') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $adminId = $user->getUserId();
+            $session->set('user_id', $adminId);
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($adminId === false || $role !== 'admin') {
             throw $this->createAccessDeniedException('Administrator access is required.');
         }
 
@@ -44,7 +53,11 @@ final class manage_clients extends AbstractController
             $clients = $this->connection->fetchAllAssociative(<<<'SQL'
                 SELECT
                     u.user_id,
-                    u.full_name,
+                    u.username,
+                    u.first_name,
+                    u.middle_name,
+                    u.surname,
+                    TRIM(CONCAT_WS(' ', NULLIF(u.first_name, ''), NULLIF(u.middle_name, ''), NULLIF(u.surname, ''))) AS full_name,
                     u.email,
                     u.is_active,
                     u.created_at,
@@ -79,7 +92,7 @@ final class manage_clients extends AbstractController
                 FROM users u
                 LEFT JOIN dispatch_requests d ON u.user_id = d.client_id
                 WHERE u.role = 'client'
-                GROUP BY u.user_id
+                GROUP BY u.user_id, u.username, u.first_name, u.middle_name, u.surname, u.email, u.is_active, u.created_at
                 ORDER BY u.created_at DESC
                 SQL);
         } catch (DBALException $exception) {
@@ -109,7 +122,7 @@ final class manage_clients extends AbstractController
             return $this->redirectToRoute('admin_manage_clients');
         }
 
-        $token = $form['csrf_token'] ?? null;
+        $token = $form['csrf_token'] ?? $form['_token'] ?? $form['_csrf_token'] ?? null;
         if (!is_string($token) || !$this->isCsrfTokenValid('admin_clients', $token)) {
             $this->addFlash('danger', 'Security validation failed. Unauthorized request.');
 
@@ -126,39 +139,70 @@ final class manage_clients extends AbstractController
 
     private function addClient(array $form): Response
     {
-        $name = $this->stringField($form, 'client_name');
+        $username = $this->stringField($form, 'client_username');
+        $firstName = \App\Entity\User::capitalizeName($this->stringField($form, 'client_first_name'));
+        $middleRaw = \App\Entity\User::capitalizeName($this->stringField($form, 'client_middle_name'));
+        $middleName = $middleRaw !== '' ? $middleRaw : null;
+        $surname = \App\Entity\User::capitalizeName($this->stringField($form, 'client_surname'));
+
+        if ($firstName === '' && $surname === '' && isset($form['client_name'])) {
+            $split = $this->splitFullName($this->stringField($form, 'client_name'));
+            $firstName = $split['first_name'];
+            $middleName = $split['middle_name'];
+            $surname = $split['surname'];
+        }
+
+        if ($username === '' && $firstName !== '') {
+            $username = strtolower((string) preg_replace('/[^a-zA-Z0-9_.-]/', '', $firstName.'_'.$surname));
+        }
+
         $email = $this->stringField($form, 'client_email');
         $password = $form['client_password'] ?? null;
 
-        if ($name === '' || $email === '' || !is_string($password) || $password === '') {
-            $this->addFlash('warning', 'All fields are required to register a client.');
+        if ($username === '' || $firstName === '' || $surname === '' || $email === '' || !is_string($password) || $password === '') {
+            $this->addFlash('warning', 'Username, First Name, Surname, Email, and Password are required to register a client.');
 
             return $this->redirectToRoute('admin_manage_clients');
         }
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            $this->addFlash('warning', 'Enter a valid email address.');
+
+        $usernameError = \App\Security\CredentialSecurityPolicy::validateUsername($username);
+        if ($usernameError !== null) {
+            $this->addFlash('warning', $usernameError);
 
             return $this->redirectToRoute('admin_manage_clients');
         }
-        if (strlen($password) < 8) {
-            $this->addFlash('warning', 'Access Code must be at least 8 characters.');
+
+        $email = \App\Security\CredentialSecurityPolicy::normalizeEmail($email);
+        $emailError = \App\Security\CredentialSecurityPolicy::validateEmail($email);
+        if ($emailError !== null) {
+            $this->addFlash('warning', $emailError);
+
+            return $this->redirectToRoute('admin_manage_clients');
+        }
+
+        $passwordError = \App\Security\CredentialSecurityPolicy::validatePassword($password, $email);
+        if ($passwordError !== null) {
+            $this->addFlash('warning', $passwordError);
 
             return $this->redirectToRoute('admin_manage_clients');
         }
 
         try {
             if ($this->connection->fetchOne(
-                'SELECT user_id FROM users WHERE email = ? LIMIT 1',
-                [$email],
+                'SELECT user_id FROM users WHERE email = ? OR username = ? LIMIT 1',
+                [$email, $username],
             )) {
-                $this->addFlash('danger', 'Registration halted: Email already exists in the system.');
+                $this->addFlash('danger', 'Registration halted: Email or Username already exists in the system.');
 
                 return $this->redirectToRoute('admin_manage_clients');
             }
 
-            $this->connection->transactional(function (Connection $connection) use ($name, $email, $password): void {
+            $this->connection->transactional(function (Connection $connection) use ($username, $firstName, $middleName, $surname, $email, $password): void {
                 $connection->insert('users', [
-                    'full_name' => $name,
+                    'username' => $username,
+                    'first_name' => $firstName,
+                    'middle_name' => $middleName,
+                    'surname' => $surname,
                     'email' => $email,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'role' => 'client',
@@ -181,7 +225,7 @@ final class manage_clients extends AbstractController
             return $this->redirectToRoute('admin_manage_clients');
         }
 
-        $this->addFlash('success', sprintf('Success: Client profile for "%s" created.', $name));
+        $this->addFlash('success', 'Client profile created successfully.');
 
         return $this->redirectToRoute('admin_manage_clients');
     }
@@ -189,24 +233,42 @@ final class manage_clients extends AbstractController
     private function editClient(array $form): Response
     {
         $clientId = $this->positiveId($form['client_id'] ?? null);
-        $name = $this->stringField($form, 'edit_name');
+        $firstName = \App\Entity\User::capitalizeName($this->stringField($form, 'edit_first_name'));
+        $middleRaw = \App\Entity\User::capitalizeName($this->stringField($form, 'edit_middle_name'));
+        $middleName = $middleRaw !== '' ? $middleRaw : null;
+        $surname = \App\Entity\User::capitalizeName($this->stringField($form, 'edit_surname'));
+
+        if ($firstName === '' && $surname === '' && isset($form['edit_name'])) {
+            $split = $this->splitFullName($this->stringField($form, 'edit_name'));
+            $firstName = $split['first_name'];
+            $middleName = $split['middle_name'];
+            $surname = $split['surname'];
+        }
+
         $email = $this->stringField($form, 'edit_email');
         $password = $form['edit_password'] ?? '';
 
-        if ($clientId === null || $name === '' || $email === '' || !is_string($password)) {
-            $this->addFlash('warning', 'Enter a valid client name, email, and account.');
+        if ($clientId === null || $firstName === '' || $surname === '' || $email === '' || !is_string($password)) {
+            $this->addFlash('warning', 'First Name, Surname, and Email are required.');
 
             return $this->redirectToRoute('admin_manage_clients');
         }
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            $this->addFlash('warning', 'Enter a valid email address.');
+
+        $email = \App\Security\CredentialSecurityPolicy::normalizeEmail($email);
+        $emailError = \App\Security\CredentialSecurityPolicy::validateEmail($email);
+        if ($emailError !== null) {
+            $this->addFlash('warning', $emailError);
 
             return $this->redirectToRoute('admin_manage_clients');
         }
-        if ($password !== '' && strlen($password) < 8) {
-            $this->addFlash('warning', 'A new password must be at least 8 characters.');
 
-            return $this->redirectToRoute('admin_manage_clients');
+        if ($password !== '') {
+            $passwordError = \App\Security\CredentialSecurityPolicy::validatePassword($password, $email);
+            if ($passwordError !== null) {
+                $this->addFlash('warning', $passwordError);
+
+                return $this->redirectToRoute('admin_manage_clients');
+            }
         }
 
         try {
@@ -229,7 +291,9 @@ final class manage_clients extends AbstractController
             }
 
             $userData = [
-                'full_name' => $name,
+                'first_name' => $firstName,
+                'middle_name' => $middleName,
+                'surname' => $surname,
                 'email' => $email,
             ];
             if ($password !== '') {
@@ -321,31 +385,7 @@ final class manage_clients extends AbstractController
                 return $this->redirectToRoute('admin_manage_clients');
             }
 
-            $hasDispatches = (int) $this->connection->fetchOne(
-                'SELECT COUNT(*) FROM dispatch_requests WHERE client_id = ?',
-                [$clientId],
-            ) > 0;
-            $hasInvoices = (int) $this->connection->fetchOne(
-                'SELECT COUNT(*) FROM invoices WHERE client_id = ?',
-                [$clientId],
-            ) > 0;
-            if ($hasDispatches || $hasInvoices) {
-                $this->addFlash(
-                    'warning',
-                    'This client has dispatch or invoice records and cannot be purged. Suspend the account to revoke access without deleting its history.',
-                );
-
-                return $this->redirectToRoute('admin_manage_clients');
-            }
-
-            $deleted = $this->connection->transactional(function (Connection $connection) use ($clientId): int {
-                $connection->delete('client_profiles', ['client_id' => $clientId]);
-
-                return $connection->delete('users', [
-                    'user_id' => $clientId,
-                    'role' => 'client',
-                ]);
-            });
+            $deleted = self::purgeClientAccountAndHistory($this->connection, $clientId);
         } catch (DBALException $exception) {
             $this->logger->error('Unable to permanently delete a client account.', [
                 'client_id' => $clientId,
@@ -367,10 +407,92 @@ final class manage_clients extends AbstractController
 
         $this->addFlash(
             'success',
-            'Client account permanently erased.',
+            'Client account and all connected dispatch, deployment, timeline, and billing history have been permanently erased.',
         );
 
         return $this->redirectToRoute('admin_manage_clients');
+    }
+
+    /**
+     * Permanently deletes a client account along with all connected history
+     * (operation updates, deployments, invoices, dispatch requests, and client profile),
+     * and releases any engineers who were deployed exclusively on this client's operations.
+     */
+    public static function purgeClientAccountAndHistory(Connection $connection, int $clientId): int
+    {
+        return $connection->transactional(function (Connection $conn) use ($clientId): int {
+            $requestIds = array_map(
+                'intval',
+                $conn->fetchFirstColumn(
+                    'SELECT request_id FROM dispatch_requests WHERE client_id = ?',
+                    [$clientId],
+                ),
+            );
+
+            $affectedEngineerIds = [];
+            if ($requestIds !== []) {
+                $placeholders = implode(', ', array_fill(0, count($requestIds), '?'));
+
+                $affectedEngineerIds = array_values(array_unique(array_map(
+                    'intval',
+                    $conn->fetchFirstColumn(
+                        "SELECT DISTINCT engineer_id FROM deployments WHERE request_id IN ($placeholders) AND engineer_id IS NOT NULL",
+                        $requestIds,
+                    ),
+                )));
+
+                $conn->executeStatement(
+                    "DELETE FROM operation_updates WHERE request_id IN ($placeholders)",
+                    $requestIds,
+                );
+                $conn->executeStatement(
+                    "DELETE FROM deployments WHERE request_id IN ($placeholders)",
+                    $requestIds,
+                );
+                $conn->executeStatement(
+                    "DELETE FROM invoices WHERE request_id IN ($placeholders)",
+                    $requestIds,
+                );
+            }
+
+            $conn->executeStatement(
+                'DELETE FROM operation_updates WHERE updater_id = ?',
+                [$clientId],
+            );
+            $conn->executeStatement(
+                'DELETE FROM invoices WHERE client_id = ?',
+                [$clientId],
+            );
+            $conn->executeStatement(
+                'DELETE FROM dispatch_requests WHERE client_id = ?',
+                [$clientId],
+            );
+            $conn->executeStatement(
+                'DELETE FROM client_profiles WHERE client_id = ?',
+                [$clientId],
+            );
+
+            foreach ($affectedEngineerIds as $engineerId) {
+                if ($engineerId <= 0) {
+                    continue;
+                }
+                $remainingActive = (int) $conn->fetchOne(
+                    "SELECT COUNT(*) FROM deployments WHERE engineer_id = ? AND deployment_status <> 'completed'",
+                    [$engineerId],
+                );
+                if ($remainingActive === 0) {
+                    $conn->executeStatement(
+                        "UPDATE engineer_profiles SET current_status = 'available' WHERE engineer_id = ? AND current_status = 'deployed'",
+                        [$engineerId],
+                    );
+                }
+            }
+
+            return (int) $conn->delete('users', [
+                'user_id' => $clientId,
+                'role' => 'client',
+            ]);
+        });
     }
 
     private function stringField(array $form, string $key): string
@@ -385,5 +507,32 @@ final class manage_clients extends AbstractController
         $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
         return $id === false ? null : $id;
+    }
+
+    /**
+     * @return array{first_name: string, middle_name: ?string, surname: string}
+     */
+    private function splitFullName(string $fullName): array
+    {
+        $parts = preg_split('/\s+/', \App\Entity\User::capitalizeName($fullName), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if ($parts === []) {
+            return ['first_name' => '', 'middle_name' => null, 'surname' => ''];
+        }
+        if (count($parts) === 1) {
+            return ['first_name' => $parts[0], 'middle_name' => null, 'surname' => ''];
+        }
+        if (count($parts) === 2) {
+            return ['first_name' => $parts[0], 'middle_name' => null, 'surname' => $parts[1]];
+        }
+
+        $firstName = (string) array_shift($parts);
+        $surname = (string) array_pop($parts);
+        $middleName = trim(implode(' ', $parts));
+
+        return [
+            'first_name' => $firstName,
+            'middle_name' => $middleName !== '' ? $middleName : null,
+            'surname' => $surname,
+        ];
     }
 }

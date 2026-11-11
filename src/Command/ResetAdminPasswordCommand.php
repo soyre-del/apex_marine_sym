@@ -48,8 +48,15 @@ final class ResetAdminPasswordCommand extends Command
         $passwordQuestion->setTrimmable(false);
         $password = $helper->ask($input, $output, $passwordQuestion);
 
-        if (!is_string($password) || strlen($password) < 6) {
-            $output->writeln('<error>Password must be at least 6 characters.</error>');
+        if (!is_string($password)) {
+            $output->writeln('<error>Please enter a password.</error>');
+
+            return Command::FAILURE;
+        }
+
+        $passwordError = \App\Security\CredentialSecurityPolicy::validatePassword($password, $user->getEmail());
+        if ($passwordError !== null) {
+            $output->writeln(sprintf('<error>%s</error>', $passwordError));
 
             return Command::FAILURE;
         }

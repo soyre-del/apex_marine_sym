@@ -1,8 +1,9 @@
 .billing-page {
     min-height: 100vh;
+    min-height: 100dvh;
     padding: clamp(20px, 4vw, 48px);
-    color: #a3b6c8;
-    background-color: #081c2d;
+    color: #f0f5ff !important;
+    background-color: #081c2d !important;
     background-image:
         linear-gradient(rgba(46, 107, 156, .06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .06) 1px, transparent 1px);
@@ -51,6 +52,101 @@
 
 .billing-heading h1 {
     font-size: clamp(20px, 2.5vw, 30px);
+}
+
+.billing-subtitle {
+    margin: 4px 0 0;
+    color: #91a8bd;
+    font-size: 12px;
+}
+
+.billing-section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 18px 20px;
+    border-bottom: 1px solid rgba(163, 182, 200, .15);
+}
+
+.billing-section-header h2 {
+    padding: 0 !important;
+    border-bottom: 0 !important;
+}
+
+.billing-policy-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 10px;
+    border: 1px solid rgba(11, 165, 223, .38);
+    border-radius: 999px;
+    background: rgba(11, 165, 223, .12);
+    color: #70d7fa;
+    font: 700 10px/1.2 Inter, Arial, sans-serif;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.billing-client-cell {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.billing-role-tag {
+    display: inline-block;
+    padding: 2px 7px;
+    border: 1px solid rgba(16, 185, 129, .45);
+    border-radius: 4px;
+    background: rgba(16, 185, 129, .14);
+    color: #68e0ae;
+    font: 700 9px/1.2 Inter, Arial, sans-serif;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.billing-modal-note {
+    margin: 4px 0 0;
+    color: #91a8bd;
+    font-size: 11px;
+}
+
+.billing-presets {
+    display: grid;
+    gap: 6px;
+}
+
+.billing-presets-label {
+    color: #a3b6c8;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+
+.billing-presets-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.billing-preset-btn {
+    padding: 6px 11px;
+    border: 1px solid rgba(11, 165, 223, .35);
+    border-radius: 6px;
+    background: rgba(11, 165, 223, .1);
+    color: #70d7fa;
+    font: 700 11px/1.2 Inter, Arial, sans-serif;
+    cursor: pointer;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.billing-preset-btn:hover {
+    border-color: #0ba5df;
+    background: rgba(11, 165, 223, .24);
+    color: #fff;
 }
 
 .billing-button {
@@ -166,10 +262,12 @@
 
 .billing-metric,
 .billing-section {
-    border: 1px solid rgba(163, 182, 200, .2);
+    border: 1px solid #23415d !important;
     border-radius: 12px;
-    background: rgba(14, 43, 73, .88);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, .18);
+    background-color: #0e2b49 !important;
+    background: #0e2b49 !important;
+    color: #f0f5ff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
 }
 
 .billing-metric {

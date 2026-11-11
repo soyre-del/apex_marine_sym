@@ -4,6 +4,44 @@
 
 {% block stylesheets %}
     <link rel="stylesheet" href="{{ asset('styles/manage_clients.css') }}">
+    <style>
+        .adm-password-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .adm-password-wrap .clients-control {
+            padding-right: 5.2rem !important;
+        }
+        .adm-password-toggle {
+            position: absolute;
+            top: 50%;
+            right: .55rem;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .3rem .58rem;
+            border: 1px solid rgba(11, 165, 223, .32);
+            border-radius: 6px;
+            background: rgba(11, 165, 223, .12);
+            color: #70d7fa;
+            font-family: inherit;
+            font-size: .74rem;
+            font-weight: 600;
+            letter-spacing: .02em;
+            text-transform: none;
+            cursor: pointer;
+            z-index: 2;
+            transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+        }
+        .adm-password-toggle:hover {
+            background: rgba(11, 165, 223, .24);
+            border-color: rgba(11, 165, 223, .6);
+            color: #ffffff;
+        }
+    </style>
 {% endblock %}
 
 {% block body %}
@@ -74,6 +112,9 @@
                                 <tr{% if not client.is_active %} class="is-suspended"{% endif %}>
                                     <td>
                                         <strong class="clients-name">{{ client.full_name }}</strong>
+                                        {% if client.username is defined and client.username %}
+                                            <span class="clients-muted" style="color:#70d7fa;">@{{ client.username }}</span>
+                                        {% endif %}
                                         {% if client.latest_company %}
                                             <span class="clients-company">{{ client.latest_company }}</span>
                                         {% else %}
@@ -109,6 +150,10 @@
                                             <button type="button" class="clients-button clients-button-small clients-button-edit"
                                                     data-clients-edit
                                                     data-id="{{ client.user_id }}"
+                                                    data-username="{{ client.username|default('') }}"
+                                                    data-first-name="{{ client.first_name|default('') }}"
+                                                    data-middle-name="{{ client.middle_name|default('') }}"
+                                                    data-surname="{{ client.surname|default('') }}"
                                                     data-name="{{ client.full_name }}"
                                                     data-email="{{ client.email }}">
                                                 Edit
@@ -160,15 +205,38 @@
                     <div class="clients-modal-body">
                         <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
                         <input type="hidden" name="action" value="add_client">
-                        <label class="clients-label">Organization / Contact Name
-                            <input type="text" name="client_name" required class="clients-control" autocomplete="name">
+                        <label class="clients-label">Username <span style="color:#ff8585;">*</span>
+                            <input type="text" name="client_username" required class="clients-control" placeholder="e.g. juan_cruz" autocomplete="username">
                         </label>
-                        <label class="clients-label">Secure Email
+                        <label class="clients-label">First Name <span style="color:#ff8585;">*</span>
+                            <input type="text" name="client_first_name" required class="clients-control" placeholder="First Name" autocomplete="given-name" data-capitalize-name>
+                        </label>
+                        <label class="clients-label">Middle Name <span style="color:#8199ae; font-weight:400; text-transform:none;">(Optional)</span>
+                            <input type="text" name="client_middle_name" class="clients-control" placeholder="Middle Name (Optional)" autocomplete="additional-name" data-capitalize-name>
+                        </label>
+                        <label class="clients-label">Surname <span style="color:#ff8585;">*</span>
+                            <input type="text" name="client_surname" required class="clients-control" placeholder="Surname" autocomplete="family-name" data-capitalize-name>
+                        </label>
+                        <label class="clients-label">Secure Email <span style="color:#ff8585;">*</span>
                             <input type="email" name="client_email" required class="clients-control" autocomplete="email">
                         </label>
                         <label class="clients-label">Temporary Password
-                            <input type="password" name="client_password" required minlength="8" class="clients-control"
-                                   placeholder="Min 8 characters" autocomplete="new-password">
+                            <div class="adm-password-wrap">
+                                <input type="password" name="client_password" id="add_client_password" required minlength="8" maxlength="128" class="clients-control"
+                                       placeholder="Min. 8 chars, upper, lower, number &amp; symbol" autocomplete="new-password">
+                                <button type="button" class="adm-password-toggle" data-adm-password-toggle aria-label="Show password" aria-pressed="false">
+                                    <svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="icon-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                    <span class="adm-password-toggle-text">Show</span>
+                                </button>
+                            </div>
+                            <small style="color:#8da2b5; font-size:0.72rem; text-transform:none; letter-spacing:normal; font-weight:400;">Must include 8+ characters, uppercase, lowercase, number, and special character.</small>
                         </label>
                     </div>
                     <footer class="clients-modal-footer">
@@ -190,15 +258,37 @@
                         <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
                         <input type="hidden" name="action" value="edit_client">
                         <input type="hidden" name="client_id" id="edit_client_id">
-                        <label class="clients-label">Organization / Contact Name
-                            <input type="text" name="edit_name" id="edit_name" required class="clients-control" autocomplete="name">
+                        <label class="clients-label">Username <span style="color:#8199ae; font-weight:400; text-transform:none;">(Client Editable Only)</span>
+                            <input type="text" id="edit_username_display" class="clients-control" readonly disabled style="opacity:0.65; cursor:not-allowed;">
                         </label>
-                        <label class="clients-label">Secure Email
+                        <label class="clients-label">First Name <span style="color:#ff8585;">*</span>
+                            <input type="text" name="edit_first_name" id="edit_first_name" required class="clients-control" autocomplete="given-name" data-capitalize-name>
+                        </label>
+                        <label class="clients-label">Middle Name <span style="color:#8199ae; font-weight:400; text-transform:none;">(Optional)</span>
+                            <input type="text" name="edit_middle_name" id="edit_middle_name" class="clients-control" placeholder="Optional" autocomplete="additional-name" data-capitalize-name>
+                        </label>
+                        <label class="clients-label">Surname <span style="color:#ff8585;">*</span>
+                            <input type="text" name="edit_surname" id="edit_surname" required class="clients-control" autocomplete="family-name" data-capitalize-name>
+                        </label>
+                        <label class="clients-label">Secure Email <span style="color:#ff8585;">*</span>
                             <input type="email" name="edit_email" id="edit_email" required class="clients-control" autocomplete="email">
                         </label>
                         <label class="clients-label">Reset Password (Optional)
-                            <input type="password" name="edit_password" minlength="8" class="clients-control"
-                                   placeholder="Leave blank to keep current" autocomplete="new-password">
+                            <div class="adm-password-wrap">
+                                <input type="password" name="edit_password" id="edit_client_password" minlength="8" class="clients-control"
+                                       placeholder="Leave blank to keep current" autocomplete="new-password">
+                                <button type="button" class="adm-password-toggle" data-adm-password-toggle aria-label="Show password" aria-pressed="false">
+                                    <svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                        <circle cx="12" cy="12" r="3"/>
+                                    </svg>
+                                    <svg class="icon-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                                        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                        <line x1="1" y1="1" x2="23" y2="23"/>
+                                    </svg>
+                                    <span class="adm-password-toggle-text">Show</span>
+                                </button>
+                            </div>
                         </label>
                     </div>
                     <footer class="clients-modal-footer">
@@ -217,8 +307,7 @@
                 </header>
                 <div class="clients-modal-body clients-modal-confirm">
                     <p>
-                        This permanently deletes <strong id="purge_client_name_display"></strong>'s account.
-                        Accounts with dispatch or invoice history cannot be purged; suspend them to preserve their records.
+                        This permanently deletes <strong id="purge_client_name_display"></strong>'s account along with all connected dispatch requests, deployment records, operation timeline logs, and billing history.
                     </p>
                     <form action="{{ path('admin_manage_clients') }}" method="post" class="clients-modal-footer" data-turbo="false">
                         <input type="hidden" name="csrf_token" value="{{ clientCsrfToken }}">
@@ -247,5 +336,67 @@
             </section>
         </div>
     </main>
+
+    <script>
+    (function () {
+        function bindClientPasswordToggles() {
+            document.querySelectorAll('[data-adm-password-toggle]').forEach(function (btn) {
+                if (btn.dataset.toggleBound === 'true') {
+                    return;
+                }
+                btn.dataset.toggleBound = 'true';
+
+                btn.addEventListener('click', function () {
+                    var wrap = btn.closest('.adm-password-wrap');
+                    if (!wrap) return;
+                    var input = wrap.querySelector('input');
+                    if (!input) return;
+
+                    var isHidden = input.type === 'password';
+                    input.type = isHidden ? 'text' : 'password';
+                    btn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                    btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+
+                    var eyeIcon = btn.querySelector('.icon-eye');
+                    var eyeOffIcon = btn.querySelector('.icon-eye-off');
+                    var textSpan = btn.querySelector('.adm-password-toggle-text');
+
+                    if (eyeIcon) eyeIcon.hidden = isHidden;
+                    if (eyeOffIcon) eyeOffIcon.hidden = !isHidden;
+                    if (textSpan) textSpan.textContent = isHidden ? 'Hide' : 'Show';
+                });
+            });
+
+            var capName = function (v) {
+                return v.replace(/(^|[\s'-])(\p{Ll})/gu, function (m, sep, ch) {
+                    return sep + ch.toLocaleUpperCase();
+                });
+            };
+            document.querySelectorAll('[data-capitalize-name]').forEach(function (field) {
+                if (field.dataset.capBound === 'true') return;
+                field.dataset.capBound = 'true';
+                field.addEventListener('input', function () {
+                    var s = field.selectionStart, e = field.selectionEnd;
+                    var next = capName(field.value);
+                    if (next !== field.value) {
+                        field.value = next;
+                        if (s !== null) field.setSelectionRange(s, e);
+                    }
+                });
+                field.addEventListener('blur', function () {
+                    field.value = capName(field.value.replace(/\s+/g, ' ').trim());
+                });
+            });
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', bindClientPasswordToggles);
+        } else {
+            bindClientPasswordToggles();
+        }
+        document.addEventListener('turbo:load', bindClientPasswordToggles);
+        document.addEventListener('turbo:render', bindClientPasswordToggles);
+    })();
+    </script>
 
 {% endblock %}

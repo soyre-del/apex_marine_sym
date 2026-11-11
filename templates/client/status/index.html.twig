@@ -18,8 +18,9 @@
                     <a href="{{ path('client_status') }}" class="client-status-link" aria-current="page">Refresh Feed</a>
                     <a href="{{ path('app_contact') }}" class="client-status-link">New Dispatch</a>
                     <a href="{{ path('client_billing') }}" class="client-status-link">Billing</a>
+                    <a href="{{ path('app_profile') }}" class="client-status-link">My Profile</a>
                     <a href="{{ path('app_home') }}" class="client-status-link">Home</a>
-                    <span class="client-status-identity">ID: <strong>{{ client_name }}</strong></span>
+                    <span class="client-status-identity">Welcome, <strong>{{ client_first_name|default(client_name) }}</strong></span>
                 </div>
             </div>
         </nav>
@@ -27,9 +28,25 @@
         <div class="client-status-content">
             <header class="client-status-heading">
                 <p>Client Portal</p>
-                <h1>Active Dispatch Monitoring</h1>
-                <span>Review request status, invoice state, and the latest operation timeline.</span>
+                <h1>Welcome, {{ client_first_name|default(client_name) }}</h1>
+                <span>Active Dispatch Monitoring &mdash; Review request status, invoice state, and the latest operation timeline.</span>
             </header>
+
+            {% for message in app.flashes('success') %}
+                <div class="client-status-alert" style="background: rgba(16, 185, 129, 0.18); border-color: #10b981; color: #34d399;" role="status">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('warning') %}
+                <div class="client-status-alert" style="background: rgba(245, 158, 11, 0.18); border-color: #f59e0b; color: #fbbf24;" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                </div>
+            {% endfor %}
+            {% for message in app.flashes('danger') %}
+                <div class="client-status-alert" style="background: rgba(239, 68, 68, 0.18); border-color: #ef4444; color: #f87171;" role="alert">
+                    <strong>&gt; SYSTEM_LOG:</strong> {{ message }}
+                </div>
+            {% endfor %}
 
             {% if load_error %}
                 <div class="client-status-alert" role="alert">
@@ -37,7 +54,6 @@
                 </div>
             {% elseif requests is empty %}
                 <section class="client-status-empty">
-                    <span class="client-status-empty-icon" aria-hidden="true">✓</span>
                     <h2>No Active Operations</h2>
                     <p>You currently have no vessels requiring assistance.</p>
                     <a href="{{ path('app_contact') }}" class="client-status-button client-status-button-primary">
@@ -60,9 +76,11 @@
                         <article class="client-status-card">
                             <header class="client-status-card-heading">
                                 <div class="client-status-vessel">
-                                    <span class="client-status-lightning" aria-hidden="true">ϟ</span>
                                     <h2>{{ dispatch.vessel_name }}</h2>
                                     <span class="client-status-request-id">REQ-{{ '%04d'|format(dispatch.request_id) }}</span>
+                                    {% if dispatch.is_urgent %}
+                                        <span style="display: inline-block; padding: 2px 7px; border-radius: 4px; background: #ef4444; color: #fff; font-size: 0.68rem; font-weight: 700; text-transform: uppercase;">Critical</span>
+                                    {% endif %}
                                 </div>
                                 <div class="client-status-card-badges">
                                     <span class="client-status-badge {{ badge_class }}">
@@ -80,6 +98,38 @@
                                     {% endif %}
                                 </div>
                             </header>
+
+                            <div style="margin: 12px 0 16px; padding: 12px 14px; border-radius: 8px; background: rgba(8, 28, 45, 0.6); border: 1px solid rgba(163, 182, 200, 0.15); font-size: 0.85rem; color: #c5d4e2;">
+                                <div style="display: flex; flex-wrap: wrap; gap: 16px; margin-bottom: 8px;">
+                                    <span><strong>Discipline:</strong> <span style="color: #38bdf8;">{{ dispatch.service_type|default('N/A') }}</span></span>
+                                    <span><strong>Contact:</strong> {{ dispatch.contact_person|default('N/A') }} ({{ dispatch.contact_phone|default('N/A') }})</span>
+                                    <span><strong>Requested:</strong> {{ dispatch.requested_at|date('M d, Y - H:i') }}</span>
+                                </div>
+                                {% if dispatch.description %}
+                                    <p style="margin: 0; color: #94a3b8; font-size: 0.82rem; line-height: 1.5;">{{ dispatch.description }}</p>
+                                {% endif %}
+
+                                {# Client CRUD Actions on Pending Requests #}
+                                {% if dispatch.status == 'pending' %}
+                                    <div style="display: flex; gap: 10px; margin-top: 12px; padding-top: 10px; border-top: 1px solid rgba(163, 182, 200, 0.1);">
+                                        <button type="button" class="client-status-button" style="background: rgba(11, 165, 223, 0.15); border: 1px solid rgba(11, 165, 223, 0.5); color: #38bdf8; padding: 6px 14px; font-size: 0.78rem; cursor: pointer;"
+                                                data-open-edit-request
+                                                data-id="{{ dispatch.request_id }}"
+                                                data-vessel="{{ dispatch.vessel_name }}"
+                                                data-contact="{{ dispatch.contact_person }}"
+                                                data-phone="{{ dispatch.contact_phone }}"
+                                                data-desc="{{ dispatch.description }}">
+                                            Edit Request
+                                        </button>
+                                        <button type="button" class="client-status-button" style="background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.45); color: #f87171; padding: 6px 14px; font-size: 0.78rem; cursor: pointer;"
+                                                data-open-cancel-request
+                                                data-id="{{ dispatch.request_id }}"
+                                                data-vessel="{{ dispatch.vessel_name }}">
+                                            Cancel Request
+                                        </button>
+                                    </div>
+                                {% endif %}
+                            </div>
 
                             <h3 class="client-status-timeline-title">Live Timeline Log</h3>
                             {% set request_updates = updates_by_request[dispatch.request_id]|default([]) %}
@@ -107,5 +157,125 @@
                 </section>
             {% endif %}
         </div>
+
+        {# ── Client Edit Request Modal (CRUD: Update) ───────────────── #}
+        <div id="clientEditModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(3, 10, 17, 0.85); align-items: center; justify-content: center; padding: 20px;" aria-hidden="true">
+            <div style="background: #081c2d; border: 1px solid rgba(11, 165, 223, 0.5); border-radius: 12px; width: min(100%, 540px); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7); overflow: hidden;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 18px 24px; border-bottom: 1px solid rgba(163, 182, 200, 0.2);">
+                    <h2 style="margin: 0; font-size: 1.15rem; color: #f0f5ff; font-weight: 700;">Edit Dispatch Request</h2>
+                    <button type="button" data-close-modal style="background: none; border: none; color: #94a3b8; font-size: 1.5rem; cursor: pointer; line-height: 1;">&times;</button>
+                </div>
+                <form method="post" action="{{ path('client_status') }}" style="padding: 24px; display: flex; flex-direction: column; gap: 16px;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token('client_edit_request') }}">
+                    <input type="hidden" name="action" value="edit_request">
+                    <input type="hidden" name="request_id" id="edit_modal_request_id">
+
+                    <div>
+                        <span style="font-size: 0.75rem; text-transform: uppercase; color: #38bdf8; font-weight: 700; letter-spacing: 0.08em;">Vessel Reference</span>
+                        <div id="edit_modal_vessel_name" style="font-size: 1.05rem; font-weight: 700; color: #f0f5ff; margin-top: 4px;"></div>
+                    </div>
+
+                    <div>
+                        <label for="edit_modal_contact_person" style="display: block; font-size: 0.82rem; font-weight: 600; color: #c5d4e2; margin-bottom: 6px;">Contact Person</label>
+                        <input type="text" id="edit_modal_contact_person" name="contact_person" required style="width: 100%; min-height: 42px; padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(11, 165, 223, 0.4); background: #0c2339; color: #f0f5ff; font-size: 0.9rem;">
+                    </div>
+
+                    <div>
+                        <label for="edit_modal_contact_phone" style="display: block; font-size: 0.82rem; font-weight: 600; color: #c5d4e2; margin-bottom: 6px;">Contact Phone</label>
+                        <input type="text" id="edit_modal_contact_phone" name="contact_phone" required style="width: 100%; min-height: 42px; padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(11, 165, 223, 0.4); background: #0c2339; color: #f0f5ff; font-size: 0.9rem;">
+                    </div>
+
+                    <div>
+                        <label for="edit_modal_description" style="display: block; font-size: 0.82rem; font-weight: 600; color: #c5d4e2; margin-bottom: 6px;">Request Details</label>
+                        <textarea id="edit_modal_description" name="description" rows="4" required style="width: 100%; padding: 10px 14px; border-radius: 6px; border: 1px solid rgba(11, 165, 223, 0.4); background: #0c2339; color: #f0f5ff; font-size: 0.9rem; line-height: 1.5; resize: vertical;"></textarea>
+                    </div>
+
+                    <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px;">
+                        <button type="button" data-close-modal style="padding: 10px 18px; border-radius: 6px; border: 1px solid rgba(163, 182, 200, 0.3); background: transparent; color: #cbd5e1; cursor: pointer; font-size: 0.85rem;">Cancel</button>
+                        <button type="submit" style="padding: 10px 22px; border-radius: 6px; border: none; background: #0ba5df; color: #fff; font-weight: 700; cursor: pointer; font-size: 0.85rem;">Save Changes</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        {# ── Client Cancel Request Modal (CRUD: Delete with confirmation) ── #}
+        <div id="clientCancelModal" style="display: none; position: fixed; inset: 0; z-index: 9999; background: rgba(3, 10, 17, 0.85); align-items: center; justify-content: center; padding: 20px;" aria-hidden="true">
+            <div style="background: #081c2d; border: 1px solid rgba(239, 68, 68, 0.5); border-radius: 12px; width: min(100%, 480px); box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7); overflow: hidden; text-align: center; padding: 28px;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(239, 68, 68, 0.15); border: 2px solid #ef4444; color: #ef4444; font-size: 1.6rem; font-weight: 700; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 16px;">!</div>
+                <h2 style="margin: 0 0 10px; font-size: 1.2rem; color: #f0f5ff; font-weight: 700;">Cancel Dispatch Request?</h2>
+                <p style="margin: 0 0 20px; font-size: 0.9rem; color: #94a3b8; line-height: 1.5;">
+                    Are you sure you want to cancel dispatch request <strong id="cancel_modal_req_badge" style="color: #f87171;"></strong> for <strong id="cancel_modal_vessel_name" style="color: #f0f5ff;"></strong>? This action will mark the mission as cancelled.
+                </p>
+                <form method="post" action="{{ path('client_status') }}">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token('client_cancel_request') }}">
+                    <input type="hidden" name="action" value="cancel_request">
+                    <input type="hidden" name="request_id" id="cancel_modal_request_id">
+                    <div style="display: flex; justify-content: center; gap: 14px;">
+                        <button type="button" data-close-modal style="padding: 10px 20px; border-radius: 6px; border: 1px solid rgba(163, 182, 200, 0.3); background: transparent; color: #cbd5e1; cursor: pointer; font-size: 0.88rem;">Keep Request</button>
+                        <button type="submit" style="padding: 10px 22px; border-radius: 6px; border: none; background: #ef4444; color: #fff; font-weight: 700; cursor: pointer; font-size: 0.88rem;">Confirm Cancel</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <script>
+        (function () {
+            function initClientModals() {
+                var editModal = document.getElementById('clientEditModal');
+                var cancelModal = document.getElementById('clientCancelModal');
+
+                document.querySelectorAll('[data-open-edit-request]').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        document.getElementById('edit_modal_request_id').value = btn.dataset.id || '';
+                        document.getElementById('edit_modal_vessel_name').textContent = btn.dataset.vessel || '';
+                        document.getElementById('edit_modal_contact_person').value = btn.dataset.contact || '';
+                        document.getElementById('edit_modal_contact_phone').value = btn.dataset.phone || '';
+                        document.getElementById('edit_modal_description').value = btn.dataset.desc || '';
+                        if (editModal) {
+                            editModal.style.display = 'flex';
+                            editModal.setAttribute('aria-hidden', 'false');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('[data-open-cancel-request]').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        document.getElementById('cancel_modal_request_id').value = btn.dataset.id || '';
+                        document.getElementById('cancel_modal_req_badge').textContent = 'REQ-' + String(btn.dataset.id).padStart(4, '0');
+                        document.getElementById('cancel_modal_vessel_name').textContent = btn.dataset.vessel || '';
+                        if (cancelModal) {
+                            cancelModal.style.display = 'flex';
+                            cancelModal.setAttribute('aria-hidden', 'false');
+                        }
+                    });
+                });
+
+                document.querySelectorAll('[data-close-modal]').forEach(function (btn) {
+                    btn.addEventListener('click', function () {
+                        if (editModal) { editModal.style.display = 'none'; editModal.setAttribute('aria-hidden', 'true'); }
+                        if (cancelModal) { cancelModal.style.display = 'none'; cancelModal.setAttribute('aria-hidden', 'true'); }
+                    });
+                });
+
+                [editModal, cancelModal].forEach(function (m) {
+                    if (!m) return;
+                    m.addEventListener('click', function (e) {
+                        if (e.target === m) {
+                            m.style.display = 'none';
+                            m.setAttribute('aria-hidden', 'true');
+                        }
+                    });
+                });
+            }
+
+            if (document.readyState === 'loading') {
+                document.addEventListener('DOMContentLoaded', initClientModals);
+            } else {
+                initClientModals();
+            }
+            document.addEventListener('turbo:load', initClientModals);
+            document.addEventListener('turbo:render', initClientModals);
+        })();
+        </script>
     </main>
 {% endblock %}

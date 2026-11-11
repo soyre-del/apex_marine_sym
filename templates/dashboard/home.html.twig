@@ -11,7 +11,7 @@
         <header class="dashboard-welcome">
             <div class="dashboard-welcome-copy">
                 <span class="dashboard-eyebrow">Apex Marine / Operations Portal</span>
-                <h1>Good day{% if app.user and app.user.fullName %}, {{ app.user.fullName|split(' ')|first }}{% endif %}</h1>
+                <h1>Welcome{% if app.user and (app.user.username or app.user.firstName) %}, {{ app.user.username ?: app.user.firstName }}{% elseif app.user and app.user.fullName %}, {{ app.user.fullName|split(' ')|first }}{% endif %}</h1>
                 <p>Your workspace for marine operations, service information, and support.</p>
             </div>
             {% if is_granted('ROLE_ADMIN') %}
@@ -62,8 +62,13 @@
                         <span class="dashboard-card-content"><strong>My field operations</strong><span>Review assignments and report job progress.</span></span>
                         <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="dashboard-card" href="{{ path('app_service') }}">
+                    <a class="dashboard-card" href="{{ path('app_profile') }}">
                         <span class="dashboard-card-icon" aria-hidden="true">02</span>
+                        <span class="dashboard-card-content"><strong>My engineer profile</strong><span>View your operative profile and update your personal details.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('app_service') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">03</span>
                         <span class="dashboard-card-content"><strong>Service capabilities</strong><span>Browse engineering disciplines and service coverage.</span></span>
                         <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
                     </a>
@@ -78,8 +83,13 @@
                         <span class="dashboard-card-content"><strong>Billing &amp; payments</strong><span>Review invoices and manage outstanding payments.</span></span>
                         <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
                     </a>
-                    <a class="dashboard-card" href="{{ path('app_contact') }}">
+                    <a class="dashboard-card" href="{{ path('app_profile') }}">
                         <span class="dashboard-card-icon" aria-hidden="true">03</span>
+                        <span class="dashboard-card-content"><strong>My profile</strong><span>View and edit your username, personal name, email, and password.</span></span>
+                        <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
+                    </a>
+                    <a class="dashboard-card" href="{{ path('app_contact') }}">
+                        <span class="dashboard-card-icon" aria-hidden="true">04</span>
                         <span class="dashboard-card-content"><strong>Request service</strong><span>Contact operations to discuss your vessel's needs.</span></span>
                         <span class="dashboard-card-arrow" aria-hidden="true">&rarr;</span>
                     </a>

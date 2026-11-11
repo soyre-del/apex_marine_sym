@@ -1,7 +1,8 @@
 .clients-page {
     min-height: 100vh;
-    color: #a3b6c8;
-    background-color: #081c2d;
+    min-height: 100dvh;
+    color: #f0f5ff !important;
+    background-color: #081c2d !important;
     background-image:
         linear-gradient(rgba(46, 107, 156, .055) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .055) 1px, transparent 1px);
@@ -13,8 +14,8 @@
     position: sticky;
     z-index: 20;
     top: 0;
-    border-bottom: 1px solid rgba(245, 158, 11, .2);
-    background: rgba(13, 42, 74, .96);
+    border-bottom: 1px solid #23415d !important;
+    background: #081c2d !important;
     backdrop-filter: blur(16px);
 }
 
@@ -189,19 +190,22 @@
     width: 100%;
     min-width: 900px;
     border-collapse: collapse;
-    background: rgba(4, 20, 34, .18);
+    background-color: #0e2b49 !important;
+    background: #0e2b49 !important;
+    color: #f0f5ff !important;
 }
 
 .clients-table th,
 .clients-table td {
     padding: 14px 18px;
-    border-bottom: 1px solid rgba(163, 182, 200, .13);
+    border-bottom: 1px solid #23415d !important;
     text-align: left;
     vertical-align: middle;
 }
 
 .clients-table th {
-    color: #91a8bd;
+    background-color: #081c2d !important;
+    color: #a3b6c8 !important;
     font: 700 9px/1.5 Inter, Arial, sans-serif;
     letter-spacing: .8px;
     text-transform: uppercase;
@@ -447,6 +451,46 @@
     color: #f7faff;
     color-scheme: dark;
     font: 13px/1.5 Inter, Arial, sans-serif;
+}
+
+.adm-password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.adm-password-wrap .clients-control {
+    padding-right: 5.2rem !important;
+}
+
+.adm-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: .55rem;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .58rem;
+    border: 1px solid rgba(11, 165, 223, .32);
+    border-radius: 6px;
+    background: rgba(11, 165, 223, .12);
+    color: #70d7fa;
+    font-family: inherit;
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: none;
+    cursor: pointer;
+    z-index: 2;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.adm-password-toggle:hover {
+    background: rgba(11, 165, 223, .24);
+    border-color: rgba(11, 165, 223, .6);
+    color: #ffffff;
 }
 
 .clients-modal-footer {

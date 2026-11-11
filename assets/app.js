@@ -1,10 +1,5 @@
 import './stimulus_bootstrap.js';
 import './styles/app.css';
-import './styles/home.css';
-import './styles/dashboard.css';
-import './styles/about.css';
-import './styles/service.css';
-import './styles/contact.css';
 import './controllers/active_operations_controller.js';
 import './controllers/admin_controller.js';
 import './controllers/billing_controller.js';

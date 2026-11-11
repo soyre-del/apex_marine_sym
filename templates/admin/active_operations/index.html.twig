@@ -9,7 +9,7 @@
 {% block body %}
     <main class="active-ops-page">
         <div class="active-ops-container">
-            <a href="{{ path('app_dashboard') }}" class="btn btn-outline-info active-ops-back">&larr; Return to Matrix</a>
+            <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-info active-ops-back">&larr; Return to Matrix</a>
             <h1 class="active-ops-title">Active Operations Tracker</h1>
 
             {% for message in app.flashes('success') %}

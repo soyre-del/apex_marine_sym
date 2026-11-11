@@ -36,7 +36,16 @@ final class checkout extends AbstractController
             ? filter_var($identity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($clientId === false || $session->get('role') !== 'client') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $clientId = $user->getUserId();
+            $session->set('user_id', $clientId);
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($clientId === false || !in_array($role, ['client', 'admin'], true)) {
             throw $this->createAccessDeniedException('Client access is required.');
         }
 
@@ -55,7 +64,7 @@ final class checkout extends AbstractController
 
         try {
             $invoice = $this->connection->fetchAssociative(<<<'SQL'
-                SELECT i.amount, i.currency, d.vessel_name, d.request_id
+                SELECT i.invoice_id, i.amount, i.currency, i.client_id, d.vessel_name, d.request_id
                 FROM invoices i
                 JOIN dispatch_requests d ON i.request_id = d.request_id
                 WHERE i.invoice_id = ?
@@ -85,10 +94,12 @@ final class checkout extends AbstractController
     private function submitPayment(Request $request, int $clientId): Response
     {
         $form = $request->request->all();
-        $token = $form['csrf_token'] ?? null;
+        $token = $form['csrf_token'] ?? $form['_token'] ?? $form['_csrf_token'] ?? null;
 
         if (!is_string($token) || !$this->isCsrfTokenValid('client_checkout', $token)) {
-            return new Response('Invalid security token. Reload checkout and try again.', Response::HTTP_FORBIDDEN);
+            $this->addFlash('danger', 'Invalid security token. Please try submitting your payment again.');
+
+            return $this->redirectToRoute('client_billing');
         }
 
         $invoiceId = filter_var(
@@ -104,33 +115,77 @@ final class checkout extends AbstractController
             || !in_array($paymentMethod, self::PAYMENT_METHODS, true)
             || !is_string($reference)
             || strlen(trim($reference)) > 100) {
-            return new Response('Invalid payment details.', Response::HTTP_BAD_REQUEST);
+            $this->addFlash('danger', 'Please provide a valid payment method and reference number.');
+
+            return $this->redirectToRoute('client_billing');
         }
 
         $referenceNumber = trim($reference) !== ''
             ? trim($reference)
-            : 'TXN-'.strtoupper(bin2hex(random_bytes(12)));
+            : 'TXN-'.strtoupper(bin2hex(random_bytes(6)));
 
         try {
-            $updated = $this->connection->executeStatement(
-                "UPDATE invoices
-                SET payment_status = 'paid', payment_method = ?, reference_number = ?
-                WHERE invoice_id = ? AND client_id = ? AND payment_status = 'unpaid'",
-                [$paymentMethod, $referenceNumber, $invoiceId, $clientId],
-            );
+            $updated = $this->connection->transactional(function (Connection $connection) use (
+                $invoiceId,
+                $clientId,
+                $paymentMethod,
+                $referenceNumber,
+            ): int {
+                $invoiceRow = $connection->fetchAssociative(
+                    "SELECT request_id, amount, currency FROM invoices WHERE invoice_id = ? AND client_id = ? AND payment_status = 'unpaid' LIMIT 1",
+                    [$invoiceId, $clientId],
+                );
+                if ($invoiceRow === false) {
+                    return 0;
+                }
+
+                // Automatically mark the invoice as PAID upon client payment submission
+                $affected = $connection->executeStatement(
+                    "UPDATE invoices
+                    SET payment_status = 'paid', payment_method = ?, reference_number = ?
+                    WHERE invoice_id = ? AND client_id = ? AND payment_status = 'unpaid'",
+                    [$paymentMethod, $referenceNumber, $invoiceId, $clientId],
+                );
+
+                if ($affected === 1) {
+                    $connection->insert('operation_updates', [
+                        'request_id' => (int) $invoiceRow['request_id'],
+                        'updater_id' => $clientId,
+                        'status_milestone' => 'Invoice Paid by Client',
+                        'detailed_message' => sprintf(
+                            'Client completed payment of %s %s via %s (Reference: %s). Invoice INV-%05d has been automatically marked as PAID.',
+                            (string) $invoiceRow['currency'],
+                            number_format((float) $invoiceRow['amount'], 2, '.', ','),
+                            $paymentMethod,
+                            $referenceNumber,
+                            $invoiceId,
+                        ),
+                    ]);
+                }
+
+                return $affected;
+            });
         } catch (DBALException $exception) {
-            $this->logger->error('Unable to process simulated checkout payment.', [
+            $this->logger->error('Unable to process checkout payment.', [
                 'client_id' => $clientId,
                 'invoice_id' => $invoiceId,
                 'exception' => $exception,
             ]);
+            $this->addFlash('danger', 'Unable to complete payment. Please try again later.');
 
-            return new Response('Unable to complete payment. Please try again later.', Response::HTTP_INTERNAL_SERVER_ERROR);
+            return $this->redirectToRoute('client_billing');
         }
 
         if ($updated !== 1) {
-            return new Response('Invoice not found or already paid.', Response::HTTP_CONFLICT);
+            $this->addFlash('warning', 'Invoice was not found or has already been marked as paid.');
+
+            return $this->redirectToRoute('client_billing');
         }
+
+        $this->addFlash('success', sprintf(
+            'Payment received. Invoice INV-%05d has been automatically marked as PAID.',
+            $invoiceId,
+        ));
 
         return $this->redirectToRoute(
             'client_payment_success',

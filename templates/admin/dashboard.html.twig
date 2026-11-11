@@ -199,7 +199,7 @@
         font-size: .875rem;
     }
     .adm-table thead tr {
-        background: rgba(255,255,255,.03);
+        background: #081c2d !important;
         border-bottom: 1px solid var(--adm-border);
     }
     .adm-table th {
@@ -209,17 +209,19 @@
         font-weight: 700;
         letter-spacing: .1em;
         text-transform: uppercase;
-        color: var(--adm-muted);
+        color: var(--adm-muted) !important;
+        background: #081c2d !important;
         white-space: nowrap;
     }
     .adm-table td {
         padding: .95rem 1.25rem;
-        color: var(--adm-text);
+        color: var(--adm-text) !important;
+        background: #0e2b49 !important;
         vertical-align: middle;
         border-bottom: 1px solid rgba(35,65,93,.5);
     }
     .adm-table tbody tr:last-child td { border-bottom: none; }
-    .adm-table tbody tr:hover td { background: rgba(11,165,223,.04); }
+    .adm-table tbody tr:hover td { background: #173b5c !important; }
     .adm-table tbody tr.is-suspended td { opacity: .55; }
 
     .adm-name { font-weight: 600; color: var(--adm-text); }
@@ -643,6 +645,44 @@
     .admin-form input::placeholder {
         color: var(--adm-muted);
     }
+    .adm-password-wrap {
+        position: relative;
+        display: flex;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 1rem;
+    }
+    .admin-form .adm-password-wrap input {
+        margin-bottom: 0 !important;
+        padding-right: 5.2rem !important;
+    }
+    .adm-password-toggle {
+        position: absolute;
+        top: 50%;
+        right: .55rem;
+        transform: translateY(-50%);
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        padding: .3rem .58rem;
+        border: 1px solid rgba(11, 165, 223, .32);
+        border-radius: 6px;
+        background: rgba(11, 165, 223, .12);
+        color: #70d7fa;
+        font-family: inherit;
+        font-size: .74rem;
+        font-weight: 600;
+        letter-spacing: .02em;
+        text-transform: none;
+        cursor: pointer;
+        z-index: 2;
+        transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+    }
+    .adm-password-toggle:hover {
+        background: rgba(11, 165, 223, .24);
+        border-color: rgba(11, 165, 223, .6);
+        color: #ffffff;
+    }
 </style>
 {% endblock %}
 
@@ -661,8 +701,10 @@
                 <span class="admin-identity">ID: <strong>{{ admin_name }}</strong></span>
                 <a href="{{ path('admin_active_operations') }}"  class="admin-nav-link admin-nav-success">Active Ops</a>
                 <a href="{{ path('admin_pending_dispatch') }}"   class="admin-nav-link admin-nav-info">Pending Dispatches</a>
+                <a href="{{ path('admin_manage_clients') }}"     class="admin-nav-link admin-nav-info">Clients</a>
                 <a href="{{ path('admin_billing') }}"            class="admin-nav-link admin-nav-info">Billing</a>
                 <a href="{{ path('app_home') }}"                 class="admin-nav-link admin-nav-info">Public</a>
+                <a href="{{ path('app_logout') }}"               class="admin-nav-link admin-nav-info">Log Out</a>
             </div>
         </div>
     </nav>
@@ -793,7 +835,14 @@
                                 <tr{% if not engineer.is_active %} class="is-suspended"{% endif %}>
                                     <td class="adm-name">{{ engineer.full_name }}</td>
                                     <td class="adm-email">{{ engineer.email }}</td>
-                                    <td class="adm-specialty">{{ engineer.specialty }}</td>
+                                    <td class="adm-specialty">
+                                        {{ engineer.specialty }}
+                                        {% if engineer.specialty == 'Chief Engineer' %}
+                                            <span style="display:inline-block; margin-left:6px; padding:2px 6px; border-radius:4px; background:rgba(245,158,11,0.2); border:1px solid rgba(245,158,11,0.5); color:#fbbf24; font-size:0.68rem; font-weight:700; text-transform:uppercase;">
+                                                Universal Clearance
+                                            </span>
+                                        {% endif %}
+                                    </td>
                                     <td>
                                         {% if not engineer.is_active %}
                                             <span class="adm-badge adm-badge--danger">Suspended</span>
@@ -813,6 +862,9 @@
                                                 data-edit-engineer
                                                 data-id="{{ engineer.user_id }}"
                                                 data-name="{{ engineer.full_name }}"
+                                                data-first-name="{{ engineer.first_name|default('') }}"
+                                                data-middle-name="{{ engineer.middle_name|default('') }}"
+                                                data-surname="{{ engineer.surname|default('') }}"
                                                 data-email="{{ engineer.email }}"
                                                 data-specialty="{{ engineer.specialty }}"
                                                 data-status="{{ engineer.current_status }}"
@@ -877,11 +929,8 @@
 
 })();
 
-/* ── Embedded Modal Controller (per antigravity reference) ─────────────── */
+/* ── Embedded Modal Controller (Robust Turbo & DOM lifecycle) ─────────────── */
 (function () {
-    var adminPage = document.querySelector('.admin-page');
-    if (!adminPage) return;
-
     var activeModal = null;
 
     function openModal(modal, trigger) {
@@ -901,58 +950,91 @@
         activeModal = null;
     }
 
-    // Open modal via [data-modal-open]
-    adminPage.querySelectorAll('[data-modal-open]').forEach(function (button) {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            var targetId = button.getAttribute('data-modal-open');
-            var targetModal = document.getElementById(targetId);
-            if (targetModal) openModal(targetModal, button);
-        });
-    });
+    function initAdminDashboard() {
+        var adminPage = document.querySelector('.admin-page');
+        if (!adminPage) return;
 
-    // Dismiss via [data-modal-dismiss]
-    adminPage.querySelectorAll('[data-modal-dismiss]').forEach(function (button) {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            closeModal();
+        // Open modal via [data-modal-open]
+        adminPage.querySelectorAll('[data-modal-open]').forEach(function (button) {
+            button.onclick = function (e) {
+                e.preventDefault();
+                var targetId = button.getAttribute('data-modal-open');
+                var targetModal = document.getElementById(targetId);
+                if (targetModal) openModal(targetModal, button);
+            };
         });
-    });
 
-    // Backdrop click closes modal
-    adminPage.querySelectorAll('.admin-modal').forEach(function (modal) {
-        modal.addEventListener('click', function (event) {
-            if (event.target === modal) closeModal();
+        // Dismiss via [data-modal-dismiss]
+        adminPage.querySelectorAll('[data-modal-dismiss]').forEach(function (button) {
+            button.onclick = function (e) {
+                e.preventDefault();
+                closeModal();
+            };
         });
-    });
 
-    // Edit engineer button → populate + open edit modal
-    adminPage.querySelectorAll('[data-edit-engineer]').forEach(function (button) {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('edit_user_id').value = button.dataset.id ?? '';
-            document.getElementById('edit_eng_name').value = button.dataset.name ?? '';
-            document.getElementById('edit_eng_email').value = button.dataset.email ?? '';
-            document.getElementById('edit_eng_specialty').value = button.dataset.specialty ?? '';
-            document.getElementById('edit_eng_status').value = button.dataset.status ?? 'available';
-            openModal(document.getElementById('editEngineerModal'), button);
+        // Backdrop click closes modal
+        adminPage.querySelectorAll('.admin-modal').forEach(function (modal) {
+            modal.onclick = function (event) {
+                if (event.target === modal) closeModal();
+            };
         });
-    });
 
-    // Revoke/delete engineer button → populate + open delete modal
-    adminPage.querySelectorAll('[data-delete-engineer]').forEach(function (button) {
-        button.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.getElementById('delete_user_id').value = button.dataset.id ?? '';
-            document.getElementById('delete_eng_name_display').textContent = button.dataset.name ?? '';
-            openModal(document.getElementById('deleteEngineerModal'), button);
+        // Edit engineer button → populate + open edit modal
+        adminPage.querySelectorAll('[data-edit-engineer]').forEach(function (button) {
+            button.onclick = function (e) {
+                e.preventDefault();
+                var editId = document.getElementById('edit_user_id');
+                var editFirstName = document.getElementById('edit_eng_first_name');
+                var editMiddleName = document.getElementById('edit_eng_middle_name');
+                var editSurname = document.getElementById('edit_eng_surname');
+                var editEmail = document.getElementById('edit_eng_email');
+                var editSpecialty = document.getElementById('edit_eng_specialty');
+                var editStatus = document.getElementById('edit_eng_status');
+
+                if (editId) editId.value = button.dataset.id || '';
+                if (editFirstName) editFirstName.value = button.dataset.firstName || '';
+                if (editMiddleName) editMiddleName.value = button.dataset.middleName || '';
+                if (editSurname) editSurname.value = button.dataset.surname || '';
+                if (editEmail) editEmail.value = button.dataset.email || '';
+                if (editSpecialty) editSpecialty.value = button.dataset.specialty || '';
+                if (editStatus) editStatus.value = button.dataset.status || 'available';
+                openModal(document.getElementById('editEngineerModal'), button);
+            };
         });
-    });
+
+        // Revoke/delete engineer button → populate + open delete modal
+        adminPage.querySelectorAll('[data-delete-engineer]').forEach(function (button) {
+            button.onclick = function (e) {
+                e.preventDefault();
+                var deleteId = document.getElementById('delete_user_id');
+                var deleteDisplay = document.getElementById('delete_eng_name_display');
+                if (deleteId) deleteId.value = button.dataset.id || '';
+                if (deleteDisplay) deleteDisplay.textContent = button.dataset.name || '';
+                openModal(document.getElementById('deleteEngineerModal'), button);
+            };
+        });
+
+        // Auto-reopen modal if there was a previous failure
+        var failedAction = adminPage.dataset.failedAction;
+        if (failedAction === 'add_engineer') {
+            openModal(document.getElementById('addEngineerModal'));
+        } else if (failedAction === 'edit_engineer') {
+            openModal(document.getElementById('editEngineerModal'));
+        }
+    }
 
     // Escape key closes modal
     document.addEventListener('keydown', function (event) {
         if (event.key === 'Escape' && activeModal) closeModal();
     });
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initAdminDashboard);
+    } else {
+        initAdminDashboard();
+    }
+    document.addEventListener('turbo:load', initAdminDashboard);
+    document.addEventListener('turbo:render', initAdminDashboard);
 })();
 </script>
 {% endblock %}

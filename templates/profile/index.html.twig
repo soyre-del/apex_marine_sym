@@ -1,0 +1,523 @@
+{% extends 'dashboard/index.html.twig' %}
+
+{% block title %}My Profile | {{ configuration.sidebar.brand }}{% endblock %}
+{% block main_class %}profile-main{% endblock %}
+
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+    <style>
+        .profile-shell {
+            max-width: 1080px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3.5rem;
+            color: #f0f5ff;
+        }
+        .profile-banner {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 1.25rem;
+            padding: 1.75rem 2rem;
+            margin-bottom: 1.75rem;
+            border: 1px solid #23415d;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #122d47 0%, #0e2b49 65%, #081c2d 100%);
+        }
+        .profile-eyebrow {
+            display: block;
+            margin-bottom: .35rem;
+            color: #0ba5df;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .12em;
+            text-transform: uppercase;
+        }
+        .profile-banner h1 {
+            margin: 0 0 .35rem;
+            color: #f0f5ff;
+            font-size: 1.55rem;
+            font-weight: 700;
+        }
+        .profile-banner p {
+            margin: 0;
+            color: #a3b6c8;
+            font-size: .88rem;
+        }
+        .profile-role-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: .45rem;
+            padding: .42rem .95rem;
+            border: 1px solid rgba(11, 165, 223, .45);
+            border-radius: 999px;
+            background: rgba(11, 165, 223, .14);
+            color: #70d7fa;
+            font-size: .75rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .profile-alert {
+            margin-bottom: 1.25rem;
+            padding: .9rem 1.15rem;
+            border-radius: 9px;
+            font-size: .86rem;
+            font-weight: 500;
+        }
+        .profile-alert-success {
+            border: 1px solid rgba(16, 185, 129, .45);
+            background: rgba(16, 185, 129, .14);
+            color: #6ee7b7;
+        }
+        .profile-alert-warning {
+            border: 1px solid rgba(245, 158, 11, .45);
+            background: rgba(245, 158, 11, .14);
+            color: #fcd34d;
+        }
+        .profile-alert-danger {
+            border: 1px solid rgba(239, 68, 68, .45);
+            background: rgba(239, 68, 68, .14);
+            color: #fca5a5;
+        }
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+        .profile-card {
+            padding: 1.65rem;
+            border: 1px solid #23415d;
+            border-radius: 14px;
+            background: #0e2b49;
+            box-shadow: 0 14px 36px rgba(0, 0, 0, .24);
+        }
+        .profile-card h2 {
+            margin: 0 0 1.15rem;
+            padding-bottom: .75rem;
+            border-bottom: 1px solid #23415d;
+            color: #f0f5ff;
+            font-size: 1.05rem;
+            font-weight: 700;
+            letter-spacing: .03em;
+            text-transform: uppercase;
+        }
+        .profile-meta-list {
+            display: grid;
+            gap: .95rem;
+            margin: 0;
+        }
+        .profile-meta-item dt {
+            color: #8da2b5;
+            font-size: .72rem;
+            font-weight: 700;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+        .profile-meta-item dd {
+            margin: .22rem 0 0;
+            color: #f0f5ff;
+            font-size: .92rem;
+            font-weight: 600;
+            word-break: break-word;
+        }
+        .profile-stat-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: .75rem;
+            margin-top: 1.25rem;
+            padding-top: 1.15rem;
+            border-top: 1px solid #23415d;
+        }
+        .profile-stat-box {
+            padding: .75rem .9rem;
+            border: 1px solid rgba(11, 165, 223, .24);
+            border-radius: 9px;
+            background: #081c2d;
+            text-align: center;
+        }
+        .profile-stat-box strong {
+            display: block;
+            color: #70d7fa;
+            font-size: 1.25rem;
+            font-weight: 800;
+        }
+        .profile-stat-box span {
+            color: #8da2b5;
+            font-size: .72rem;
+            text-transform: uppercase;
+        }
+        .profile-form {
+            display: grid;
+            gap: 1.1rem;
+        }
+        .profile-form-row {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: .9rem;
+        }
+        .profile-field label {
+            display: block;
+            margin-bottom: .4rem;
+            color: #a3b6c8;
+            font-size: .76rem;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+        .profile-input {
+            width: 100%;
+            min-height: 43px;
+            padding: .62rem .85rem;
+            border: 1px solid #2b4c6f;
+            border-radius: 8px;
+            background: #081c2d;
+            color: #f0f5ff;
+            font-size: .9rem;
+            box-sizing: border-box;
+        }
+        .profile-input:focus {
+            outline: none;
+            border-color: #0ba5df;
+            box-shadow: 0 0 0 3px rgba(11, 165, 223, .16);
+        }
+        .profile-input[readonly],
+        .profile-input:disabled {
+            background: rgba(8, 28, 45, .5);
+            color: #8da2b5;
+            cursor: not-allowed;
+        }
+        .profile-hint {
+            display: block;
+            margin-top: .32rem;
+            color: #8da2b5;
+            font-size: .73rem;
+        }
+        .profile-password-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+        }
+        .profile-password-wrap .profile-input {
+            padding-right: 5.2rem;
+        }
+        .profile-password-toggle {
+            position: absolute;
+            top: 50%;
+            right: .55rem;
+            transform: translateY(-50%);
+            display: inline-flex;
+            align-items: center;
+            gap: .3rem;
+            padding: .3rem .58rem;
+            border: 1px solid rgba(11, 165, 223, .32);
+            border-radius: 6px;
+            background: rgba(11, 165, 223, .12);
+            color: #70d7fa;
+            font-size: .74rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .profile-password-toggle:hover {
+            background: rgba(11, 165, 223, .24);
+            color: #fff;
+        }
+        .profile-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: .85rem;
+            margin-top: .5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #23415d;
+        }
+        .profile-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 42px;
+            padding: .62rem 1.35rem;
+            border-radius: 8px;
+            font-size: .84rem;
+            font-weight: 700;
+            text-decoration: none;
+            text-transform: uppercase;
+            letter-spacing: .05em;
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .profile-btn-primary {
+            background: #0ba5df;
+            color: #071724;
+        }
+        .profile-btn-primary:hover {
+            background: #38bdf8;
+        }
+        .profile-btn-outline {
+            border-color: #2b4c6f;
+            background: transparent;
+            color: #c3d1df;
+        }
+        .profile-btn-outline:hover {
+            border-color: #0ba5df;
+            color: #fff;
+        }
+        @media (max-width: 860px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+            .profile-form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+{% endblock %}
+
+{% block page_content %}
+    <div class="profile-shell">
+        <header class="profile-banner">
+            <div>
+                <span class="profile-eyebrow">Apex Marine / Account Identity</span>
+                <h1>Welcome, {{ profile.username|default(profile.first_name) }}</h1>
+                <p>View your operational identity and manage your personal profile settings.</p>
+            </div>
+            <span class="profile-role-pill">
+                {{ role == 'engineer' ? 'Field Engineer Profile' : (role == 'admin' ? 'Administrator Profile' : 'Client Account Profile') }}
+            </span>
+        </header>
+
+        {% for message in app.flashes('success') %}
+            <div class="profile-alert profile-alert-success" role="status">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('warning') %}
+            <div class="profile-alert profile-alert-warning" role="alert">{{ message }}</div>
+        {% endfor %}
+        {% for message in app.flashes('danger') %}
+            <div class="profile-alert profile-alert-danger" role="alert">{{ message }}</div>
+        {% endfor %}
+
+        <div class="profile-grid">
+            {# ── Left Column: Read-Only Profile Summary Card ──────────── #}
+            <aside class="profile-card" aria-labelledby="profile-overview-heading">
+                <h2 id="profile-overview-heading">Profile Summary</h2>
+                <dl class="profile-meta-list">
+                    <div class="profile-meta-item">
+                        <dt>Username</dt>
+                        <dd>@{{ profile.username|default(profile.first_name|lower) }}</dd>
+                    </div>
+                    <div class="profile-meta-item">
+                        <dt>Full Name</dt>
+                        <dd>{{ full_name }}</dd>
+                    </div>
+                    <div class="profile-meta-item">
+                        <dt>First / Middle / Surname</dt>
+                        <dd>
+                            {{ profile.first_name }}
+                            {% if profile.middle_name %} &bull; {{ profile.middle_name }}{% endif %}
+                            &bull; {{ profile.surname }}
+                        </dd>
+                    </div>
+                    <div class="profile-meta-item">
+                        <dt>Email Address</dt>
+                        <dd>{{ profile.email }}</dd>
+                    </div>
+
+                    {% if role == 'client' and client_profile %}
+                        <div class="profile-meta-item">
+                            <dt>Organization / Company</dt>
+                            <dd>{{ client_profile.company_name|default('Apex Fleet Partner') }}</dd>
+                        </div>
+                        <div class="profile-meta-item">
+                            <dt>Contact Number</dt>
+                            <dd>{{ client_profile.contact_number|default('Not set') }}</dd>
+                        </div>
+                    {% elseif role == 'engineer' and engineer_profile %}
+                        <div class="profile-meta-item">
+                            <dt>Technical Discipline</dt>
+                            <dd style="color:#38bdf8;">
+                                {{ engineer_profile.specialty }}
+                                {% if 'chief engineer' in engineer_profile.specialty|lower %}
+                                    (Universal Clearance)
+                                {% endif %}
+                            </dd>
+                        </div>
+                        <div class="profile-meta-item">
+                            <dt>Deployment Status</dt>
+                            <dd>{{ engineer_profile.current_status|replace({'_': ' '})|title }}</dd>
+                        </div>
+                    {% endif %}
+
+                    <div class="profile-meta-item">
+                        <dt>Account Created</dt>
+                        <dd>{{ profile.created_at|date('M d, Y') }}</dd>
+                    </div>
+                </dl>
+
+                {% if role in ['client', 'engineer'] %}
+                    <div class="profile-stat-row">
+                        <div class="profile-stat-box">
+                            <strong>{{ stats.active_ops }}</strong>
+                            <span>Active Ops</span>
+                        </div>
+                        <div class="profile-stat-box">
+                            <strong>{{ stats.total_ops }}</strong>
+                            <span>Total Lifetime</span>
+                        </div>
+                    </div>
+                {% endif %}
+            </aside>
+
+            {# ── Right Column: Edit Profile Form ──────────────────────── #}
+            <section class="profile-card" aria-labelledby="profile-edit-heading">
+                <h2 id="profile-edit-heading">Edit Profile Details</h2>
+                <form action="{{ path('app_profile') }}" method="post" class="profile-form" data-turbo="false">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token('profile_update') }}">
+
+                    <div class="profile-field">
+                        <label for="profile_username">
+                            Username
+                            {% if can_edit_username %}
+                                <span style="color:#f87171;">*</span>
+                            {% else %}
+                                <span style="color:#8da2b5; font-weight:400; text-transform:none;">(Locked &mdash; Only clients can edit their username)</span>
+                            {% endif %}
+                        </label>
+                        {% if can_edit_username %}
+                            <input type="text" id="profile_username" name="username" required minlength="3" maxlength="50"
+                                   class="profile-input" value="{{ profile.username }}" placeholder="Choose your username">
+                            <span class="profile-hint">Your username is displayed on your dashboard welcome banner (3&ndash;50 characters, letters, numbers, underscores, dots, or hyphens).</span>
+                        {% else %}
+                            <input type="text" id="profile_username" class="profile-input" value="{{ profile.username }}" readonly disabled>
+                            <span class="profile-hint">Engineer and staff usernames are managed by system policy; only client accounts may modify their username.</span>
+                        {% endif %}
+                    </div>
+
+                    <div class="profile-form-row">
+                        <div class="profile-field">
+                            <label for="profile_first_name">First Name <span style="color:#f87171;">*</span></label>
+                            <input type="text" id="profile_first_name" name="first_name" required maxlength="100"
+                                   class="profile-input" value="{{ profile.first_name }}" data-capitalize-name>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profile_middle_name">Middle Name <span style="color:#8da2b5; font-weight:400; text-transform:none;">(Optional)</span></label>
+                            <input type="text" id="profile_middle_name" name="middle_name" maxlength="100"
+                                   class="profile-input" value="{{ profile.middle_name }}" placeholder="Optional" data-capitalize-name>
+                        </div>
+
+                        <div class="profile-field">
+                            <label for="profile_surname">Surname <span style="color:#f87171;">*</span></label>
+                            <input type="text" id="profile_surname" name="surname" required maxlength="100"
+                                   class="profile-input" value="{{ profile.surname }}" data-capitalize-name>
+                        </div>
+                    </div>
+
+                    <div class="profile-field">
+                        <label for="profile_email">Email Address <span style="color:#f87171;">*</span></label>
+                        <input type="email" id="profile_email" name="email" required maxlength="100"
+                               class="profile-input" value="{{ profile.email }}">
+                        <span class="profile-hint">Must be a valid corporate or personal email domain.</span>
+                    </div>
+
+                    {% if role == 'client' %}
+                        <div class="profile-form-row" style="grid-template-columns: 1fr 1fr;">
+                            <div class="profile-field">
+                                <label for="profile_company">Company / Fleet Name</label>
+                                <input type="text" id="profile_company" name="company_name" maxlength="150"
+                                       class="profile-input" value="{{ client_profile.company_name|default('Apex Fleet Partner') }}">
+                            </div>
+                            <div class="profile-field">
+                                <label for="profile_phone">Contact Phone Number</label>
+                                <input type="text" id="profile_phone" name="contact_number" maxlength="50"
+                                       class="profile-input" value="{{ client_profile.contact_number|default('') }}" placeholder="+63 917 000 0000">
+                            </div>
+                        </div>
+                    {% elseif role == 'engineer' and engineer_profile %}
+                        <div class="profile-form-row" style="grid-template-columns: 1fr 1fr;">
+                            <div class="profile-field">
+                                <label>Assigned Technical Discipline</label>
+                                <input type="text" class="profile-input" value="{{ engineer_profile.specialty }}" readonly disabled>
+                            </div>
+                            <div class="profile-field">
+                                <label>Current Status</label>
+                                <input type="text" class="profile-input" value="{{ engineer_profile.current_status|replace({'_': ' '})|title }}" readonly disabled>
+                            </div>
+                        </div>
+                    {% endif %}
+
+                    <div class="profile-field">
+                        <label for="profile_new_password">Change Password <span style="color:#8da2b5; font-weight:400; text-transform:none;">(Optional &mdash; leave blank to keep current password)</span></label>
+                        <div class="profile-password-wrap">
+                            <input type="password" id="profile_new_password" name="new_password" minlength="8" maxlength="128"
+                                   class="profile-input" placeholder="Min. 8 chars, upper, lower, number &amp; symbol" autocomplete="new-password">
+                            <button type="button" class="profile-password-toggle" data-profile-password-toggle aria-label="Show password" aria-pressed="false">
+                                <svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                    <circle cx="12" cy="12" r="3"/>
+                                </svg>
+                                <svg class="icon-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                    <line x1="1" y1="1" x2="23" y2="23"/>
+                                </svg>
+                                <span class="profile-password-toggle-text">Show</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="profile-actions">
+                        {% if role == 'engineer' %}
+                            <a href="{{ path('engineer_operations') }}" class="profile-btn profile-btn-outline">Back to Field Ops</a>
+                        {% elseif role == 'client' %}
+                            <a href="{{ path('client_status') }}" class="profile-btn profile-btn-outline">My Operations</a>
+                        {% else %}
+                            <a href="{{ path('app_dashboard') }}" class="profile-btn profile-btn-outline">Back to Dashboard</a>
+                        {% endif %}
+                        <button type="submit" class="profile-btn profile-btn-primary">Save Profile Changes</button>
+                    </div>
+                </form>
+            </section>
+        </div>
+    </div>
+
+    <script>
+    (function () {
+        var capName = function (v) {
+            return v.replace(/(^|[\s'-])(\p{Ll})/gu, function (m, sep, ch) {
+                return sep + ch.toLocaleUpperCase();
+            });
+        };
+        document.querySelectorAll('[data-capitalize-name]').forEach(function (field) {
+            field.addEventListener('input', function () {
+                var s = field.selectionStart, e = field.selectionEnd;
+                var next = capName(field.value);
+                if (next !== field.value) {
+                    field.value = next;
+                    if (s !== null) field.setSelectionRange(s, e);
+                }
+            });
+            field.addEventListener('blur', function () {
+                field.value = capName(field.value.replace(/\s+/g, ' ').trim());
+            });
+        });
+
+        document.querySelectorAll('[data-profile-password-toggle]').forEach(function (btn) {
+            btn.addEventListener('click', function () {
+                var wrap = btn.closest('.profile-password-wrap');
+                var input = wrap ? wrap.querySelector('input') : null;
+                if (!input) return;
+                var isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                btn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                var eye = btn.querySelector('.icon-eye');
+                var eyeOff = btn.querySelector('.icon-eye-off');
+                var txt = btn.querySelector('.profile-password-toggle-text');
+                if (eye) eye.hidden = isHidden;
+                if (eyeOff) eyeOff.hidden = !isHidden;
+                if (txt) txt.textContent = isHidden ? 'Hide' : 'Show';
+            });
+        });
+    })();
+    </script>
+{% endblock %}

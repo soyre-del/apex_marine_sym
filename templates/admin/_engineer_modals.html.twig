@@ -9,20 +9,42 @@
                 <input type="hidden" name="csrf_token" value="{{ adminCsrfToken }}">
                 <input type="hidden" name="action" value="add_engineer">
 
-                <label>Full Name
-                    <input type="text" name="eng_name" required value="{{ old_post.eng_name|default('') }}" placeholder="Operative Designation">
+                <label>First Name <span style="color:#f87171;">*</span>
+                    <input type="text" name="eng_first_name" required value="{{ old_post.eng_first_name|default('') }}" placeholder="First Name" data-capitalize-name>
+                </label>
+                <label>Middle Name <span style="color:#8da2b5; font-weight:400; text-transform:none;">(Optional)</span>
+                    <input type="text" name="eng_middle_name" value="{{ old_post.eng_middle_name|default('') }}" placeholder="Middle Name (Optional)" data-capitalize-name>
+                </label>
+                <label>Surname <span style="color:#f87171;">*</span>
+                    <input type="text" name="eng_surname" required value="{{ old_post.eng_surname|default('') }}" placeholder="Surname" data-capitalize-name>
                 </label>
                 <label>Secure Email
                     <input type="email" name="eng_email" required value="{{ old_post.eng_email|default('') }}" placeholder="engineer@apexmarine.com.ph">
                 </label>
                 <label>Access Code (Password)
-                    <input type="password" name="eng_password" required minlength="8" placeholder="At least 8 characters">
+                    <div class="adm-password-wrap">
+                        <input type="password" name="eng_password" id="add_eng_password" required minlength="8" maxlength="128" placeholder="Min. 8 chars, upper, lower, number &amp; symbol" autocomplete="new-password">
+                        <button type="button" class="adm-password-toggle" data-adm-password-toggle aria-label="Show password" aria-pressed="false">
+                            <svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="icon-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            <span class="adm-password-toggle-text">Show</span>
+                        </button>
+                    </div>
+                    <small style="display:block; margin-top:-0.5rem; margin-bottom:0.75rem; color:#8da2b5; font-size:0.72rem; text-transform:none; letter-spacing:normal; font-weight:400;">Must include 8+ characters, uppercase, lowercase, number, and special character.</small>
                 </label>
                 <label>Technical Discipline
                     <select name="eng_specialty" required>
                         <option value=""{% if old_post.eng_specialty|default('') == '' %} selected{% endif %} disabled>Assign Role...</option>
                         {% for specialty in specialties %}
-                            <option value="{{ specialty }}"{% if old_post.eng_specialty|default('') == specialty %} selected{% endif %}>{{ specialty }}</option>
+                            <option value="{{ specialty }}"{% if old_post.eng_specialty|default('') == specialty %} selected{% endif %}>
+                                {{ specialty }}{% if specialty == 'Chief Engineer' %} (Universal Clearance — All Problems){% endif %}
+                            </option>
                         {% endfor %}
                     </select>
                 </label>
@@ -51,19 +73,40 @@
                 <input type="hidden" name="action" value="edit_engineer">
                 <input type="hidden" name="user_id" id="edit_user_id" value="{{ old_post.user_id|default('') }}">
 
-                <label>Full Name
-                    <input type="text" name="eng_name" id="edit_eng_name" required value="{{ old_post.eng_name|default('') }}">
+                <label>First Name <span style="color:#f87171;">*</span>
+                    <input type="text" name="eng_first_name" id="edit_eng_first_name" required value="{{ old_post.eng_first_name|default('') }}" placeholder="First Name" data-capitalize-name>
+                </label>
+                <label>Middle Name <span style="color:#8da2b5; font-weight:400; text-transform:none;">(Optional)</span>
+                    <input type="text" name="eng_middle_name" id="edit_eng_middle_name" value="{{ old_post.eng_middle_name|default('') }}" placeholder="Middle Name (Optional)" data-capitalize-name>
+                </label>
+                <label>Surname <span style="color:#f87171;">*</span>
+                    <input type="text" name="eng_surname" id="edit_eng_surname" required value="{{ old_post.eng_surname|default('') }}" placeholder="Surname" data-capitalize-name>
                 </label>
                 <label>Secure Email
                     <input type="email" name="eng_email" id="edit_eng_email" required value="{{ old_post.eng_email|default('') }}">
                 </label>
                 <label>Update Access Code
-                    <input type="password" name="eng_password" minlength="8" placeholder="Leave blank to keep current code">
+                    <div class="adm-password-wrap">
+                        <input type="password" name="eng_password" id="edit_eng_password" minlength="8" placeholder="Leave blank to keep current code" autocomplete="new-password">
+                        <button type="button" class="adm-password-toggle" data-adm-password-toggle aria-label="Show password" aria-pressed="false">
+                            <svg class="icon-eye" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                                <circle cx="12" cy="12" r="3"/>
+                            </svg>
+                            <svg class="icon-eye-off" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" hidden>
+                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"/>
+                                <line x1="1" y1="1" x2="23" y2="23"/>
+                            </svg>
+                            <span class="adm-password-toggle-text">Show</span>
+                        </button>
+                    </div>
                 </label>
                 <label>Technical Discipline
                     <select name="eng_specialty" id="edit_eng_specialty" required>
                         {% for specialty in specialties %}
-                            <option value="{{ specialty }}"{% if old_post.eng_specialty|default('') == specialty %} selected{% endif %}>{{ specialty }}</option>
+                            <option value="{{ specialty }}"{% if old_post.eng_specialty|default('') == specialty %} selected{% endif %}>
+                                {{ specialty }}{% if specialty == 'Chief Engineer' %} (Universal Clearance — All Problems){% endif %}
+                            </option>
                         {% endfor %}
                     </select>
                 </label>
@@ -94,3 +137,65 @@
         </form>
     </section>
 </div>
+
+<script>
+(function () {
+    function bindAdminPasswordToggles() {
+        document.querySelectorAll('[data-adm-password-toggle]').forEach(function (btn) {
+            if (btn.dataset.toggleBound === 'true') {
+                return;
+            }
+            btn.dataset.toggleBound = 'true';
+
+            btn.addEventListener('click', function () {
+                var wrap = btn.closest('.adm-password-wrap');
+                if (!wrap) return;
+                var input = wrap.querySelector('input');
+                if (!input) return;
+
+                var isHidden = input.type === 'password';
+                input.type = isHidden ? 'text' : 'password';
+                btn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+                btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+
+                var eyeIcon = btn.querySelector('.icon-eye');
+                var eyeOffIcon = btn.querySelector('.icon-eye-off');
+                var textSpan = btn.querySelector('.adm-password-toggle-text');
+
+                if (eyeIcon) eyeIcon.hidden = isHidden;
+                if (eyeOffIcon) eyeOffIcon.hidden = !isHidden;
+                if (textSpan) textSpan.textContent = isHidden ? 'Hide' : 'Show';
+            });
+        });
+
+        var capName = function (v) {
+            return v.replace(/(^|[\s'-])(\p{Ll})/gu, function (m, sep, ch) {
+                return sep + ch.toLocaleUpperCase();
+            });
+        };
+        document.querySelectorAll('[data-capitalize-name]').forEach(function (field) {
+            if (field.dataset.capBound === 'true') return;
+            field.dataset.capBound = 'true';
+            field.addEventListener('input', function () {
+                var s = field.selectionStart, e = field.selectionEnd;
+                var next = capName(field.value);
+                if (next !== field.value) {
+                    field.value = next;
+                    if (s !== null) field.setSelectionRange(s, e);
+                }
+            });
+            field.addEventListener('blur', function () {
+                field.value = capName(field.value.replace(/\s+/g, ' ').trim());
+            });
+        });
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', bindAdminPasswordToggles);
+    } else {
+        bindAdminPasswordToggles();
+    }
+    document.addEventListener('turbo:load', bindAdminPasswordToggles);
+    document.addEventListener('turbo:render', bindAdminPasswordToggles);
+})();
+</script>

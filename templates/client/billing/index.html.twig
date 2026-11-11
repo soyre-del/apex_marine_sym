@@ -13,10 +13,11 @@
                 <div class="client-billing-heading">
                     <a href="{{ path('app_home') }}" class="client-billing-button client-billing-button-outline">&larr; Home</a>
                     <a href="{{ path('client_status') }}" class="client-billing-button client-billing-button-outline">Operations</a>
+                    <a href="{{ path('app_profile') }}" class="client-billing-button client-billing-button-outline">My Profile</a>
                     <h1>Billing &amp; Payments</h1>
                 </div>
                 <div class="client-billing-identity">
-                    <span>Client:</span> <strong>{{ client_name }}</strong>
+                    <span>Welcome,</span> <strong>{{ client_first_name|default(client_name) }}</strong>
                 </div>
             </header>
 
@@ -80,7 +81,7 @@
                                     </a>
                                 {% else %}
                                     <button type="button" class="client-billing-button client-billing-button-settled" disabled>
-                                        <span aria-hidden="true">✓</span> Settled
+                                        Settled
                                     </button>
                                 {% endif %}
                             </div>

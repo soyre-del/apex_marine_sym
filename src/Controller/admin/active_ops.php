@@ -38,7 +38,16 @@ final class active_ops extends AbstractController
             ? filter_var($sessionIdentity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($adminId === false || $session->get('role') !== 'admin') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $adminId = $user->getUserId();
+            $session->set('user_id', $adminId);
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($adminId === false || $role !== 'admin') {
             throw $this->createAccessDeniedException('Administrator access is required.');
         }
 
@@ -53,14 +62,15 @@ final class active_ops extends AbstractController
             $operations = $this->connection->fetchAllAssociative(<<<'SQL'
                 SELECT
                     d.request_id, d.vessel_name, d.status, d.is_urgent,
-                    e.full_name AS eng_name, ep.engineer_id
+                    TRIM(CONCAT_WS(' ', NULLIF(e.first_name, ''), NULLIF(e.middle_name, ''), NULLIF(e.surname, ''))) AS eng_name,
+                    ep.engineer_id, ep.specialty
                 FROM dispatch_requests d
                 JOIN deployments dep ON d.request_id = dep.request_id
                 JOIN users e ON dep.engineer_id = e.user_id
                 JOIN engineer_profiles ep ON e.user_id = ep.engineer_id
                 WHERE dep.deployment_status != 'completed'
                 AND d.status NOT IN ('resolved', 'cancelled')
-                GROUP BY d.request_id, dep.engineer_id
+                GROUP BY d.request_id, d.vessel_name, d.status, d.is_urgent, d.requested_at, e.user_id, e.first_name, e.middle_name, e.surname, ep.engineer_id, ep.specialty
                 ORDER BY d.is_urgent DESC, d.requested_at DESC
                 SQL);
         } catch (DBALException $exception) {
@@ -95,7 +105,7 @@ final class active_ops extends AbstractController
         $milestone = $form['milestone'] ?? null;
         $message = $form['detailed_message'] ?? null;
         $status = $form['new_status'] ?? null;
-        $token = $form['_token'] ?? null;
+        $token = $form['_token'] ?? $form['csrf_token'] ?? $form['_csrf_token'] ?? null;
 
         if ($requestId === false
             || $engineerId === false
@@ -120,7 +130,7 @@ final class active_ops extends AbstractController
             'deployed' => 'en_route',
             'in_progress' => 'on_site',
             'resolved', 'cancelled' => 'completed',
-            default => 'active',
+            default => 'en_route',
         };
 
         try {
@@ -154,11 +164,17 @@ final class active_ops extends AbstractController
                 ]);
 
                 if (in_array($status, ['resolved', 'cancelled'], true)) {
-                    $connection->update('engineer_profiles', [
-                        'current_status' => 'available',
-                    ], [
-                        'engineer_id' => $engineerId,
-                    ]);
+                    $remainingActive = (int) $connection->fetchOne(
+                        "SELECT COUNT(*) FROM deployments WHERE engineer_id = ? AND deployment_status <> 'completed'",
+                        [$engineerId],
+                    );
+                    if ($remainingActive === 0) {
+                        $connection->update('engineer_profiles', [
+                            'current_status' => 'available',
+                        ], [
+                            'engineer_id' => $engineerId,
+                        ]);
+                    }
                 }
             });
         } catch (DBALException $exception) {

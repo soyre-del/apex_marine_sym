@@ -1,5 +1,10 @@
 {% extends 'dashboard/index.html.twig' %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/contact.css') }}">
+{% endblock %}
+
 {% macro icon(name) %}
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
         {% if name == 'mail' %}
@@ -137,14 +142,34 @@
                         </div>
                     {% endif %}
 
-                    <form class="contact-form" action="{{ path('app_contact') }}" method="post" enctype="multipart/form-data">
+                    <form class="contact-form" action="{{ path('app_contact') }}" method="post" enctype="multipart/form-data" data-turbo="false" id="dispatchRequestForm" data-can-submit="{{ can_submit ? '1' : '0' }}">
                         <input type="hidden" name="_token" value="{{ csrf_token('dispatch_request') }}">
+                        <input type="hidden" name="_csrf_token" value="{{ csrf_token('dispatch_request') }}">
                         <div class="contact-form-grid">
-                            {{ ui.input_field('vessel_name', 'Vessel Name', 'text', values, errors, true, '', 255) }}
-                            {{ ui.input_field('imo_number', 'IMO Number', 'text', values, errors, true, 'e.g., 9876543', 7) }}
-                            {{ ui.select_field('vessel_type', 'Vessel Type', contact.vessel_types, values, errors) }}
-                            {{ ui.input_field('company', 'Company (Optional)', 'text', values, errors, false, '', 255) }}
-                            {{ ui.input_field('contact_person', 'Contact Person', 'text', values, errors, true, '', 255) }}
+                            {{ ui.input_field('vessel_name', 'Vessel Name', 'text', values, errors, true, 'e.g., MV Pacific Horizon', 255) }}
+
+                            <div class="contact-field">
+                                <label class="contact-field-label" for="imo_number">IMO Number</label>
+                                <input class="contact-input" id="imo_number" name="imo_number" type="text" value="{{ values.imo_number }}" required placeholder="e.g., 9876543" maxlength="7"{% if errors.imo_number is defined %} aria-invalid="true" aria-describedby="imo_number_error"{% endif %}>
+                                <div id="imo-feedback" style="display: none; margin-top: 6px; font-size: 0.78rem;"></div>
+                                {{ ui.field_error('imo_number', errors) }}
+                            </div>
+
+                            <div class="contact-field">
+                                <label class="contact-field-label" for="vessel_type">Vessel Type</label>
+                                <select class="contact-input" id="vessel_type" name="vessel_type" required{% if errors.vessel_type is defined %} aria-invalid="true" aria-describedby="vessel_type_error"{% endif %}>
+                                    <option value="">Select vessel type</option>
+                                    {% for value, text in contact.vessel_types %}
+                                        <option value="{{ value }}"{% if values.vessel_type == value %} selected{% endif %}>{{ text }}</option>
+                                    {% endfor %}
+                                </select>
+                                {{ ui.field_error('vessel_type', errors) }}
+                                <div id="vessel-class-preview" style="display: none; margin-top: 8px; padding: 8px 12px; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.8rem; color: #6ee7b7;"></div>
+                            </div>
+
+                            {{ ui.input_field('company', 'Company / Operator (Optional)', 'text', values, errors, false, 'e.g., Maersk Marine Lines', 255) }}
+                            {{ ui.input_field('contact_person', 'Contact Person', 'text', values, errors, true, 'e.g., Chief Engineer James Thorne', 255) }}
+
                             <div class="contact-field">
                                 <label class="contact-field-label" for="phone_number">Contact Phone</label>
                                 <div class="contact-phone-group">
@@ -158,13 +183,16 @@
                                 {{ ui.field_error('country_code', errors) }}
                                 {{ ui.field_error('phone_number', errors) }}
                             </div>
+
                             {{ ui.input_field('eta_date', 'ETA / Service Date', 'date', values, errors) }}
+
                             <div class="contact-field">
                                 <label class="contact-urgent" for="urgent">
                                     <input type="checkbox" id="urgent" name="urgent" value="1"{% if values.urgent %} checked{% endif %}>
                                     <span>Urgent Request</span>
                                 </label>
                             </div>
+
                             <div class="contact-field">
                                 <label class="contact-field-label" for="location">Service Location</label>
                                 <select class="contact-input" id="location" name="location" required{% if errors.location is defined %} aria-invalid="true" aria-describedby="location_error"{% endif %}>
@@ -172,14 +200,26 @@
                                     {% for group, locations in contact.locations %}
                                         <optgroup label="{{ group }}">
                                             {% for id, label in locations %}
-                                                <option value="{{ id }}"{% if values.location == id %} selected{% endif %}>{{ label }}</option>
+                                                <option value="{{ id }}"{% if values.location == id %} selected{% endif %}>{{ label }} ({{ group|split(' ')|first }})</option>
                                             {% endfor %}
                                         </optgroup>
                                     {% endfor %}
                                 </select>
                                 {{ ui.field_error('location', errors) }}
+                                <div id="location-hub-preview" style="display: none; margin-top: 8px; padding: 10px 14px; border-radius: 8px; background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3); font-size: 0.82rem; color: #bae6fd;"></div>
                             </div>
-                            {{ ui.select_field('service_type', 'Service Type', contact.service_types, values, errors) }}
+
+                            <div class="contact-field">
+                                <label class="contact-field-label" for="service_type">Service Type</label>
+                                <select class="contact-input" id="service_type" name="service_type" required{% if errors.service_type is defined %} aria-invalid="true" aria-describedby="service_type_error"{% endif %}>
+                                    <option value="">Select service type</option>
+                                    {% for value, text in contact.service_types %}
+                                        <option value="{{ value }}"{% if values.service_type == value %} selected{% endif %}>{{ text }}</option>
+                                    {% endfor %}
+                                </select>
+                                {{ ui.field_error('service_type', errors) }}
+                                <div id="service-discipline-preview" style="display: none; margin-top: 8px; padding: 10px 14px; border-radius: 8px; background: rgba(11, 165, 223, 0.12); border: 1px solid rgba(11, 165, 223, 0.35); font-size: 0.82rem; color: #7dd3fc;"></div>
+                            </div>
                         </div>
 
                         <div class="contact-form-row contact-field">
@@ -188,6 +228,7 @@
                             <p class="contact-file-hint" id="attachment_hint">JPG, PNG, or PDF. Maximum size: 5 MB. Select the file again if you need to resubmit.</p>
                             {{ ui.field_error('attachment', errors) }}
                         </div>
+
                         <div class="contact-form-row contact-field">
                             <label class="contact-field-label" for="description">
                                 Request Details
@@ -198,31 +239,35 @@
                         </div>
 
                         {# Dynamic Form Manipulation Notice #}
-                        <div id="urgent-notice" style="display: none; padding: 12px 16px; border-radius: 8px; margin-bottom: 1rem; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.4); color: #f6bc4c; font-size: 0.85rem;">
-                            <strong>⚡ PRIORITY DISPATCH ENGAGED:</strong> This request will be marked critical and escalated immediately to the active on-duty engineering unit.
+                        <div id="urgent-notice" style="display: none; padding: 10px 14px; border-radius: 6px; margin-bottom: 1rem; background: rgba(245, 158, 11, 0.12); border: 1px solid rgba(245, 158, 11, 0.35); color: #fbbf24; font-size: 0.82rem;">
+                            <strong>Urgent Request:</strong> Priority dispatch requested.
                         </div>
 
                         <div id="file-info" style="display: none; padding: 8px 12px; border-radius: 6px; margin-bottom: 1rem; background: rgba(11, 165, 223, 0.12); border: 1px solid rgba(11, 165, 223, 0.3); color: #0ba5df; font-size: 0.82rem;"></div>
 
-                        {% if can_submit %}
-                            <button class="contact-submit" type="submit">{{ ui.icon('send') }}Submit Request</button>
-                        {% else %}
-                            <div class="contact-clearance">
-                                {{ ui.icon('lock') }}
-                                <p>Clearance required to submit dispatch</p>
-                                <div class="contact-auth-actions">
-                                    {% if login_url %}
-                                        <a class="contact-auth-button" href="{{ login_url }}">Authenticate</a>
-                                    {% else %}
-                                        <button class="contact-auth-button" type="button" disabled title="Account access is currently unavailable">Authenticate</button>
-                                    {% endif %}
-                                    {% if register_url %}
-                                        <a class="contact-auth-button contact-auth-button-outline" href="{{ register_url }}">Enlist Now</a>
-                                    {% else %}
-                                        <button class="contact-auth-button contact-auth-button-outline" type="button" disabled title="Registration is currently unavailable">Enlist Now</button>
-                                    {% endif %}
-                                </div>
+                        {# User authorization / clearance status banner #}
+                        <div class="contact-dispatch-mode" style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 1.25rem; padding: 10px 14px; border-radius: 8px; background: rgba(14, 43, 73, 0.7); border: 1px solid {{ can_submit ? 'rgba(16, 185, 129, 0.35)' : 'rgba(245, 158, 11, 0.45)' }};">
+                            <div style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
+                                {% if can_submit %}
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #10b981;"></span>
+                                    <span style="font-size: 0.82rem; color: #f0f5ff;">Authorized Client: <strong style="color: #38bdf8;">{{ client_name }}</strong></span>
+                                {% elseif is_logged_in %}
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>
+                                    <span style="font-size: 0.82rem; color: #f0f5ff;">Dispatch submission is restricted to <strong>Client</strong> accounts. <a href="{{ path('app_logout') }}" style="color: #38bdf8; text-decoration: underline;">Switch to a Client account</a> to send a request.</span>
+                                {% else %}
+                                    <span style="display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: #f59e0b;"></span>
+                                    <span style="font-size: 0.82rem; color: #f0f5ff;">Client Account Required &mdash; Please <a href="{{ path('app_login') }}" style="color: #38bdf8; font-weight: 600; text-decoration: underline;">Log In</a> or <a href="{{ path('app_register') }}" style="color: #38bdf8; font-weight: 600; text-decoration: underline;">Register</a> to unlock dispatch submission.</span>
+                                {% endif %}
                             </div>
+                            <span style="font-size: 0.72rem; color: #38bdf8; font-weight: 600;">Apex Marine 24/7</span>
+                        </div>
+
+                        {% if can_submit %}
+                            <button class="contact-submit" type="submit" style="cursor: pointer;">{{ ui.icon('send') }} Submit Dispatch Request</button>
+                        {% else %}
+                            <button class="contact-submit is-locked" type="button" disabled aria-disabled="true" style="opacity: 0.65; cursor: not-allowed; background: rgba(30, 58, 86, 0.9); color: #9ab0c6; border: 1px solid rgba(163, 182, 200, 0.3); box-shadow: none;">
+                                {{ ui.icon('lock') }} Locked &mdash; Log In as Client to Submit Dispatch Request
+                            </button>
                         {% endif %}
                     </form>
                 </section>
@@ -233,13 +278,77 @@
     <script>
     (function () {
         function initContactForm() {
-            var urgentCheckbox = document.getElementById('urgent');
-            var urgentNotice   = document.getElementById('urgent-notice');
-            var formCard       = document.querySelector('.contact-form-card');
-            var descTextarea   = document.getElementById('description');
-            var charCounter    = document.getElementById('char-counter');
-            var fileInput      = document.getElementById('attachment');
-            var fileInfo       = document.getElementById('file-info');
+            var urgentCheckbox     = document.getElementById('urgent');
+            var urgentNotice       = document.getElementById('urgent-notice');
+            var formCard           = document.querySelector('.contact-form-card');
+            var descTextarea       = document.getElementById('description');
+            var charCounter        = document.getElementById('char-counter');
+            var fileInput          = document.getElementById('attachment');
+            var fileInfo           = document.getElementById('file-info');
+            var serviceTypeSelect  = document.getElementById('service_type');
+            var servicePreview     = document.getElementById('service-discipline-preview');
+            var locationSelect     = document.getElementById('location');
+            var locationPreview    = document.getElementById('location-hub-preview');
+            var vesselTypeSelect   = document.getElementById('vessel_type');
+            var vesselPreview      = document.getElementById('vessel-class-preview');
+            var countryCodeSelect  = document.getElementById('country_code');
+            var etaDateInput       = document.getElementById('eta_date');
+            var imoInput           = document.getElementById('imo_number');
+            var imoFeedback        = document.getElementById('imo-feedback');
+
+            // Set minimum ETA date to local today and prefill if empty
+            if (etaDateInput) {
+                var now = new Date();
+                var y = now.getFullYear();
+                var m = String(now.getMonth() + 1).padStart(2, '0');
+                var d = String(now.getDate()).padStart(2, '0');
+                var localToday = y + '-' + m + '-' + d;
+                etaDateInput.setAttribute('min', localToday);
+                if (!etaDateInput.value) {
+                    etaDateInput.value = localToday;
+                }
+            }
+
+            // Auto-filter non-digits on IMO input
+            if (imoInput) {
+                imoInput.addEventListener('input', function() {
+                    var sanitized = this.value.replace(/\D/g, '').slice(0, 7);
+                    if (this.value !== sanitized) {
+                        this.value = sanitized;
+                    }
+                });
+            }
+
+            // Intercept form submit for smooth UX and robust validation
+            var form = document.getElementById('dispatchRequestForm');
+            var submitBtn = form ? form.querySelector('button[type="submit"]') : null;
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    if (form.getAttribute('data-can-submit') !== '1' || !submitBtn) {
+                        e.preventDefault();
+                        return false;
+                    }
+                    if (!form.checkValidity()) {
+                        e.preventDefault();
+                        var firstInvalid = form.querySelector(':invalid');
+                        if (firstInvalid) {
+                            firstInvalid.focus();
+                            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                            firstInvalid.style.outline = '2px solid #ef4444';
+                            firstInvalid.style.borderColor = '#ef4444';
+                            setTimeout(function() {
+                                firstInvalid.style.outline = '';
+                                firstInvalid.style.borderColor = '';
+                            }, 3000);
+                        }
+                        return false;
+                    }
+                    submitBtn.disabled = true;
+                    submitBtn.innerHTML = 'Submitting...';
+                    submitBtn.style.opacity = '0.85';
+                    submitBtn.style.cursor = 'wait';
+                });
+            }
 
             // 1. Dynamic Urgent State Manipulation
             function updateUrgentState() {
@@ -248,10 +357,13 @@
                 if (urgentNotice) urgentNotice.style.display = isUrgent ? 'block' : 'none';
                 if (formCard) {
                     if (isUrgent) {
-                        formCard.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, .5), 0 12px 40px rgba(0, 0, 0, .4)';
+                        formCard.style.boxShadow = '0 0 0 2px rgba(245, 158, 11, .6), 0 16px 48px rgba(0, 0, 0, .5)';
                     } else {
                         formCard.style.boxShadow = '';
                     }
+                }
+                if (isUrgent && etaDateInput && !etaDateInput.value) {
+                    etaDateInput.value = new Date().toISOString().split('T')[0];
                 }
             }
             if (urgentCheckbox) {
@@ -259,13 +371,112 @@
                 updateUrgentState();
             }
 
-            // 2. Dynamic Character Counter
+            // 2. Dynamic Service Type State
+            var serviceDisciplineMap = {
+                'Propulsion & Machinery': 'Marine Propulsion Specialist',
+                'Electrical & Automation': 'Electrical & Automation Engineer',
+                'Hydraulics & Deck Gear': 'Hydraulics Specialist',
+                'Hull & Steel Fabrication': 'Hull & Steel Fabricator',
+                'Preventative Maintenance': 'Maintenance Surveyor',
+                'General Consultation': 'Technical Superintendent'
+            };
+
+            function updateServiceTypeState() {
+                if (!serviceTypeSelect || !servicePreview) return;
+                var val = serviceTypeSelect.value;
+                var role = serviceDisciplineMap[val];
+                if (role) {
+                    servicePreview.innerHTML = 'Assigned: <strong>' + role + '</strong>';
+                    servicePreview.style.display = 'block';
+                } else {
+                    servicePreview.style.display = 'none';
+                }
+            }
+            if (serviceTypeSelect) {
+                serviceTypeSelect.addEventListener('change', updateServiceTypeState);
+                updateServiceTypeState();
+            }
+
+            // 3. Dynamic Location State
+            var locationHubMap = {
+                '1': { name: 'Singapore Station', code: '+65' },
+                '2': { name: 'Shanghai Station', code: '+86' },
+                '3': { name: 'Rotterdam Station', code: '+31' },
+                '4': { name: 'Dubai Station', code: '+971' },
+                '5': { name: 'Cape Town Station', code: '+27' },
+                '6': { name: 'Houston Station', code: '+1' },
+                '7': { name: 'Panama Station', code: '+507' }
+            };
+
+            function updateLocationState() {
+                if (!locationSelect || !locationPreview) return;
+                var val = locationSelect.value;
+                var data = locationHubMap[val];
+                if (data) {
+                    locationPreview.innerHTML = 'Station: <strong>' + data.name + '</strong>';
+                    locationPreview.style.display = 'block';
+
+                    var phoneInput = document.getElementById('phone_number');
+                    if (countryCodeSelect && (!phoneInput || !phoneInput.value)) {
+                        countryCodeSelect.value = data.code;
+                    }
+                } else {
+                    locationPreview.style.display = 'none';
+                }
+            }
+            if (locationSelect) {
+                locationSelect.addEventListener('change', updateLocationState);
+                updateLocationState();
+            }
+
+            // 4. Dynamic Vessel Type State
+            function updateVesselTypeState() {
+                if (!vesselTypeSelect || !vesselPreview) return;
+                var val = vesselTypeSelect.value;
+                if (val) {
+                    vesselPreview.textContent = 'Selected: ' + val;
+                    vesselPreview.style.display = 'block';
+                } else {
+                    vesselPreview.style.display = 'none';
+                }
+            }
+            if (vesselTypeSelect) {
+                vesselTypeSelect.addEventListener('change', updateVesselTypeState);
+                updateVesselTypeState();
+            }
+
+            // 5. Dynamic IMO Number Live Format Validation
+            function updateImoValidation() {
+                if (!imoInput || !imoFeedback) return;
+                var val = imoInput.value.trim();
+                if (val.length === 0) {
+                    imoFeedback.style.display = 'none';
+                    return;
+                }
+                if (/^\d{7}$/.test(val)) {
+                    imoFeedback.style.display = 'block';
+                    imoFeedback.style.color = '#34d399';
+                    imoFeedback.textContent = 'Valid IMO (7 digits)';
+                } else {
+                    imoFeedback.style.display = 'block';
+                    imoFeedback.style.color = '#f59e0b';
+                    imoFeedback.textContent = '7 digits required (' + val.length + '/7)';
+                }
+            }
+            if (imoInput) {
+                imoInput.addEventListener('input', updateImoValidation);
+                updateImoValidation();
+            }
+
+            // 6. Dynamic Character Counter
             function updateCharCount() {
                 if (!descTextarea || !charCounter) return;
                 var len = descTextarea.value.length;
                 charCounter.textContent = len.toLocaleString() + ' / 10,000';
-                if (len > 9000) {
+                if (len > 9500) {
                     charCounter.style.color = '#ef4444';
+                } else if (len > 8000) {
+                    charCounter.style.color = '#f59e0b';
                 } else {
                     charCounter.style.color = '#a3b6c8';
                 }
@@ -275,13 +486,22 @@
                 updateCharCount();
             }
 
-            // 3. Dynamic File Upload Info Display
+            // 7. Dynamic File Upload Info
             if (fileInput && fileInfo) {
                 fileInput.addEventListener('change', function () {
                     if (fileInput.files && fileInput.files[0]) {
                         var file = fileInput.files[0];
-                        var sizeMb = (file.size / (1024 * 1024)).toFixed(2);
-                        fileInfo.textContent = '📎 Attached: ' + file.name + ' (' + sizeMb + ' MB)';
+                        if (file.size > 5 * 1024 * 1024) {
+                            fileInfo.innerHTML = 'File exceeds 5 MB limit.';
+                            fileInfo.style.borderColor = '#ef4444';
+                            fileInfo.style.color = '#ef4444';
+                            fileInfo.style.background = 'rgba(239, 68, 68, 0.15)';
+                        } else {
+                            fileInfo.innerHTML = 'File: ' + file.name;
+                            fileInfo.style.borderColor = 'rgba(11, 165, 223, 0.4)';
+                            fileInfo.style.color = '#0ba5df';
+                            fileInfo.style.background = 'rgba(11, 165, 223, 0.12)';
+                        }
                         fileInfo.style.display = 'block';
                     } else {
                         fileInfo.style.display = 'none';

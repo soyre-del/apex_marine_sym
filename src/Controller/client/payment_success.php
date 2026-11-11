@@ -29,7 +29,16 @@ final class payment_success extends AbstractController
             ? filter_var($identity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($clientId === false || $session->get('role') !== 'client') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $clientId = $user->getUserId();
+            $session->set('user_id', $clientId);
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($clientId === false || !in_array($role, ['client', 'admin'], true)) {
             throw $this->createAccessDeniedException('Client access is required.');
         }
 

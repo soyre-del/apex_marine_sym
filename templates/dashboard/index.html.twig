@@ -6,12 +6,15 @@
 {% block title %}{{ dashboard.title }} | {{ sidebar.brand }}{% endblock %}
 {% block meta_description %}{{ dashboard.description }}{% endblock %}
 {% block body_class %}app-layout{% endblock %}
+{% block stylesheets %}
+    <link rel="stylesheet" href="{{ asset('styles/dashboard.css') }}">
+{% endblock %}
 
 {% block body %}
 {% include 'partials/topbar.html.twig' with {
     brand: sidebar.brand,
     logo_path: sidebar.logo_path,
-    account_name: app.user ? app.user.fullName : null
+    account_name: app.user ? (app.user.username ?: (app.user.firstName ?: app.user.fullName)) : null
 } only %}
 <div class="dashboard-shell">
     {% include 'partials/sidebar.html.twig' with { sidebar: sidebar } only %}

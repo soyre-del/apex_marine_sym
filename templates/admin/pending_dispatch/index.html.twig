@@ -54,7 +54,6 @@
             {% if load_error %}
             {% elseif pending_requests is empty %}
                 <section class="pending-empty">
-                    <span aria-hidden="true" class="pending-empty-icon">✓</span>
                     <h2>Sector Clear</h2>
                     <p>No pending dispatches detected in the system.</p>
                     <a href="{{ path('admin_dashboard') }}" class="pending-button pending-button-outline">Return to Dashboard</a>
@@ -127,20 +126,38 @@
 
                                 <template id="engineers-for-{{ dispatch.request_id }}">
                                     {% for engineer in matching_engineers[dispatch.request_id] %}
-                                        <form method="post" action="{{ path('admin_pending_dispatch') }}" class="pending-engineer-option">
+                                        <form method="post" action="{{ path('admin_pending_dispatch') }}" class="pending-engineer-option" style="{% if 'chief engineer' in engineer.specialty|lower %}border-color: #f59e0b; background: rgba(245, 158, 11, 0.08);{% endif %}">
                                             <input type="hidden" name="csrf_token" value="{{ csrf_token('pending_dispatch') }}">
                                             <input type="hidden" name="action" value="assign_engineer">
                                             <input type="hidden" name="request_id" value="{{ dispatch.request_id }}">
                                             <input type="hidden" name="engineer_id" value="{{ engineer.user_id }}">
-                                            <strong>{{ engineer.full_name }}</strong>
-                                            <span>{{ engineer.specialty }}</span>
-                                            <button type="submit" class="pending-button pending-button-warning">
-                                                Deploy {{ engineer.full_name }}
-                                            </button>
+                                            <div>
+                                                {% if 'chief engineer' in engineer.specialty|lower %}
+                                                    <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 2px;">
+                                                        <strong style="color: #fbbf24; font-size: 0.95rem;">{{ engineer.full_name }}</strong>
+                                                        <span style="font-size: 0.68rem; font-weight: 700; text-transform: uppercase; padding: 2px 6px; border-radius: 4px; background: rgba(245, 158, 11, 0.25); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.6);">
+                                                            Universal Clearance
+                                                        </span>
+                                                    </div>
+                                                    <span style="display: block; font-size: 0.78rem; color: #fde68a;">Chief Engineer &bull; Certified to Resolve Any Problem Domain</span>
+                                                {% else %}
+                                                    <strong style="color: #f0f5ff;">{{ engineer.full_name }}</strong>
+                                                    <span style="display: block; font-size: 0.78rem; color: #a3b6c8;">{{ engineer.specialty }}</span>
+                                                {% endif %}
+                                            </div>
+                                            {% if 'chief engineer' in engineer.specialty|lower %}
+                                                <button type="submit" class="pending-button" style="background: #f59e0b; color: #081c2d; font-weight: 700; border: none; cursor: pointer; white-space: nowrap;">
+                                                    Deploy Chief Engineer
+                                                </button>
+                                            {% else %}
+                                                <button type="submit" class="pending-button pending-button-warning">
+                                                    Deploy {{ engineer.full_name }}
+                                                </button>
+                                            {% endif %}
                                         </form>
                                     {% else %}
                                         <p class="pending-no-match">
-                                            No available engineers match this discipline. Deployment will be available when a matching specialist is available.
+                                            No available engineers match this discipline. Deployment will be available when a matching specialist or Chief Engineer is available.
                                         </p>
                                     {% endfor %}
                                 </template>
@@ -184,8 +201,11 @@
                 </header>
                 <div class="pending-modal-body">
                     <p class="pending-modal-description">
-                        Assign an engineer to <strong id="modalVesselName"></strong>.
+                        Assign an engineer to <strong id="modalVesselName"></strong>.<br>
                         Requested discipline: <strong id="modalReqSpecialty"></strong>.
+                        <span style="display: block; margin-top: 8px; font-size: 0.8rem; color: #fbbf24; background: rgba(245, 158, 11, 0.12); padding: 8px 12px; border-radius: 6px; border: 1px solid rgba(245, 158, 11, 0.35);">
+                            <strong>Universal Technical Authority:</strong> The <strong>Chief Engineer</strong> is universally certified to resolve all technical failures and can be deployed to any problem.
+                        </span>
                     </p>
                     <div id="matchingEngineers" aria-live="polite"></div>
                 </div>

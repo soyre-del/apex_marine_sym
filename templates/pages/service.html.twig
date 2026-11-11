@@ -1,5 +1,10 @@
 {% extends 'dashboard/index.html.twig' %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    <link rel="stylesheet" href="{{ asset('styles/service.css') }}">
+{% endblock %}
+
 {% block main_class %}service-main{% endblock %}
 
 {% macro icon(name, size = 28) %}

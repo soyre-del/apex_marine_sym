@@ -4,13 +4,13 @@
 }
 
 .service-page {
-    --service-accent: #0ba5df;
+    --service-accent: #2b86c5;
     --service-heading: #f7faff;
-    --service-muted: #a3b6c8;
-    --service-border: rgba(163, 182, 200, .18);
+    --service-muted: #9ab0c4;
+    --service-border: transparent;
     --service-caution: #e7b254;
     color: var(--service-heading);
-    background: #0e2b49;
+    background: #081c2d;
     font-family: Inter, Arial, sans-serif;
 }
 
@@ -18,9 +18,9 @@
     position: relative;
     z-index: 1;
     width: 100%;
-    max-width: 1440px;
+    max-width: 1360px;
     margin-inline: auto;
-    padding-inline: clamp(18px, 3vw, 44px);
+    padding-inline: clamp(20px, 3.5vw, 48px);
 }
 
 .service-page .service-hero {
@@ -30,7 +30,9 @@
     min-height: 420px;
     padding-block: clamp(68px, 7vw, 100px);
     text-align: center;
-    background: radial-gradient(ellipse at 50% 0, #174365, #081c2d 75%);
+    background:
+        radial-gradient(ellipse at 50% 0, rgba(24, 62, 98, .75), transparent 72%),
+        linear-gradient(180deg, #0c263e 0%, #0a2035 65%, #081c2d 100%);
 }
 
 .service-page .service-hero .service-container {
@@ -42,11 +44,11 @@
     align-items: center;
     gap: 8px;
     max-width: 100%;
-    padding: 7px 14px;
-    border: 1px solid var(--service-border);
+    padding: 6px 15px;
+    border: 0;
     border-radius: 999px;
-    background: rgba(255, 255, 255, .04);
-    font-size: 10px;
+    background: rgba(16, 42, 68, .68);
+    font-size: 9.5px;
     font-weight: 700;
     line-height: 1.4;
     letter-spacing: 1.8px;
@@ -105,20 +107,21 @@
 .service-page .service-cta {
     position: relative;
     padding-block: clamp(64px, 7vw, 100px);
-    border-bottom: 1px solid var(--service-border);
+    border-bottom: 0;
     scroll-margin-top: 24px;
+    background: linear-gradient(180deg, #081c2d 0%, #0c263e 50%, #081c2d 100%);
 }
 
 .service-page .service-section-dark,
 .service-page .service-cta {
-    background: #081c2d;
+    background: linear-gradient(180deg, #081c2d 0%, #0a2035 50%, #081c2d 100%);
 }
 
 .service-page .service-section-glow::before {
     content: '';
     position: absolute;
     inset: 0;
-    background: radial-gradient(ellipse at 50% 0, rgba(11, 165, 223, .1), transparent 65%);
+    background: radial-gradient(ellipse at 50% 0, rgba(43, 134, 197, .08), transparent 68%);
     pointer-events: none;
 }
 
@@ -151,10 +154,11 @@
 .service-page .service-discipline-card {
     min-width: 0;
     padding: 26px 22px;
-    border: 1px solid var(--service-border);
+    border: 0;
     border-radius: 14px;
-    background: rgba(255, 255, 255, .025);
-    transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+    background: rgba(14, 37, 60, .62);
+    box-shadow: 0 10px 28px rgba(0, 0, 0, .18);
+    transition: transform .2s ease, background-color .2s ease, box-shadow .2s ease;
 }
 
 .service-page .service-discipline-icon {
@@ -434,23 +438,23 @@
     gap: 14px;
     max-width: 100%;
     min-height: 44px;
-    padding: 14px 22px;
-    border: 1px solid transparent;
+    padding: 13px 22px;
+    border: 0;
     border-radius: 6px;
-    background: var(--service-accent);
+    background: #236b9e;
     color: #fff;
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 1px;
     line-height: 1.4;
     text-transform: uppercase;
-    transition: background-color .2s ease, border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    transition: background-color .2s ease, box-shadow .2s ease, transform .2s ease;
 }
 
 .service-page .service-button:hover {
     transform: translateY(-2px);
-    background: #078ec2;
-    box-shadow: 0 8px 20px rgba(0, 0, 0, .18);
+    background: #2b7db8;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, .22);
 }
 
 .service-page .service-button svg {
@@ -461,13 +465,11 @@
 }
 
 .service-page .service-button-outline {
-    border-color: rgba(163, 182, 200, .45);
-    background: transparent;
+    background: rgba(255, 255, 255, .06);
 }
 
 .service-page .service-button-outline:hover {
-    border-color: var(--service-accent);
-    background: rgba(11, 165, 223, .1);
+    background: rgba(43, 134, 197, .18);
 }
 
 @media (hover: hover) {

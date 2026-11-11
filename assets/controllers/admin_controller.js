@@ -61,13 +61,17 @@ function initAdminPage() {
         button.addEventListener('click', (e) => {
             e.preventDefault();
             const editId = document.getElementById('edit_user_id');
-            const editName = document.getElementById('edit_eng_name');
+            const editFirstName = document.getElementById('edit_eng_first_name');
+            const editMiddleName = document.getElementById('edit_eng_middle_name');
+            const editSurname = document.getElementById('edit_eng_surname');
             const editEmail = document.getElementById('edit_eng_email');
             const editSpecialty = document.getElementById('edit_eng_specialty');
             const editStatus = document.getElementById('edit_eng_status');
 
             if (editId) editId.value = button.dataset.id ?? '';
-            if (editName) editName.value = button.dataset.name ?? '';
+            if (editFirstName) editFirstName.value = button.dataset.firstName ?? '';
+            if (editMiddleName) editMiddleName.value = button.dataset.middleName ?? '';
+            if (editSurname) editSurname.value = button.dataset.surname ?? '';
             if (editEmail) editEmail.value = button.dataset.email ?? '';
             if (editSpecialty) editSpecialty.value = button.dataset.specialty ?? '';
             if (editStatus) editStatus.value = button.dataset.status ?? 'available';
@@ -113,6 +117,32 @@ function initAdminPage() {
     } else if (failedAction === 'edit_engineer') {
         openModal(document.getElementById('editEngineerModal'));
     }
+
+    document.querySelectorAll('[data-adm-password-toggle]').forEach((btn) => {
+        if (btn.dataset.toggleBound === 'true') {
+            return;
+        }
+        btn.dataset.toggleBound = 'true';
+
+        btn.addEventListener('click', () => {
+            const wrap = btn.closest('.adm-password-wrap');
+            const input = wrap?.querySelector('input');
+            if (!input) return;
+
+            const isHidden = input.type === 'password';
+            input.type = isHidden ? 'text' : 'password';
+            btn.setAttribute('aria-pressed', isHidden ? 'true' : 'false');
+            btn.setAttribute('aria-label', isHidden ? 'Hide password' : 'Show password');
+
+            const eyeIcon = btn.querySelector('.icon-eye');
+            const eyeOffIcon = btn.querySelector('.icon-eye-off');
+            const textSpan = btn.querySelector('.adm-password-toggle-text');
+
+            if (eyeIcon) eyeIcon.hidden = isHidden;
+            if (eyeOffIcon) eyeOffIcon.hidden = !isHidden;
+            if (textSpan) textSpan.textContent = isHidden ? 'Hide' : 'Show';
+        });
+    });
 }
 
 if (document.readyState === 'loading') {

@@ -36,6 +36,7 @@ security:
         - { path: ^/admin, roles: ROLE_ADMIN }
         - { path: ^/engineer, roles: ROLE_ENGINEER }
         - { path: ^/client, roles: ROLE_CLIENT }
+        - { path: ^/profile, roles: ROLE_USER }
         - { path: ^/dashboard, roles: ROLE_USER }
 
 when@test:

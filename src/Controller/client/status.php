@@ -20,7 +20,7 @@ final class status extends AbstractController
     ) {
     }
 
-    #[Route('/client/status', name: 'client_status', methods: ['GET'])]
+    #[Route('/client/status', name: 'client_status', methods: ['GET', 'POST'])]
     public function index(Request $request): Response
     {
         $session = $request->getSession();
@@ -29,8 +29,79 @@ final class status extends AbstractController
             ? filter_var($identity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($clientId === false || $session->get('role') !== 'client') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $clientId = $user->getUserId();
+            $session->set('user_id', $clientId);
+            $session->set('role', $user->getRole());
+            $session->set('username', $user->getUsername() ?: ($user->getFirstName() ?? $user->getUserIdentifier()));
+            $session->set('first_name', $user->getFirstName() ?? $user->getUserIdentifier());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($clientId === false || !in_array($role, ['client', 'admin'], true)) {
             throw $this->createAccessDeniedException('Client access is required.');
+        }
+
+        // Handle Client CRUD POST actions
+        if ($request->isMethod('POST')) {
+            $action = $request->request->getString('action');
+            $csrfToken = $request->request->getString('csrf_token') ?: ($request->request->getString('_token') ?: $request->request->getString('_csrf_token'));
+
+            if ($action === 'cancel_request') {
+                if (!$this->isCsrfTokenValid('client_cancel_request', $csrfToken)) {
+                    $this->addFlash('danger', 'Security validation failed. Reload the page and try again.');
+                } else {
+                    $requestId = filter_var($request->request->get('request_id'), FILTER_VALIDATE_INT);
+                    if ($requestId) {
+                        try {
+                            $affected = $this->connection->executeStatement(
+                                "UPDATE dispatch_requests SET status = 'cancelled' WHERE request_id = ? AND client_id = ? AND status = 'pending'",
+                                [$requestId, $clientId]
+                            );
+                            if ($affected > 0) {
+                                $this->addFlash('success', 'Request cancelled successfully.');
+                            } else {
+                                $this->addFlash('warning', 'Only pending requests may be cancelled.');
+                            }
+                        } catch (\Throwable $e) {
+                            $this->addFlash('danger', 'Unable to cancel request: '.$e->getMessage());
+                        }
+                    }
+                }
+                return $this->redirectToRoute('client_status', [], Response::HTTP_SEE_OTHER);
+            }
+
+            if ($action === 'edit_request') {
+                if (!$this->isCsrfTokenValid('client_edit_request', $csrfToken)) {
+                    $this->addFlash('danger', 'Security validation failed. Reload the page and try again.');
+                } else {
+                    $requestId = filter_var($request->request->get('request_id'), FILTER_VALIDATE_INT);
+                    $description = trim($request->request->getString('description'));
+                    $contactPerson = trim($request->request->getString('contact_person'));
+                    $contactPhone = trim($request->request->getString('contact_phone'));
+
+                    if ($requestId && $description !== '' && $contactPerson !== '') {
+                        try {
+                            $affected = $this->connection->executeStatement(
+                                "UPDATE dispatch_requests SET description = ?, contact_person = ?, contact_phone = ? WHERE request_id = ? AND client_id = ? AND status = 'pending'",
+                                [$description, $contactPerson, $contactPhone, $requestId, $clientId]
+                            );
+                            if ($affected > 0) {
+                                $this->addFlash('success', 'Request updated successfully.');
+                            } else {
+                                $this->addFlash('warning', 'Only pending requests may be updated.');
+                            }
+                        } catch (\Throwable $e) {
+                            $this->addFlash('danger', 'Unable to update request: '.$e->getMessage());
+                        }
+                    } else {
+                        $this->addFlash('danger', 'Please provide a valid description and contact person.');
+                    }
+                }
+                return $this->redirectToRoute('client_status', [], Response::HTTP_SEE_OTHER);
+            }
         }
 
         $requests = [];
@@ -42,6 +113,12 @@ final class status extends AbstractController
                 SELECT
                     d.request_id,
                     d.vessel_name,
+                    d.vessel_type,
+                    d.service_type,
+                    d.contact_person,
+                    d.contact_phone,
+                    d.description,
+                    d.is_urgent,
                     d.status,
                     d.requested_at,
                     i.invoice_id,
@@ -84,6 +161,7 @@ final class status extends AbstractController
 
         return $this->render('client/status/index.html.twig', [
             'client_name' => $session->get('full_name', 'Client'),
+            'client_first_name' => $user instanceof \App\Entity\User ? ($user->getUsername() ?: ($user->getFirstName() ?: $user->getFullName())) : $session->get('username', $session->get('first_name', $session->get('full_name', 'Client'))),
             'requests' => $requests,
             'updates_by_request' => $updatesByRequest,
             'load_error' => $loadError,

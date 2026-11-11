@@ -1,13 +1,13 @@
 .admin-page {
     --admin-bg: #081c2d;
-    --admin-panel: rgba(13, 42, 74, .82);
-    --admin-border: rgba(163, 182, 200, .18);
+    --admin-panel: #0e2b49;
+    --admin-border: #23415d;
     --admin-steel: #a3b6c8;
     --admin-white: #f7faff;
     --admin-blue: #0ba5df;
-    min-height: 100%;
-    color: var(--admin-steel);
-    background-color: var(--admin-bg);
+    min-height: 100vh;
+    color: #f0f5ff !important;
+    background-color: #081c2d !important;
     background-image:
         linear-gradient(rgba(46, 107, 156, .055) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .055) 1px, transparent 1px);
@@ -620,6 +620,47 @@
 .admin-form select:focus {
     border-color: #0ba5df;
     box-shadow: 0 0 0 3px rgba(11, 165, 223, .15);
+}
+
+.adm-password-wrap {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.admin-form .adm-password-wrap input {
+    margin-bottom: 0 !important;
+    padding-right: 5.2rem !important;
+}
+
+.adm-password-toggle {
+    position: absolute;
+    top: 50%;
+    right: .55rem;
+    transform: translateY(-50%);
+    display: inline-flex;
+    align-items: center;
+    gap: .3rem;
+    padding: .3rem .58rem;
+    border: 1px solid rgba(11, 165, 223, .32);
+    border-radius: 6px;
+    background: rgba(11, 165, 223, .12);
+    color: #70d7fa;
+    font-family: inherit;
+    font-size: .74rem;
+    font-weight: 600;
+    letter-spacing: .02em;
+    text-transform: none;
+    cursor: pointer;
+    z-index: 2;
+    transition: background-color .15s ease, border-color .15s ease, color .15s ease;
+}
+
+.adm-password-toggle:hover {
+    background: rgba(11, 165, 223, .24);
+    border-color: rgba(11, 165, 223, .6);
+    color: #ffffff;
 }
 
 .admin-modal-confirm {

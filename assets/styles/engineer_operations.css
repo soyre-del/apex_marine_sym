@@ -1,10 +1,11 @@
 .engineer-operations-page {
     position: relative;
     isolation: isolate;
-    min-height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     overflow: hidden;
-    color: #a3b6c8;
-    background-color: #081c2d;
+    color: #f0f5ff !important;
+    background-color: #081c2d !important;
     background-image:
         linear-gradient(rgba(255, 255, 255, .03) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, .03) 1px, transparent 1px);
@@ -167,10 +168,12 @@
 .engineer-task-card,
 .engineer-empty {
     min-width: 0;
-    border: 1px solid rgba(163, 182, 200, .18);
+    border: 1px solid #23415d !important;
     border-radius: 13px;
-    background: rgba(13, 27, 42, .74);
-    box-shadow: 0 18px 42px rgba(0, 0, 0, .22);
+    background-color: #0e2b49 !important;
+    background: #0e2b49 !important;
+    color: #f0f5ff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .3);
 }
 
 .engineer-task-card {
@@ -254,7 +257,7 @@
 .engineer-description {
     flex: 1;
     margin: 0 0 20px;
-    color: #a3b6c8;
+    color: #cbd5e1 !important;
     font-size: 11px;
     line-height: 1.65;
     overflow-wrap: anywhere;

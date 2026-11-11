@@ -11,11 +11,14 @@
         <div class="billing-container">
             <header class="billing-header">
                 <div class="billing-heading">
-                    <a href="{{ path('admin_dashboard') }}" class="billing-button billing-button-outline">&larr; Matrix</a>
-                    <h1>Financial &amp; Billing Operations</h1>
+                    <a href="{{ path('admin_dashboard') }}" class="billing-button billing-button-outline">&larr; Command Matrix</a>
+                    <div>
+                        <h1>Financial &amp; Client Billing Operations</h1>
+                        <p class="billing-subtitle">Issue invoices exclusively to client organizations and track receivables.</p>
+                    </div>
                 </div>
                 <button type="button" class="billing-button billing-button-info" data-billing-open>
-                    + Generate Invoice
+                    + Generate Client Invoice
                 </button>
             </header>
 
@@ -31,11 +34,11 @@
 
             <section class="billing-metrics" aria-label="Billing summary">
                 <article class="billing-metric billing-metric-success">
-                    <span>Collected Revenue</span>
+                    <span>Collected Client Revenue</span>
                     <strong>USD {{ total_revenue|number_format(2, '.', ',') }}</strong>
                 </article>
                 <article class="billing-metric billing-metric-warning">
-                    <span>Outstanding Receivables</span>
+                    <span>Outstanding Client Receivables</span>
                     <strong>USD {{ pending_revenue|number_format(2, '.', ',') }}</strong>
                 </article>
                 <article class="billing-metric billing-metric-info">
@@ -45,10 +48,13 @@
             </section>
 
             <section class="billing-section" aria-labelledby="unbilled-title">
-                <h2 id="unbilled-title"><span aria-hidden="true">◷</span> Operations Awaiting Billing</h2>
+                <div class="billing-section-header">
+                    <h2 id="unbilled-title">Client Operations Awaiting Billing</h2>
+                    <span class="billing-policy-pill">Client Accounts Only &mdash; Engineers Excluded</span>
+                </div>
                 {% if unbilled_load_error %}
                     <div class="billing-alert billing-alert-danger" role="alert">
-                        Unable to load operations awaiting billing. Please try again later.
+                        Unable to load client operations awaiting billing. Please try again later.
                     </div>
                 {% else %}
                     <div class="billing-table-wrap">
@@ -56,57 +62,72 @@
                             <thead>
                                 <tr>
                                     <th>Request ID</th>
-                                    <th>Client Organization</th>
-                                    <th>Vessel &amp; Issue</th>
-                                    <th class="billing-center">Resolve Status</th>
-                                    <th class="billing-right">Action</th>
+                                    <th>Billed Client Account</th>
+                                    <th>Vessel &amp; Service Scope</th>
+                                    <th class="billing-center">Operation Status</th>
+                                    <th class="billing-right">Billing Action</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 {% for request in unbilled_requests %}
-                                    <tr{% if request.status == 'completed' %} class="billing-row-completed"{% endif %}>
-                                        <td class="billing-strong">REQ-{{ '%04d'|format(request.request_id) }}</td>
-                                        <td>{{ request.client_name }}</td>
+                                    {% set is_resolved = request.status in ['resolved', 'completed'] %}
+                                    <tr{% if is_resolved %} class="billing-row-completed"{% endif %}>
+                                        <td class="billing-strong">
+                                            REQ-{{ '%04d'|format(request.request_id) }}
+                                            {% if request.requested_at is defined and request.requested_at %}
+                                                <div class="billing-detail billing-muted">{{ request.requested_at|date('M d, Y') }}</div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="billing-client-cell">
+                                                <strong class="billing-strong">{{ request.client_name }}</strong>
+                                                <span class="billing-role-tag">Client</span>
+                                            </div>
+                                            <div class="billing-detail">{{ request.client_company|default('Apex Fleet Partner') }}</div>
+                                            {% if request.client_email is defined and request.client_email %}
+                                                <div class="billing-detail billing-muted">{{ request.client_email }}</div>
+                                            {% endif %}
+                                        </td>
                                         <td>
                                             <strong class="billing-vessel">{{ request.vessel_name }}</strong>
+                                            {% if request.service_type is defined and request.service_type %}
+                                                <div class="billing-detail"><strong>Discipline:</strong> {{ request.service_type }}</div>
+                                            {% endif %}
                                             {% if request.latest_milestone %}
-                                                <div class="billing-detail"><strong>Status:</strong> {{ request.latest_milestone }}</div>
+                                                <div class="billing-detail"><strong>Latest Log:</strong> {{ request.latest_milestone }}</div>
                                             {% endif %}
                                             {% if request.problem_description %}
                                                 <div class="billing-detail billing-description" title="{{ request.problem_description }}">
                                                     {{ request.problem_description }}
                                                 </div>
                                             {% else %}
-                                                <div class="billing-detail billing-muted"><em>No operation logs submitted.</em></div>
+                                                <div class="billing-detail billing-muted"><em>Standard marine service dispatch.</em></div>
                                             {% endif %}
                                         </td>
                                         <td class="billing-center">
-                                            {% if request.status == 'completed' %}
+                                            {% if is_resolved %}
                                                 <span class="billing-badge billing-badge-success">Resolved</span>
-                                                <span class="billing-substatus billing-text-warning">Needs Payment</span>
+                                                <span class="billing-substatus billing-text-warning">Ready for Billing</span>
                                             {% elseif request.status in ['in_progress', 'deployed'] %}
                                                 <span class="billing-badge billing-badge-info">In Progress</span>
-                                                <span class="billing-substatus">Awaiting Resolution</span>
+                                                <span class="billing-substatus">Active Operation</span>
                                             {% else %}
-                                                <span class="billing-badge billing-badge-muted">Pending</span>
-                                                <span class="billing-substatus">Awaiting Resolution</span>
+                                                <span class="billing-badge billing-badge-muted">{{ request.status|capitalize }}</span>
+                                                <span class="billing-substatus">Logged Request</span>
                                             {% endif %}
                                         </td>
                                         <td class="billing-right">
-                                            {% if request.status == 'completed' %}
-                                                <button type="button" class="billing-button billing-button-warning"
-                                                        data-billing-open data-request-id="{{ request.request_id }}">
-                                                    Bill Now
-                                                </button>
-                                            {% else %}
-                                                <button type="button" class="billing-button billing-button-disabled" disabled>
-                                                    Hold Billing
-                                                </button>
-                                            {% endif %}
+                                            <button type="button"
+                                                    class="billing-button {% if is_resolved %}billing-button-warning{% else %}billing-button-outline{% endif %}"
+                                                    data-billing-open
+                                                    data-request-id="{{ request.request_id }}"
+                                                    data-client-id="{{ request.client_id }}">
+                                                {% if is_resolved %}Bill Client Now{% else %}Generate Invoice{% endif %}
+                                            </button>
                                         </td>
                                     </tr>
                                 {% else %}
-                                    <tr><td colspan="5" class="billing-empty">All operations have been successfully billed.</td></tr>
+                                    <tr><td colspan="5" class="billing-empty">All client operations have been billed.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -115,7 +136,10 @@
             </section>
 
             <section class="billing-section" aria-labelledby="invoices-title">
-                <h2 id="invoices-title"><span aria-hidden="true">▤</span> Invoices Master Ledger</h2>
+                <div class="billing-section-header">
+                    <h2 id="invoices-title">Client Invoices Master Ledger</h2>
+                    <span class="billing-policy-pill">Auto-Marked Paid Upon Client Checkout</span>
+                </div>
                 {% if invoices_load_error %}
                     <div class="billing-alert billing-alert-danger" role="alert">
                         Unable to load invoices. Please try again later.
@@ -126,13 +150,13 @@
                             <thead>
                                 <tr>
                                     <th>Invoice #</th>
-                                    <th>Client</th>
-                                    <th>Vessel</th>
-                                    <th>Date</th>
-                                    <th>Method / Ref</th>
+                                    <th>Billed Client</th>
+                                    <th>Vessel &amp; Service</th>
+                                    <th>Issued Date</th>
+                                    <th>Payment Method / Ref</th>
                                     <th class="billing-right">Amount</th>
-                                    <th class="billing-center">Status</th>
-                                    <th class="billing-center">Action</th>
+                                    <th class="billing-center">Payment Status</th>
+                                    <th class="billing-center">Settlement State</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -143,17 +167,29 @@
                                             <div class="billing-detail billing-muted">REQ-{{ '%04d'|format(invoice.request_id) }}</div>
                                         </td>
                                         <td>
-                                            <span>{{ invoice.client_name }}</span>
+                                            <div class="billing-client-cell">
+                                                <strong class="billing-strong">{{ invoice.client_name }}</strong>
+                                                <span class="billing-role-tag">Client</span>
+                                            </div>
                                             <div class="billing-detail billing-muted">{{ invoice.client_email }}</div>
                                         </td>
-                                        <td class="billing-vessel">{{ invoice.vessel_name }}</td>
+                                        <td>
+                                            <strong class="billing-vessel">{{ invoice.vessel_name }}</strong>
+                                            {% if invoice.service_type is defined and invoice.service_type %}
+                                                <div class="billing-detail billing-muted">{{ invoice.service_type }}</div>
+                                            {% endif %}
+                                        </td>
                                         <td class="billing-muted">
                                             {{ invoice.created_at|date('M d, Y') }}
                                         </td>
                                         <td>
-                                            {{ invoice.payment_method|default('N/A') }}
-                                            {% if invoice.reference_number %}
-                                                <div class="billing-detail billing-muted">{{ invoice.reference_number }}</div>
+                                            {% if invoice.payment_status == 'paid' %}
+                                                <span class="billing-strong">{{ invoice.payment_method|default('Client Online Checkout') }}</span>
+                                                {% if invoice.reference_number %}
+                                                    <div class="billing-detail billing-muted">Ref: {{ invoice.reference_number }}</div>
+                                                {% endif %}
+                                            {% else %}
+                                                <span class="billing-muted">Pending Client Checkout</span>
                                             {% endif %}
                                         </td>
                                         <td class="billing-right billing-strong">
@@ -169,21 +205,15 @@
                                             {% endif %}
                                         </td>
                                         <td class="billing-center">
-                                            {% if invoice.payment_status != 'paid' %}
-                                                <form method="post" action="{{ path('admin_billing') }}" class="billing-inline-form">
-                                                    <input type="hidden" name="_token" value="{{ csrf_token('admin_billing') }}">
-                                                    <input type="hidden" name="action" value="update_status">
-                                                    <input type="hidden" name="invoice_id" value="{{ invoice.invoice_id }}">
-                                                    <input type="hidden" name="payment_method" value="Cash / Manual Admin">
-                                                    <button type="submit" class="billing-button billing-button-paid">Mark Paid</button>
-                                                </form>
+                                            {% if invoice.payment_status == 'paid' %}
+                                                <span class="billing-text-success billing-locked">Auto-Marked Paid by Client</span>
                                             {% else %}
-                                                <span class="billing-text-success billing-locked">Locked: Paid</span>
+                                                <span class="billing-muted billing-locked">Awaiting Client Payment</span>
                                             {% endif %}
                                         </td>
                                     </tr>
                                 {% else %}
-                                    <tr><td colspan="8" class="billing-empty">No invoices issued yet. Bill a completed operation above.</td></tr>
+                                    <tr><td colspan="8" class="billing-empty">No client invoices issued yet. Select an operation above to generate an invoice.</td></tr>
                                 {% endfor %}
                             </tbody>
                         </table>
@@ -195,31 +225,66 @@
         <div class="billing-modal" data-billing-modal aria-hidden="true">
             <div class="billing-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="billing-modal-title">
                 <header class="billing-modal-header">
-                    <h2 id="billing-modal-title">Issue New Client Invoice</h2>
+                    <div>
+                        <h2 id="billing-modal-title">Issue New Client Invoice</h2>
+                        <p class="billing-modal-note">Invoices are billed strictly to the client account. Engineers are never charged.</p>
+                    </div>
                     <button type="button" class="billing-modal-close" data-billing-close aria-label="Close">&times;</button>
                 </header>
                 <form method="post" action="{{ path('admin_billing') }}">
                     <div class="billing-modal-body">
                         <input type="hidden" name="_token" value="{{ csrf_token('admin_billing') }}">
                         <input type="hidden" name="action" value="create_invoice">
-                        <label class="billing-label" for="billing-request">Select Unbilled Request</label>
-                        <select id="billing-request" name="request_id" class="billing-control" required>
-                            <option value="" disabled selected{% if unbilled_requests is empty %} hidden{% endif %}>
-                                {% if unbilled_requests is empty %}No unbilled requests found{% else %}Choose a request...{% endif %}
-                            </option>
-                            {% for request in unbilled_requests %}
-                                <option value="{{ request.request_id }}"{% if request.status != 'completed' %} data-pending="true"{% endif %}>
-                                    {% if request.status == 'completed' %}[NEEDS PAYMENT] {% endif %}
-                                    REQ-{{ '%04d'|format(request.request_id) }} | {{ request.vessel_name }}
-                                </option>
-                            {% endfor %}
-                        </select>
+
+                        <label class="billing-label" for="billing-request">
+                            1. Select Client Operation
+                            <select id="billing-request" name="request_id" class="billing-control" required>
+                                {% if unbilled_requests is empty %}
+                                    <option value="" disabled selected>No unbilled client operations available</option>
+                                {% else %}
+                                    <option value="" disabled selected>Choose an unbilled client operation...</option>
+                                    {% for request in unbilled_requests %}
+                                        {% set is_resolved = request.status in ['resolved', 'completed'] %}
+                                        <option value="{{ request.request_id }}"
+                                                data-client-id="{{ request.client_id }}"
+                                                data-client-name="{{ request.client_name }}"
+                                                data-client-email="{{ request.client_email }}"
+                                                data-client-company="{{ request.client_company|default('Apex Fleet Partner') }}">
+                                            REQ-{{ '%04d'|format(request.request_id) }} | {{ request.vessel_name }} &mdash; Client: {{ request.client_name }} ({{ is_resolved ? 'RESOLVED' : request.status|upper }})
+                                        </option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </label>
+
+                        <label class="billing-label" for="billing-client">
+                            2. Billed Client Account (Client Only)
+                            <select id="billing-client" name="client_id" class="billing-control" required>
+                                {% for client in clients %}
+                                    <option value="{{ client.user_id }}">
+                                        {{ client.full_name }} ({{ client.company_name }}) &mdash; {{ client.email }}
+                                    </option>
+                                {% else %}
+                                    <option value="" disabled selected>No active client accounts found</option>
+                                {% endfor %}
+                            </select>
+                        </label>
+
+                        <div class="billing-presets">
+                            <span class="billing-presets-label">Quick Fee Presets:</span>
+                            <div class="billing-presets-buttons">
+                                <button type="button" class="billing-preset-btn" data-billing-preset="500.00">USD 500</button>
+                                <button type="button" class="billing-preset-btn" data-billing-preset="1250.00">USD 1,250</button>
+                                <button type="button" class="billing-preset-btn" data-billing-preset="2500.00">USD 2,500</button>
+                                <button type="button" class="billing-preset-btn" data-billing-preset="5000.00">USD 5,000</button>
+                            </div>
+                        </div>
 
                         <div class="billing-form-row">
                             <label class="billing-label" for="billing-amount">
-                                Amount
+                                3. Invoice Amount
                                 <input id="billing-amount" type="number" step="0.01" min="0.01" name="amount"
-                                       class="billing-control" placeholder="500.00" required>
+                                       class="billing-control" placeholder="1250.00" required>
                             </label>
                             <label class="billing-label" for="billing-currency">
                                 Currency
@@ -232,11 +297,106 @@
                     <footer class="billing-modal-footer">
                         <button type="button" class="billing-button billing-button-muted" data-billing-close>Cancel</button>
                         <button type="submit" class="billing-button billing-button-info"{% if unbilled_requests is empty %} disabled{% endif %}>
-                            Generate Invoice
+                            Generate Client Invoice
                         </button>
                     </footer>
                 </form>
             </div>
         </div>
     </main>
+
+    <script>
+        (function () {
+            var modal = document.querySelector('[data-billing-modal]');
+            if (!modal) return;
+
+            var requestSelect = modal.querySelector('#billing-request');
+            var clientSelect = modal.querySelector('#billing-client');
+            var amountInput = modal.querySelector('#billing-amount');
+            var previouslyFocused = null;
+
+            function syncClientFromRequest() {
+                if (!requestSelect || !clientSelect) return;
+                var selectedOption = requestSelect.options[requestSelect.selectedIndex];
+                if (selectedOption && selectedOption.dataset.clientId) {
+                    clientSelect.value = selectedOption.dataset.clientId;
+                }
+            }
+
+            if (requestSelect && !requestSelect.dataset.boundSync) {
+                requestSelect.dataset.boundSync = '1';
+                requestSelect.addEventListener('change', syncClientFromRequest);
+            }
+
+            function openModal(triggerBtn) {
+                previouslyFocused = triggerBtn || null;
+                if (triggerBtn && triggerBtn.dataset.requestId && requestSelect) {
+                    requestSelect.value = triggerBtn.dataset.requestId;
+                    syncClientFromRequest();
+                } else if (requestSelect && !requestSelect.value && requestSelect.options.length > 1) {
+                    requestSelect.selectedIndex = 1;
+                    syncClientFromRequest();
+                }
+                if (triggerBtn && triggerBtn.dataset.clientId && clientSelect) {
+                    clientSelect.value = triggerBtn.dataset.clientId;
+                }
+                modal.classList.add('is-open');
+                modal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('billing-modal-open');
+                if (amountInput && requestSelect && requestSelect.value) {
+                    amountInput.focus();
+                } else if (requestSelect) {
+                    requestSelect.focus();
+                }
+            }
+
+            function closeModal() {
+                modal.classList.remove('is-open');
+                modal.setAttribute('aria-hidden', 'true');
+                document.body.classList.remove('billing-modal-open');
+                if (previouslyFocused && typeof previouslyFocused.focus === 'function') {
+                    previouslyFocused.focus();
+                }
+            }
+
+            document.querySelectorAll('[data-billing-open]').forEach(function (button) {
+                if (button.dataset.boundOpen === '1') return;
+                button.dataset.boundOpen = '1';
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    openModal(button);
+                });
+            });
+
+            modal.querySelectorAll('[data-billing-close]').forEach(function (button) {
+                if (button.dataset.boundClose === '1') return;
+                button.dataset.boundClose = '1';
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    closeModal();
+                });
+            });
+
+            modal.querySelectorAll('[data-billing-preset]').forEach(function (button) {
+                if (button.dataset.boundPreset === '1') return;
+                button.dataset.boundPreset = '1';
+                button.addEventListener('click', function (e) {
+                    e.preventDefault();
+                    if (amountInput) {
+                        amountInput.value = button.dataset.billingPreset;
+                        amountInput.focus();
+                    }
+                });
+            });
+
+            if (!modal.dataset.boundBackdrop) {
+                modal.dataset.boundBackdrop = '1';
+                modal.addEventListener('click', function (event) {
+                    if (event.target === modal) {
+                        closeModal();
+                    }
+                });
+            }
+        })();
+    </script>
 {% endblock %}

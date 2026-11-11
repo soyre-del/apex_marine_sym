@@ -43,7 +43,16 @@ final class admin extends AbstractController
             ? filter_var($identity, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]])
             : false;
 
-        if ($adminId === false || $session->get('role') !== 'admin') {
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $adminId = $user->getUserId();
+            $session->set('user_id', $adminId);
+            $session->set('role', $user->getRole());
+            $session->set('full_name', $user->getFullName() ?? $user->getUserIdentifier());
+        }
+
+        $role = $session->get('role') ?? ($user instanceof \App\Entity\User ? $user->getRole() : null);
+        if ($adminId === false || $role !== 'admin') {
             throw $this->createAccessDeniedException('Administrator access is required.');
         }
 
@@ -113,11 +122,20 @@ final class admin extends AbstractController
             $metrics['deployed_engineers'] = $engineerStats['deployed'] ?? 0;
 
             $engineers = $this->connection->fetchAllAssociative(<<<'SQL'
-                SELECT u.user_id, u.full_name, u.email, u.is_active, ep.specialty, ep.current_status
+                SELECT
+                    u.user_id,
+                    u.first_name,
+                    u.middle_name,
+                    u.surname,
+                    TRIM(CONCAT_WS(' ', NULLIF(u.first_name, ''), NULLIF(u.middle_name, ''), NULLIF(u.surname, ''))) AS full_name,
+                    u.email,
+                    u.is_active,
+                    ep.specialty,
+                    ep.current_status
                 FROM users u
                 JOIN engineer_profiles ep ON u.user_id = ep.engineer_id
                 WHERE u.role = 'engineer'
-                ORDER BY u.is_active DESC, ep.current_status ASC, u.full_name ASC
+                ORDER BY u.is_active DESC, ep.current_status ASC, u.first_name ASC, u.surname ASC
                 SQL);
         } catch (DBALException $exception) {
             $this->logger->error('Unable to retrieve admin dashboard data.', ['exception' => $exception]);
@@ -152,7 +170,7 @@ final class admin extends AbstractController
     {
         $form = $request->request->all();
         $action = $form['action'] ?? null;
-        $token = $form['csrf_token'] ?? null;
+        $token = $form['csrf_token'] ?? $form['_token'] ?? $form['_csrf_token'] ?? null;
 
         if (!is_string($action) || !in_array($action, [
             'add_engineer',
@@ -179,7 +197,18 @@ final class admin extends AbstractController
 
     private function addEngineer(array $form): Response
     {
-        $name = $this->stringField($form, 'eng_name');
+        $firstName = \App\Entity\User::capitalizeName($this->stringField($form, 'eng_first_name'));
+        $middleRaw = \App\Entity\User::capitalizeName($this->stringField($form, 'eng_middle_name'));
+        $middleName = $middleRaw !== '' ? $middleRaw : null;
+        $surname = \App\Entity\User::capitalizeName($this->stringField($form, 'eng_surname'));
+
+        if ($firstName === '' && $surname === '' && isset($form['eng_name'])) {
+            $split = $this->splitFullName($this->stringField($form, 'eng_name'));
+            $firstName = $split['first_name'];
+            $middleName = $split['middle_name'];
+            $surname = $split['surname'];
+        }
+
         $email = $this->stringField($form, 'eng_email');
         $password = $form['eng_password'] ?? '';
         $specialty = $this->stringField($form, 'eng_specialty');
@@ -187,19 +216,24 @@ final class admin extends AbstractController
         $status = in_array($status, self::ALLOWED_STATUSES, true) ? $status : 'available';
         $specialty = in_array($specialty, self::ALLOWED_SPECIALTIES, true) ? $specialty : '';
 
-        if ($name === '' || $email === '' || !is_string($password) || $password === '' || $specialty === '') {
+        if ($firstName === '' || $surname === '' || $email === '' || !is_string($password) || $password === '' || $specialty === '') {
             return $this->formFailure(
-                'All personnel fields are required for deployment. Please select a valid discipline.',
+                'First Name, Surname, Email, Access Code, and Discipline are required for deployment.',
                 'warning',
                 'add_engineer',
                 $form,
             );
         }
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            return $this->formFailure('Invalid email format.', 'warning', 'add_engineer', $form);
+
+        $email = \App\Security\CredentialSecurityPolicy::normalizeEmail($email);
+        $emailError = \App\Security\CredentialSecurityPolicy::validateEmail($email);
+        if ($emailError !== null) {
+            return $this->formFailure($emailError, 'warning', 'add_engineer', $form);
         }
-        if (strlen($password) < 8) {
-            return $this->formFailure('Access Code must be at least 8 characters.', 'warning', 'add_engineer', $form);
+
+        $passwordError = \App\Security\CredentialSecurityPolicy::validatePassword($password, $email);
+        if ($passwordError !== null) {
+            return $this->formFailure($passwordError, 'warning', 'add_engineer', $form);
         }
 
         try {
@@ -212,9 +246,13 @@ final class admin extends AbstractController
                 );
             }
 
-            $this->connection->transactional(function (Connection $connection) use ($name, $email, $password, $specialty, $status): void {
+            $this->connection->transactional(function (Connection $connection) use ($firstName, $middleName, $surname, $email, $password, $specialty, $status): void {
+                $defaultUsername = strtolower((string) preg_replace('/[^a-zA-Z0-9_.-]/', '', $firstName.'.'.$surname));
                 $connection->insert('users', [
-                    'full_name' => $name,
+                    'username' => $defaultUsername !== '' ? $defaultUsername : null,
+                    'first_name' => $firstName,
+                    'middle_name' => $middleName,
+                    'surname' => $surname,
                     'email' => $email,
                     'password_hash' => password_hash($password, PASSWORD_DEFAULT),
                     'role' => 'engineer',
@@ -242,7 +280,7 @@ final class admin extends AbstractController
             );
         }
 
-        $this->addFlash('success', sprintf('Success: Engineer %s has been officially deployed to the roster.', $name));
+        $this->addFlash('success', 'Engineer registered successfully.');
 
         return $this->redirectToRoute('admin_dashboard');
     }
@@ -250,7 +288,18 @@ final class admin extends AbstractController
     private function editEngineer(array $form): Response
     {
         $id = $this->positiveId($form['user_id'] ?? null);
-        $name = $this->stringField($form, 'eng_name');
+        $firstName = \App\Entity\User::capitalizeName($this->stringField($form, 'eng_first_name'));
+        $middleRaw = \App\Entity\User::capitalizeName($this->stringField($form, 'eng_middle_name'));
+        $middleName = $middleRaw !== '' ? $middleRaw : null;
+        $surname = \App\Entity\User::capitalizeName($this->stringField($form, 'eng_surname'));
+
+        if ($firstName === '' && $surname === '' && isset($form['eng_name'])) {
+            $split = $this->splitFullName($this->stringField($form, 'eng_name'));
+            $firstName = $split['first_name'];
+            $middleName = $split['middle_name'];
+            $surname = $split['surname'];
+        }
+
         $email = $this->stringField($form, 'eng_email');
         $password = $form['eng_password'] ?? '';
         $specialty = $this->stringField($form, 'eng_specialty');
@@ -258,14 +307,21 @@ final class admin extends AbstractController
         $status = in_array($status, self::ALLOWED_STATUSES, true) ? $status : 'available';
         $specialty = in_array($specialty, self::ALLOWED_SPECIALTIES, true) ? $specialty : '';
 
-        if ($id === null || $name === '' || $email === '' || $specialty === '') {
-            return $this->formFailure('Critical fields missing for profile update.', 'warning', 'edit_engineer', $form);
+        if ($id === null || $firstName === '' || $surname === '' || $email === '' || $specialty === '' || !is_string($password)) {
+            return $this->formFailure('First Name, Surname, Email, and Discipline are required for profile update.', 'warning', 'edit_engineer', $form);
         }
-        if (filter_var($email, FILTER_VALIDATE_EMAIL) === false) {
-            return $this->formFailure('Invalid email format provided.', 'warning', 'edit_engineer', $form);
+
+        $email = \App\Security\CredentialSecurityPolicy::normalizeEmail($email);
+        $emailError = \App\Security\CredentialSecurityPolicy::validateEmail($email);
+        if ($emailError !== null) {
+            return $this->formFailure($emailError, 'warning', 'edit_engineer', $form);
         }
-        if (!is_string($password) || ($password !== '' && strlen($password) < 8)) {
-            return $this->formFailure('New Access Code must be at least 8 characters.', 'warning', 'edit_engineer', $form);
+
+        if ($password !== '') {
+            $passwordError = \App\Security\CredentialSecurityPolicy::validatePassword($password, $email);
+            if ($passwordError !== null) {
+                return $this->formFailure($passwordError, 'warning', 'edit_engineer', $form);
+            }
         }
 
         try {
@@ -283,14 +339,18 @@ final class admin extends AbstractController
 
             $this->connection->transactional(function (Connection $connection) use (
                 $id,
-                $name,
+                $firstName,
+                $middleName,
+                $surname,
                 $email,
                 $password,
                 $specialty,
                 $status,
             ): void {
                 $userData = [
-                    'full_name' => $name,
+                    'first_name' => $firstName,
+                    'middle_name' => $middleName,
+                    'surname' => $surname,
                     'email' => $email,
                 ];
                 if ($password !== '') {
@@ -316,7 +376,7 @@ final class admin extends AbstractController
             return $this->formFailure('CRITICAL ERROR: Unable to update profile.', 'danger', 'edit_engineer', $form);
         }
 
-        $this->addFlash('success', sprintf('Success: Engineer profile for %s updated successfully.', $name));
+        $this->addFlash('success', 'Engineer profile updated successfully.');
 
         return $this->redirectToRoute('admin_dashboard');
     }
@@ -355,8 +415,8 @@ final class admin extends AbstractController
         }
 
         $this->addFlash('success', $active
-            ? 'Operative access restored. Engineer is now available for deployment.'
-            : 'Operative access revoked and profile deactivated.');
+            ? 'Engineer restored successfully.'
+            : 'Engineer suspended successfully.');
 
         return $this->redirectToRoute('admin_dashboard');
     }
@@ -384,5 +444,32 @@ final class admin extends AbstractController
         $id = filter_var($value, FILTER_VALIDATE_INT, ['options' => ['min_range' => 1]]);
 
         return $id === false ? null : $id;
+    }
+
+    /**
+     * @return array{first_name: string, middle_name: ?string, surname: string}
+     */
+    private function splitFullName(string $fullName): array
+    {
+        $parts = preg_split('/\s+/', \App\Entity\User::capitalizeName($fullName), -1, PREG_SPLIT_NO_EMPTY) ?: [];
+        if ($parts === []) {
+            return ['first_name' => '', 'middle_name' => null, 'surname' => ''];
+        }
+        if (count($parts) === 1) {
+            return ['first_name' => $parts[0], 'middle_name' => null, 'surname' => ''];
+        }
+        if (count($parts) === 2) {
+            return ['first_name' => $parts[0], 'middle_name' => null, 'surname' => $parts[1]];
+        }
+
+        $firstName = (string) array_shift($parts);
+        $surname = (string) array_pop($parts);
+        $middleName = trim(implode(' ', $parts));
+
+        return [
+            'first_name' => $firstName,
+            'middle_name' => $middleName !== '' ? $middleName : null,
+            'surname' => $surname,
+        ];
     }
 }

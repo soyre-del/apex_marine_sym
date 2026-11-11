@@ -1,8 +1,9 @@
 .active-ops-page {
-    min-height: 100%;
+    min-height: 100vh;
+    min-height: 100dvh;
     padding: clamp(24px, 4vw, 48px);
-    color: #a3b6c8;
-    background-color: #081c2d;
+    color: #f0f5ff !important;
+    background-color: #081c2d !important;
     background-image:
         linear-gradient(rgba(46, 107, 156, .06) 1px, transparent 1px),
         linear-gradient(90deg, rgba(46, 107, 156, .06) 1px, transparent 1px);
@@ -71,10 +72,12 @@
     flex-direction: column;
     height: 100%;
     padding: clamp(22px, 2.5vw, 32px);
-    border: 1px solid rgba(11, 165, 223, .42);
+    border: 1px solid #23415d !important;
     border-radius: 14px;
-    background: rgba(14, 43, 73, .88);
-    box-shadow: 0 18px 40px rgba(0, 0, 0, .2);
+    background-color: #0e2b49 !important;
+    background: #0e2b49 !important;
+    color: #f0f5ff !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, .28);
 }
 
 .active-ops-card-heading {
