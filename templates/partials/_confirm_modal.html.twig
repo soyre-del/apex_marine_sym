@@ -1,0 +1,374 @@
+{# ── Global Apex Marine Design-System Confirmation Modal ── #}
+<div id="apexGlobalConfirmModal" class="apex-confirm-overlay" aria-hidden="true" style="display: none;">
+    <div class="apex-confirm-dialog" role="dialog" aria-modal="true" aria-labelledby="apexConfirmTitle">
+        <div class="apex-confirm-header">
+            <div class="apex-confirm-icon-box" id="apexConfirmIconBox">
+                <svg id="apexConfirmIcon" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                </svg>
+            </div>
+            <div style="flex: 1; min-width: 0;">
+                <h3 id="apexConfirmTitle" class="apex-confirm-title">Confirm Action</h3>
+                <p id="apexConfirmSub" class="apex-confirm-subtitle" style="display: none;"></p>
+            </div>
+            <button type="button" class="apex-confirm-close" data-apex-cancel aria-label="Close dialog">&times;</button>
+        </div>
+        <div class="apex-confirm-body">
+            <p id="apexConfirmMessage" class="apex-confirm-message">Are you sure you want to proceed?</p>
+        </div>
+        <div class="apex-confirm-footer">
+            <button type="button" class="apex-confirm-btn apex-confirm-btn-cancel" data-apex-cancel id="apexConfirmCancelBtn">
+                Cancel
+            </button>
+            <button type="button" class="apex-confirm-btn apex-confirm-btn-action" id="apexConfirmActionBtn">
+                Confirm
+            </button>
+        </div>
+    </div>
+</div>
+
+<style>
+/* ── Apex Marine Universal Confirmation Modal ── */
+.apex-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 999999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 1.25rem;
+    background: rgba(3, 10, 18, 0.78);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    opacity: 0;
+    transition: opacity .2s ease;
+}
+.apex-confirm-overlay.is-active {
+    display: flex !important;
+    opacity: 1;
+}
+.apex-confirm-dialog {
+    width: 100%;
+    max-width: 440px;
+    background: #0f2a44;
+    border: 1px solid #23415d;
+    border-radius: 14px;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.7), 0 0 0 1px rgba(255, 255, 255, 0.04);
+    overflow: hidden;
+    transform: scale(0.95) translateY(6px);
+    transition: transform .2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.apex-confirm-overlay.is-active .apex-confirm-dialog {
+    transform: scale(1) translateY(0);
+}
+.apex-confirm-header {
+    display: flex;
+    align-items: center;
+    gap: .85rem;
+    padding: 1.25rem 1.4rem 1rem;
+    border-bottom: 1px solid rgba(35, 65, 93, 0.55);
+}
+.apex-confirm-icon-box {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    flex-shrink: 0;
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    transition: background .15s, color .15s, border-color .15s;
+}
+.apex-confirm-icon-box.is-info {
+    background: rgba(11, 165, 223, 0.15);
+    color: #38bdf8;
+    border-color: rgba(11, 165, 223, 0.35);
+}
+.apex-confirm-icon-box.is-success {
+    background: rgba(16, 185, 129, 0.15);
+    color: #34d399;
+    border-color: rgba(16, 185, 129, 0.35);
+}
+.apex-confirm-title {
+    margin: 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: #f0f5ff;
+    letter-spacing: .02em;
+    line-height: 1.2;
+}
+.apex-confirm-subtitle {
+    margin: .25rem 0 0;
+    font-size: .78rem;
+    color: #a3b6c8;
+}
+.apex-confirm-close {
+    background: transparent;
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    line-height: 1;
+    padding: 4px;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: color .15s, background .15s;
+}
+.apex-confirm-close:hover {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+}
+.apex-confirm-body {
+    padding: 1.25rem 1.4rem;
+}
+.apex-confirm-message {
+    margin: 0;
+    font-size: .88rem;
+    line-height: 1.6;
+    color: #cbd5e1;
+}
+.apex-confirm-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: .75rem;
+    padding: 1rem 1.4rem 1.25rem;
+    border-top: 1px solid rgba(35, 65, 93, 0.45);
+    background: rgba(8, 28, 45, 0.45);
+}
+.apex-confirm-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: .55rem 1.25rem;
+    font-size: .84rem;
+    font-weight: 600;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    line-height: 1.2;
+    transition: filter .15s, transform .1s, background-color .15s;
+}
+.apex-confirm-btn:hover {
+    filter: brightness(1.15);
+    transform: translateY(-1px);
+}
+.apex-confirm-btn-cancel {
+    background: transparent;
+    border: 1px solid rgba(163, 182, 200, 0.32);
+    color: #cbd5e1;
+}
+.apex-confirm-btn-cancel:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: #ffffff;
+}
+.apex-confirm-btn-action {
+    background: #ef4444;
+    color: #ffffff;
+}
+.apex-confirm-btn-action.is-info {
+    background: #0ba5df;
+    color: #081c2d;
+    font-weight: 700;
+}
+.apex-confirm-btn-action.is-success {
+    background: #10b981;
+    color: #ffffff;
+    font-weight: 700;
+}
+</style>
+
+<script>
+(function() {
+    let confirmResolver = null;
+    let modalEl = null;
+
+    function getModalElements() {
+        if (!modalEl) {
+            modalEl = document.getElementById('apexGlobalConfirmModal');
+        }
+        return {
+            modal: modalEl,
+            dialog: modalEl ? modalEl.querySelector('.apex-confirm-dialog') : null,
+            iconBox: document.getElementById('apexConfirmIconBox'),
+            title: document.getElementById('apexConfirmTitle'),
+            sub: document.getElementById('apexConfirmSub'),
+            message: document.getElementById('apexConfirmMessage'),
+            actionBtn: document.getElementById('apexConfirmActionBtn'),
+            cancelBtn: document.getElementById('apexConfirmCancelBtn')
+        };
+    }
+
+    window.ApexConfirm = function(options) {
+        return new Promise(function(resolve) {
+            confirmResolver = resolve;
+            const els = getModalElements();
+            if (!els.modal) {
+                // Fallback to true if modal not found
+                return resolve(true);
+            }
+
+            const title = options.title || 'Confirm Action';
+            const message = options.message || 'Are you sure you want to proceed?';
+            const sub = options.sub || '';
+            const btnText = options.confirmText || 'Confirm';
+            const variant = options.variant || 'danger'; // danger | info | success
+
+            if (els.title) els.title.textContent = title;
+            if (els.message) els.message.textContent = message;
+
+            if (els.sub) {
+                if (sub) {
+                    els.sub.textContent = sub;
+                    els.sub.style.display = 'block';
+                } else {
+                    els.sub.style.display = 'none';
+                }
+            }
+
+            if (els.actionBtn) {
+                els.actionBtn.textContent = btnText;
+                els.actionBtn.className = 'apex-confirm-btn apex-confirm-btn-action';
+                if (variant === 'info') {
+                    els.actionBtn.classList.add('is-info');
+                } else if (variant === 'success') {
+                    els.actionBtn.classList.add('is-success');
+                }
+            }
+
+            if (els.iconBox) {
+                els.iconBox.className = 'apex-confirm-icon-box';
+                if (variant === 'info') {
+                    els.iconBox.classList.add('is-info');
+                } else if (variant === 'success') {
+                    els.iconBox.classList.add('is-success');
+                }
+            }
+
+            els.modal.style.display = 'flex';
+            // Force reflow for CSS transition
+            void els.modal.offsetWidth;
+            els.modal.classList.add('is-active');
+            els.modal.setAttribute('aria-hidden', 'false');
+            if (els.actionBtn) els.actionBtn.focus();
+        });
+    };
+
+    function closeModal(result) {
+        const els = getModalElements();
+        if (!els.modal) return;
+        els.modal.classList.remove('is-active');
+        els.modal.setAttribute('aria-hidden', 'true');
+        setTimeout(function() {
+            if (!els.modal.classList.contains('is-active')) {
+                els.modal.style.display = 'none';
+            }
+        }, 200);
+
+        if (confirmResolver) {
+            const res = confirmResolver;
+            confirmResolver = null;
+            res(result);
+        }
+    }
+
+    function initListeners() {
+        const modal = document.getElementById('apexGlobalConfirmModal');
+        if (!modal || modal.dataset.bound === '1') return;
+        modal.dataset.bound = '1';
+
+        modal.querySelectorAll('[data-apex-cancel]').forEach(function(btn) {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal(false);
+            });
+        });
+
+        const actionBtn = document.getElementById('apexConfirmActionBtn');
+        if (actionBtn) {
+            actionBtn.addEventListener('click', function(e) {
+                e.preventDefault();
+                closeModal(true);
+            });
+        }
+
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closeModal(false);
+            }
+        });
+
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && modal.classList.contains('is-active')) {
+                closeModal(false);
+            }
+        });
+    }
+
+    // Capture click on any [data-confirm]
+    document.addEventListener('click', function(e) {
+        const trigger = e.target.closest('[data-confirm]');
+        if (!trigger) return;
+
+        // If click was triggered internally after user approved, allow it
+        if (trigger.dataset.confirmedAction === '1') {
+            trigger.dataset.confirmedAction = '0';
+            return;
+        }
+
+        e.preventDefault();
+        e.stopPropagation();
+
+        const title = trigger.dataset.confirmTitle || 'Confirm Action';
+        const message = trigger.dataset.confirm || 'Are you sure you want to proceed?';
+        const sub = trigger.dataset.confirmSub || '';
+        const btnText = trigger.dataset.confirmBtn || 'Confirm';
+        const variant = trigger.dataset.confirmVariant || 'danger';
+
+        window.ApexConfirm({
+            title: title,
+            message: message,
+            sub: sub,
+            confirmText: btnText,
+            variant: variant
+        }).then(function(confirmed) {
+            if (!confirmed) return;
+
+            trigger.dataset.confirmedAction = '1';
+
+            if (trigger.tagName === 'A' && trigger.href) {
+                window.location.href = trigger.href;
+            } else if (trigger.type === 'submit' || trigger.closest('form')) {
+                const form = trigger.closest('form');
+                if (form) {
+                    if (trigger.name && trigger.value) {
+                        let hidden = form.querySelector('input[type="hidden"][name="' + trigger.name + '"]');
+                        if (!hidden) {
+                            hidden = document.createElement('input');
+                            hidden.type = 'hidden';
+                            hidden.name = trigger.name;
+                            form.appendChild(hidden);
+                        }
+                        hidden.value = trigger.value;
+                    }
+                    form.requestSubmit ? form.requestSubmit(trigger) : form.submit();
+                }
+            } else {
+                trigger.click();
+            }
+        });
+    }, true);
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initListeners);
+    } else {
+        initListeners();
+    }
+    document.addEventListener('turbo:load', initListeners);
+    document.addEventListener('turbo:render', initListeners);
+})();
+</script>

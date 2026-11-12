@@ -704,7 +704,7 @@
                 <a href="{{ path('admin_manage_clients') }}"     class="admin-nav-link admin-nav-info">Clients</a>
                 <a href="{{ path('admin_billing') }}"            class="admin-nav-link admin-nav-info">Billing</a>
                 <a href="{{ path('app_home') }}"                 class="admin-nav-link admin-nav-info">Public</a>
-                <a href="{{ path('app_logout') }}"               class="admin-nav-link" style="color:#f87171; border-color:rgba(239,68,68,0.4);" onclick="return confirm('Are you sure you want to log out?');">Log Out</a>
+                <a href="{{ path('app_logout') }}"               class="admin-nav-link" style="color:#f87171; border-color:rgba(239,68,68,0.4);" data-confirm="Are you sure you want to terminate your session and log out?" data-confirm-title="Log Out Confirmation" data-confirm-btn="Log Out" data-confirm-variant="danger">Log Out</a>
             </div>
         </div>
     </nav>
@@ -895,7 +895,7 @@
                                                     <input type="hidden" name="csrf_token" value="{{ adminCsrfToken }}">
                                                     <input type="hidden" name="action"    value="restore_engineer">
                                                     <input type="hidden" name="user_id"   value="{{ engineer.user_id }}">
-                                                    <button type="submit" class="adm-btn adm-btn--restore">Restore</button>
+                                                    <button type="submit" class="adm-btn adm-btn--restore" data-confirm="Are you sure you want to restore {{ engineer.full_name }} to active duty?" data-confirm-title="Restore Personnel" data-confirm-btn="Restore" data-confirm-variant="success">Restore</button>
                                                 </form>
                                             {% endif %}
                                         </div>

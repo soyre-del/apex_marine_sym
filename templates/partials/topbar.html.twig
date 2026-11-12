@@ -15,7 +15,7 @@
             <span class="header-account">Welcome, <strong>{{ account_name }}</strong></span>
             <a class="header-action-link login-button" href="{{ path('app_dashboard') }}">Dashboard</a>
             <a class="header-action-link login-button" href="{{ path('app_profile') }}">My Profile</a>
-            <a class="header-action-link register-button" href="{{ path('app_logout') }}" onclick="return confirm('Are you sure you want to log out?');">Log out</a>
+            <a class="header-action-link register-button" href="{{ path('app_logout') }}" data-confirm="Are you sure you want to log out of your account?" data-confirm-title="Log Out Confirmation" data-confirm-btn="Log Out" data-confirm-variant="danger">Log out</a>
         </nav>
     {% else %}
         <nav class="header-actions" aria-label="Account">

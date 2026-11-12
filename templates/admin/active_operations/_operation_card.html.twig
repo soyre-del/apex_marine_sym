@@ -90,11 +90,11 @@
     </form>
 
     <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(163, 182, 200, 0.12); display: flex; justify-content: flex-end;">
-        <form action="{{ path('admin_active_operations') }}" method="post" onsubmit="return confirm('Permanently delete record REQ-{{ '%04d'|format(operation.request_id) }} ({{ operation.vessel_name }})?');" style="margin:0;">
+        <form action="{{ path('admin_active_operations') }}" method="post" style="margin:0;">
             <input type="hidden" name="csrf_token" value="{{ csrf_token('delete_record_' ~ operation.request_id) }}">
             <input type="hidden" name="action" value="delete_record">
             <input type="hidden" name="request_id" value="{{ operation.request_id }}">
-            <button type="submit" class="btn btn-sm" style="font-size:0.7rem; padding:4px 10px; border-radius:5px; border:1px solid rgba(239,68,68,0.45); color:#fca5a5; background:rgba(239,68,68,0.08); cursor:pointer; font-weight:600; text-transform:uppercase; letter-spacing:0.4px;">
+            <button type="submit" class="btn btn-sm" data-confirm="Permanently delete record REQ-{{ '%04d'|format(operation.request_id) }} ({{ operation.vessel_name }})? This action cannot be undone." data-confirm-title="Delete Record" data-confirm-btn="Yes, Delete Record" data-confirm-variant="danger" style="font-size:0.7rem; padding:4px 10px; border-radius:5px; border:1px solid rgba(239,68,68,0.45); color:#fca5a5; background:rgba(239,68,68,0.08); cursor:pointer; font-weight:600; text-transform:uppercase; letter-spacing:0.4px;">
                 Delete Record
             </button>
         </form>

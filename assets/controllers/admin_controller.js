@@ -93,13 +93,7 @@ function initAdminPage() {
         });
     });
 
-    document.querySelectorAll('[data-confirm-restore]').forEach((form) => {
-        form.addEventListener('submit', (event) => {
-            if (!window.confirm('Restore this engineer to active duty?')) {
-                event.preventDefault();
-            }
-        });
-    });
+    // [data-confirm-restore] forms are handled cleanly via universal modal data-confirm attribute
 
     document.querySelectorAll('[data-alert-dismiss]').forEach((button) => {
         button.addEventListener('click', () => button.closest('.admin-alert, .adm-alert')?.remove());
