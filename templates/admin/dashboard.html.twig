@@ -704,7 +704,7 @@
                 <a href="{{ path('admin_manage_clients') }}"     class="admin-nav-link admin-nav-info">Clients</a>
                 <a href="{{ path('admin_billing') }}"            class="admin-nav-link admin-nav-info">Billing</a>
                 <a href="{{ path('app_home') }}"                 class="admin-nav-link admin-nav-info">Public</a>
-                <a href="{{ path('app_logout') }}"               class="admin-nav-link admin-nav-info">Log Out</a>
+                <a href="{{ path('app_logout') }}"               class="admin-nav-link" style="color:#f87171; border-color:rgba(239,68,68,0.4);" onclick="return confirm('Are you sure you want to log out?');">Log Out</a>
             </div>
         </div>
     </nav>
