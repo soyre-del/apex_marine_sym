@@ -55,6 +55,9 @@ final class eng extends AbstractController
 
         if ($request->isMethod('POST')) {
             $action = $request->request->get('action');
+            if ($action === 'create_record' || $action === 'create_field_report') {
+                return $this->createRecord($request, $engineerId);
+            }
             if ($action === 'edit_own_update') {
                 return $this->editOwnUpdate($request, $engineerId);
             }
@@ -345,6 +348,115 @@ final class eng extends AbstractController
                 'exception' => $e,
             ]);
             $this->addFlash('danger', 'CRITICAL FAULT: Unable to retract log entry.');
+        }
+
+        return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
+    }
+
+    private function createRecord(Request $request, int $engineerId): Response
+    {
+        $form = $request->request->all();
+        $token = $form['csrf_token'] ?? null;
+        if (!is_string($token) || !$this->isCsrfTokenValid('engineer_create_record', $token)) {
+            $this->addFlash('danger', 'Security validation failed.');
+
+            return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
+        }
+
+        $vesselName = trim((string) ($form['vessel_name'] ?? ''));
+        $serviceType = trim((string) ($form['service_type'] ?? ''));
+        $milestone = trim((string) ($form['milestone'] ?? ''));
+        $details = trim((string) ($form['details'] ?? ''));
+        $status = (string) ($form['status'] ?? 'in_progress');
+
+        if (!in_array($status, ['deployed', 'in_progress', 'resolved'], true)) {
+            $status = 'in_progress';
+        }
+
+        if ($vesselName === '' || $serviceType === '' || $milestone === '' || $details === '') {
+            $this->addFlash('warning', 'All fields (Vessel Name, Service Type, Milestone, Details) are required.');
+
+            return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);
+        }
+
+        try {
+            $this->connection->transactional(function (Connection $conn) use (
+                $engineerId,
+                $vesselName,
+                $serviceType,
+                $milestone,
+                $details,
+                $status
+            ): void {
+                $clientId = (int) $conn->fetchOne("SELECT user_id FROM users WHERE role = 'client' AND is_active = 1 ORDER BY user_id ASC LIMIT 1");
+                if ($clientId <= 0) {
+                    $clientId = 1;
+                }
+
+                $locationId = (int) $conn->fetchOne("SELECT location_id FROM service_locations ORDER BY location_id ASC LIMIT 1");
+                if ($locationId <= 0) {
+                    $locationId = 1;
+                }
+
+                $adminId = (int) $conn->fetchOne("SELECT user_id FROM users WHERE role = 'admin' ORDER BY user_id ASC LIMIT 1");
+                if ($adminId <= 0) {
+                    $adminId = 3;
+                }
+
+                $conn->insert('dispatch_requests', [
+                    'vessel_name' => $vesselName,
+                    'imo_number' => 'IMO-' . random_int(9100000, 9999999),
+                    'vessel_type' => 'Commercial Carrier',
+                    'contact_person' => 'Chief Engineer / Field Operative',
+                    'contact_phone' => '+1 (555) 019-2831',
+                    'service_type' => $serviceType,
+                    'is_urgent' => 0,
+                    'description' => $details,
+                    'client_id' => $clientId,
+                    'company' => 'Apex Marine Client Services',
+                    'location_id' => $locationId,
+                    'status' => $status,
+                    'is_active' => 1,
+                    'eta_date' => (new \DateTimeImmutable())->format('Y-m-d'),
+                ]);
+
+                $requestId = (int) $conn->lastInsertId();
+
+                $depStatus = match ($status) {
+                    'resolved' => 'completed',
+                    'in_progress' => 'on_site',
+                    default => 'en_route',
+                };
+
+                $conn->insert('deployments', [
+                    'deployment_status' => $depStatus,
+                    'request_id' => $requestId,
+                    'admin_id' => $adminId,
+                    'engineer_id' => $engineerId,
+                ]);
+
+                $conn->insert('operation_updates', [
+                    'request_id' => $requestId,
+                    'updater_id' => $engineerId,
+                    'status_milestone' => $milestone,
+                    'detailed_message' => $details,
+                ]);
+
+                $engProfileStatus = ($status === 'resolved') ? 'available' : 'deployed';
+                $conn->update('engineer_profiles', [
+                    'current_status' => $engProfileStatus,
+                ], [
+                    'engineer_id' => $engineerId,
+                ]);
+            });
+
+            $this->addFlash('success', 'Field service record created successfully for ' . $vesselName . '.');
+        } catch (\Throwable $e) {
+            $this->logger->error('Failed to create field service record.', [
+                'engineer_id' => $engineerId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->addFlash('danger', 'CRITICAL FAULT: Unable to record service log.');
         }
 
         return $this->redirectToRoute('engineer_operations', status: Response::HTTP_SEE_OTHER);

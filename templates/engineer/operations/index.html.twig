@@ -240,11 +240,20 @@
             {# /eng-welcome #}
 
             {# ── Existing page header ─────────────────────────────────── #}
-            <header class="engineer-page-heading">
+            <header class="engineer-page-heading" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:1rem;">
                 <div>
-                    <p class="engineer-eyebrow">Field Operations</p>
+                    <p class="engineer-eyebrow">Field Operations &bull; Staff Records</p>
                     <h2 style="margin:0;font-size:1.15rem;font-weight:700;color:#f0f5ff;">Active Deployment Protocol</h2>
-                    <p>Review assigned technical interventions and log updates directly to the client timeline.</p>
+                    <p>Review assigned interventions, report field logs, or create new service records.</p>
+                </div>
+                <div style="display:flex; gap:0.75rem; align-items:center; flex-wrap:wrap;">
+                    <button type="button" class="engineer-button engineer-button-primary" id="openCreateRecordBtn" style="display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        + File Field Service Record
+                    </button>
+                    <button type="button" onclick="window.location.reload();" class="engineer-button engineer-button-outline" title="Refresh assignments" style="cursor:pointer;">
+                        Refresh
+                    </button>
                 </div>
             </header>
 
@@ -276,7 +285,11 @@
             {% elseif tasks is empty %}
                 <section class="engineer-empty">
                     <h2>No Active Assignments</h2>
-                    <p>You are currently cleared of all tasks. Stand by for deployment orders.</p>
+                    <p>You have no pending assignments dispatched from the command matrix. You can file a field service record directly below or stand by for deployment orders.</p>
+                    <button type="button" class="engineer-button engineer-button-primary" id="openCreateRecordBtnEmpty" style="margin-top:1.2rem; display:inline-flex; align-items:center; gap:6px; cursor:pointer;">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
+                        + File Field Service Record
+                    </button>
                 </section>
             {% else %}
                 <section class="engineer-task-grid" aria-label="Assigned field operations">
@@ -476,6 +489,68 @@
             </section>
         </div>
 
+        {# ── Create Field Record Modal (Staff: Create Records) ──────────── #}
+        <div class="engineer-modal" id="createFieldRecordModal" aria-hidden="true">
+            <section class="engineer-modal-dialog" role="dialog" aria-modal="true" aria-labelledby="create-record-title">
+                <header class="engineer-modal-header">
+                    <h2 id="create-record-title">File Field Service Record</h2>
+                    <button type="button" class="engineer-modal-close" data-close-create-modal aria-label="Close">&times;</button>
+                </header>
+                <form method="post" action="{{ path('engineer_operations') }}">
+                    <div class="engineer-modal-body">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token('engineer_create_record') }}">
+                        <input type="hidden" name="action" value="create_record">
+
+                        <label class="engineer-label" for="new-vessel-name">
+                            Target Vessel / Installation
+                            <input id="new-vessel-name" type="text" name="vessel_name" class="engineer-control"
+                                   placeholder="e.g. M/V Atlantic Voyager" required>
+                        </label>
+
+                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                            <label class="engineer-label" for="new-service-type">
+                                Engineering Discipline
+                                <select id="new-service-type" name="service_type" class="engineer-control" required>
+                                    <option value="Main Engine Overhaul">Main Engine Overhaul</option>
+                                    <option value="Automation & Controls">Automation &amp; Controls</option>
+                                    <option value="Hydraulic Systems">Hydraulic Systems</option>
+                                    <option value="Auxiliary Machinery">Auxiliary Machinery</option>
+                                    <option value="Electrical Diagnostics">Electrical Diagnostics</option>
+                                    <option value="Propulsion Alignment">Propulsion Alignment</option>
+                                    <option value="Emergency Response">Emergency Response</option>
+                                </select>
+                            </label>
+
+                            <label class="engineer-label" for="new-op-status">
+                                Operational Status
+                                <select id="new-op-status" name="status" class="engineer-control" required>
+                                    <option value="in_progress">In Progress (On Site)</option>
+                                    <option value="deployed">Deployed (En Route)</option>
+                                    <option value="resolved">Resolved / Certified</option>
+                                </select>
+                            </label>
+                        </div>
+
+                        <label class="engineer-label" for="new-milestone">
+                            Status Milestone / Brief
+                            <input id="new-milestone" type="text" name="milestone" class="engineer-control"
+                                   placeholder="e.g. Completed initial diagnostic scan and calibration" required>
+                        </label>
+
+                        <label class="engineer-label" for="new-details">
+                            Detailed Technical Log Message
+                            <textarea id="new-details" name="details" rows="4" class="engineer-control"
+                                      placeholder="Provide technical report notes, operational parameters checked, parts serviced..." required></textarea>
+                        </label>
+                    </div>
+                    <footer class="engineer-modal-footer">
+                        <button type="button" class="engineer-button engineer-button-outline" data-close-create-modal>Cancel</button>
+                        <button type="submit" class="engineer-button engineer-button-primary">Submit Service Record</button>
+                    </footer>
+                </form>
+            </section>
+        </div>
+
     </div>{# /engineer-operations-page #}
 
     <script>
@@ -576,8 +651,36 @@
                 };
             });
 
+            // 4. Create Field Service Record Modal (Staff: Create Records)
+            var createModal = document.getElementById('createFieldRecordModal');
+            function openCreateModal(e) {
+                if (e) e.preventDefault();
+                if (!createModal) return;
+                createModal.classList.add('is-open');
+                createModal.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('engineer-modal-open');
+                var firstInput = createModal.querySelector('#new-vessel-name');
+                if (firstInput) setTimeout(function() { firstInput.focus(); }, 50);
+            }
+
+            var btnCreate = document.getElementById('openCreateRecordBtn');
+            if (btnCreate) btnCreate.onclick = openCreateModal;
+            var btnCreateEmpty = document.getElementById('openCreateRecordBtnEmpty');
+            if (btnCreateEmpty) btnCreateEmpty.onclick = openCreateModal;
+
+            page.querySelectorAll('[data-close-create-modal]').forEach(function (btn) {
+                btn.onclick = function (e) {
+                    e.preventDefault();
+                    if (createModal) {
+                        createModal.classList.remove('is-open');
+                        createModal.setAttribute('aria-hidden', 'true');
+                    }
+                    document.body.classList.remove('engineer-modal-open');
+                };
+            });
+
             // Close on backdrop click
-            [logModal, editModal, delModal].forEach(function (m) {
+            [logModal, editModal, delModal, createModal].forEach(function (m) {
                 if (m) {
                     m.onclick = function (e) {
                         if (e.target === m) {
