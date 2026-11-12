@@ -1,24 +1,54 @@
 <article class="card glass-card active-ops-card">
     <div class="active-ops-card-heading">
-        <h2>{{ operation.vessel_name }}</h2>
-        <span class="badge bg-brand-ocean active-ops-request-id">REQ-{{ '%04d'|format(operation.request_id) }}</span>
-    </div>
-    <p class="text-info active-ops-assigned">
-        Assigned: <strong>{{ operation.eng_name }}</strong>
-        {% if operation.specialty is defined and 'chief engineer' in operation.specialty|lower %}
-            <span style="display:inline-block; margin-left:6px; padding:2px 7px; border-radius:4px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; font-size:0.7rem; font-weight:700; text-transform:uppercase;">
-                Chief Engineer (Universal Clearance)
+        <div>
+            <h2>{{ operation.vessel_name }}</h2>
+            {% if operation.vessel_type is defined and operation.vessel_type %}
+                <span style="display:block; margin-top:4px; color:#91a8bd; font-size:0.76rem; font-weight:600;">
+                    {{ operation.vessel_type }}{% if operation.imo_number is defined and operation.imo_number %} &bull; IMO {{ operation.imo_number }}{% endif %}
+                </span>
+            {% endif %}
+        </div>
+        <div style="display:flex; flex-direction:column; align-items:flex-end; gap:5px;">
+            <span class="badge bg-brand-ocean active-ops-request-id">REQ-{{ '%04d'|format(operation.request_id) }}</span>
+            <span class="active-ops-status-pill active-ops-status-pill--{{ operation.status|default('pending') }}">
+                {{ (operation.status|default('pending'))|replace({'_': ' '})|upper }}
             </span>
-        {% elseif operation.specialty is defined and operation.specialty %}
-            <span style="color:#a3b6c8; font-size:0.8rem;">({{ operation.specialty }})</span>
+        </div>
+    </div>
+
+    {% if operation.service_type is defined and operation.service_type %}
+        <p style="margin:0 0 10px; font-size:0.78rem; color:#ffc857; font-weight:700; text-transform:uppercase; letter-spacing:0.04em;">
+            Discipline: {{ operation.service_type }}
+        </p>
+    {% endif %}
+
+    <p class="text-info active-ops-assigned">
+        {% if operation.eng_name is defined and operation.eng_name %}
+            Assigned: <strong>{{ operation.eng_name }}</strong>
+            {% if operation.specialty is defined and 'chief engineer' in operation.specialty|lower %}
+                <span style="display:inline-block; margin-left:6px; padding:2px 7px; border-radius:4px; background:rgba(245,158,11,0.2); border:1px solid #f59e0b; color:#fbbf24; font-size:0.7rem; font-weight:700; text-transform:uppercase;">
+                    Chief Engineer (Universal Clearance)
+                </span>
+            {% elseif operation.specialty is defined and operation.specialty %}
+                <span style="color:#a3b6c8; font-size:0.8rem;">({{ operation.specialty }})</span>
+            {% endif %}
+        {% else %}
+            Assigned: <strong style="color:#fbbf24;">Awaiting Engineer Deployment</strong>
+            <a href="{{ path('admin_pending_dispatch') }}" style="margin-left:8px; color:#70d7fa; font-weight:700; text-decoration:underline; font-size:0.75rem;">Assign Engineer &rarr;</a>
         {% endif %}
     </p>
+
+    {% if operation.description is defined and operation.description %}
+        <p style="margin:0 0 12px; padding:10px 12px; border-radius:7px; background:rgba(4,20,34,0.55); color:#c5d4e2; font-size:0.78rem; line-height:1.5;">
+            {{ operation.description }}
+        </p>
+    {% endif %}
 
     <form action="{{ path('admin_active_operations') }}" method="post" class="active-ops-form">
         <input type="hidden" name="_token" value="{{ csrf_token('active_operation_' ~ operation.request_id) }}">
         <input type="hidden" name="action" value="add_update">
         <input type="hidden" name="request_id" value="{{ operation.request_id }}">
-        <input type="hidden" name="engineer_id" value="{{ operation.engineer_id }}">
+        <input type="hidden" name="engineer_id" value="{{ operation.engineer_id|default(0) }}">
 
         <label class="visually-hidden" for="milestone-{{ operation.request_id }}">Milestone</label>
         <input
@@ -58,4 +88,15 @@
             <button type="submit" class="btn btn-info active-ops-submit">Post Log</button>
         </div>
     </form>
+
+    <div style="margin-top: 14px; padding-top: 10px; border-top: 1px solid rgba(163, 182, 200, 0.12); display: flex; justify-content: flex-end;">
+        <form action="{{ path('admin_active_operations') }}" method="post" onsubmit="return confirm('Permanently delete record REQ-{{ '%04d'|format(operation.request_id) }} ({{ operation.vessel_name }})?');" style="margin:0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token('delete_record_' ~ operation.request_id) }}">
+            <input type="hidden" name="action" value="delete_record">
+            <input type="hidden" name="request_id" value="{{ operation.request_id }}">
+            <button type="submit" class="btn btn-sm" style="font-size:0.7rem; padding:4px 10px; border-radius:5px; border:1px solid rgba(239,68,68,0.45); color:#fca5a5; background:rgba(239,68,68,0.08); cursor:pointer; font-weight:600; text-transform:uppercase; letter-spacing:0.4px;">
+                Delete Record
+            </button>
+        </form>
+    </div>
 </article>

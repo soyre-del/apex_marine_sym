@@ -63,6 +63,45 @@ function initActiveOperations() {
             closeModal();
         }
     });
+
+    const clearModal = document.getElementById('clearHistoryModal');
+    const openClearBtn = document.getElementById('openClearHistoryBtn');
+    const confirmClearBtn = document.getElementById('confirmClearHistoryBtn');
+    const clearForm = document.getElementById('clearHistoryForm');
+
+    if (clearModal && openClearBtn) {
+        const closeClearModal = () => {
+            clearModal.classList.remove('show');
+            clearModal.setAttribute('aria-hidden', 'true');
+        };
+
+        openClearBtn.addEventListener('click', () => {
+            clearModal.classList.add('show');
+            clearModal.setAttribute('aria-hidden', 'false');
+            confirmClearBtn?.focus();
+        });
+
+        clearModal.querySelectorAll('[data-modal-dismiss]').forEach((btn) => {
+            btn.addEventListener('click', closeClearModal);
+        });
+
+        clearModal.addEventListener('click', (event) => {
+            if (event.target === clearModal) {
+                closeClearModal();
+            }
+        });
+
+        confirmClearBtn?.addEventListener('click', () => {
+            closeClearModal();
+            clearForm?.submit();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && clearModal.classList.contains('show')) {
+                closeClearModal();
+            }
+        });
+    }
 }
 
 if (document.readyState === 'loading') {

@@ -49,6 +49,60 @@
     color: #fff;
 }
 
+.active-ops-clear-btn {
+    display: inline-flex;
+    align-items: center;
+    min-height: 40px;
+    padding: 8px 14px;
+    border: 1px solid rgba(239, 68, 68, .55);
+    border-radius: 6px;
+    background: rgba(239, 68, 68, .12);
+    color: #fca5a5;
+    font: 700 11px/1.5 Inter, Arial, sans-serif;
+    letter-spacing: .8px;
+    text-decoration: none;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color .18s ease, border-color .18s ease, color .18s ease;
+}
+
+.active-ops-clear-btn:hover {
+    background: rgba(239, 68, 68, .26);
+    border-color: #ef4444;
+    color: #fff;
+}
+
+.active-ops-status-pill {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+}
+.active-ops-status-pill--pending {
+    background: rgba(245, 158, 11, .18);
+    color: #fbbf24;
+}
+.active-ops-status-pill--acknowledged,
+.active-ops-status-pill--deployed {
+    background: rgba(11, 165, 223, .18);
+    color: #70d7fa;
+}
+.active-ops-status-pill--in_progress {
+    background: rgba(56, 189, 248, .18);
+    color: #38bdf8;
+}
+.active-ops-status-pill--resolved {
+    background: rgba(16, 185, 129, .18);
+    color: #34d399;
+}
+.active-ops-status-pill--cancelled {
+    background: rgba(239, 68, 68, .18);
+    color: #f87171;
+}
+
 .active-ops-title {
     margin: 0 0 28px;
     color: #fff;

@@ -735,6 +735,14 @@
             <div class="adm-clock-block" aria-live="polite" aria-atomic="true">
                 <div class="adm-clock" id="adm-clock">--:--:--</div>
                 <div class="adm-date"  id="adm-date">Loading…</div>
+                <button type="button" onclick="window.location.reload();" class="adm-btn adm-btn--edit" style="margin-top:8px; display:inline-flex; align-items:center; gap:5px; font-size:0.75rem;" title="Refresh Command Center">
+                    <svg style="width:12px; height:12px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="23 4 23 10 17 10"></polyline>
+                        <polyline points="1 20 1 14 7 14"></polyline>
+                        <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                    </svg>
+                    Refresh
+                </button>
             </div>
         </div>
 
@@ -780,7 +788,12 @@
                 <div class="adm-stat-body">
                     <div class="adm-stat-value">{{ metrics.total_records }}</div>
                     <div class="adm-stat-label">Total Records</div>
-                    <a href="{{ path('admin_active_operations') }}" class="adm-stat-link">Operations &amp; Requests &rarr;</a>
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:6px; margin-top:6px;">
+                        <a href="{{ path('admin_active_operations') }}" class="adm-stat-link">Operations &amp; Requests &rarr;</a>
+                        <button type="button" class="adm-stat-link" data-modal-open="clearHistoryModal" style="background:none; border:none; padding:0; cursor:pointer; color:#f87171;" title="Clear all history">
+                            Clear History
+                        </button>
+                    </div>
                 </div>
             </article>
 
@@ -903,6 +916,33 @@
         old_post: old_post,
         adminCsrfToken: adminCsrfToken
     } only %}
+
+    {# ── Clear History Modal (Verification) ── #}
+    <div class="admin-modal" id="clearHistoryModal" role="dialog" aria-modal="true" aria-labelledby="clearHistoryTitle">
+        <div class="admin-modal-dialog">
+            <div class="admin-modal-header" style="border-bottom-color: rgba(239, 68, 68, 0.3);">
+                <h2 id="clearHistoryTitle" style="color: #f87171;">Clear All History Verification</h2>
+                <button type="button" class="admin-modal-close" data-modal-close aria-label="Close modal">&times;</button>
+            </div>
+            <div class="admin-modal-confirm">
+                <div class="admin-confirm-icon">!</div>
+                <p>
+                    <strong>WARNING:</strong> Are you sure you want to permanently clear all dispatch requests, operational logs, engineer deployments, and invoice history?
+                </p>
+                <p style="color: #94a3b8; font-size: 0.8rem;">
+                    All personnel will be reset to available status. This action cannot be undone.
+                </p>
+                <form action="{{ path('admin_dashboard') }}" method="post" data-turbo="false" style="margin: 0;">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clear_history') }}">
+                    <input type="hidden" name="action" value="clear_history">
+                    <div class="admin-confirm-actions">
+                        <button type="button" class="admin-button admin-button-cancel" data-modal-close>Cancel</button>
+                        <button type="submit" class="admin-button admin-button-danger" style="background:#dc2626;">Yes, Clear All History</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 </main>
 

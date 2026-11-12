@@ -177,7 +177,32 @@ final class admin extends AbstractController
             'edit_engineer',
             'delete_engineer',
             'restore_engineer',
+            'clear_history',
         ], true)) {
+            return $this->redirectToRoute('admin_dashboard');
+        }
+
+        if ($action === 'clear_history') {
+            if (!is_string($token) || (!$this->isCsrfTokenValid('admin_clear_history', $token) && !$this->isCsrfTokenValid('admin_engineers', $token))) {
+                $this->addFlash('danger', 'Security token validation failed. Unauthorized request.');
+
+                return $this->redirectToRoute('admin_dashboard');
+            }
+
+            try {
+                $this->connection->transactional(function (Connection $connection): void {
+                    $connection->executeStatement('DELETE FROM operation_updates');
+                    $connection->executeStatement('DELETE FROM invoices');
+                    $connection->executeStatement('DELETE FROM deployments');
+                    $connection->executeStatement('DELETE FROM dispatch_requests');
+                    $connection->executeStatement("UPDATE engineer_profiles SET current_status = 'available' WHERE current_status = 'deployed'");
+                });
+                $this->addFlash('success', 'All operational records and dispatch history have been successfully cleared.');
+            } catch (\Throwable $exception) {
+                $this->logger->error('Unable to clear operation history.', ['exception' => $exception]);
+                $this->addFlash('danger', 'System error: Unable to clear records history.');
+            }
+
             return $this->redirectToRoute('admin_dashboard');
         }
 

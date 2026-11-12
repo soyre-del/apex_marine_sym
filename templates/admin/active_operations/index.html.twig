@@ -9,8 +9,31 @@
 {% block body %}
     <main class="active-ops-page">
         <div class="active-ops-container">
-            <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-info active-ops-back">&larr; Return to Matrix</a>
-            <h1 class="active-ops-title">Active Operations Tracker</h1>
+            <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; margin-bottom:24px;">
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <a href="{{ path('admin_dashboard') }}" class="btn btn-outline-info active-ops-back" style="margin-bottom:0;">&larr; Return to Matrix</a>
+                    <button type="button" class="btn btn-outline-info active-ops-back" style="margin-bottom:0; cursor:pointer;" onclick="window.location.reload();" title="Refresh records">
+                        <svg style="width:14px; height:14px; vertical-align:-2px; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="23 4 23 10 17 10"></polyline>
+                            <polyline points="1 20 1 14 7 14"></polyline>
+                            <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        Refresh
+                    </button>
+                </div>
+                <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                    <a href="{{ path('admin_pending_dispatch') }}" class="btn btn-outline-info active-ops-back" style="margin-bottom:0;">Assign Pending Dispatches &rarr;</a>
+                    <button type="button" class="btn active-ops-clear-btn" id="openClearHistoryBtn" title="Clear all history and records">
+                        <svg style="width:14px; height:14px; vertical-align:-2px; margin-right:4px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="3 6 5 6 21 6"></polyline>
+                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                        </svg>
+                        Clear History
+                    </button>
+                </div>
+            </div>
+
+            <h1 class="active-ops-title">Active Operations &amp; Records Tracker</h1>
 
             {% for message in app.flashes('success') %}
                 <div class="alert alert-success active-ops-alert active-ops-alert-success" role="status">
@@ -27,25 +50,99 @@
                 <div class="alert alert-danger active-ops-alert active-ops-alert-danger" role="alert">
                     Unable to load active operations right now. Please try again later.
                 </div>
-            {% elseif operations is empty %}
-                <div class="card glass-card active-ops-empty">
-                    <h2>No Active Deployments</h2>
-                    <p>All personnel are currently on standby or pending assignment.</p>
-                </div>
             {% else %}
-                <div class="row g-4 active-ops-grid">
-                    {% for operation in operations %}
-                        <div class="col-md-6 col-xl-4">
-                            {% include 'admin/active_operations/_operation_card.html.twig' with {
-                                operation: operation,
-                                statuses: statuses
-                            } only %}
+                {# ── Section 1: Active Engineer Deployments ── #}
+                <section style="margin-bottom: 36px;">
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                        <h2 style="margin:0; color:#f0f5ff; font-size:1.15rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">
+                            Active Engineer Deployments ({{ operations|length }})
+                        </h2>
+                    </div>
+
+                    {% if operations is empty %}
+                        <div class="card glass-card active-ops-empty" style="margin-bottom: 12px;">
+                            <h2>No Active Engineer Deployments</h2>
+                            <p style="margin-bottom:14px;">All engineers are currently on standby or requests are awaiting engineer assignment.</p>
+                            <div>
+                                <a href="{{ path('admin_pending_dispatch') }}" class="btn btn-outline-info active-ops-back" style="margin-bottom:0;">Go to Pending Dispatches &rarr;</a>
+                            </div>
                         </div>
-                    {% endfor %}
-                </div>
+                    {% else %}
+                        <div class="row g-4 active-ops-grid">
+                            {% for operation in operations %}
+                                <div class="col-md-6 col-xl-4">
+                                    {% include 'admin/active_operations/_operation_card.html.twig' with {
+                                        operation: operation,
+                                        statuses: statuses
+                                    } only %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+
+                {# ── Section 2: All Dispatch & Operation Records ── #}
+                <section>
+                    <div style="display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+                        <h2 style="margin:0; color:#f0f5ff; font-size:1.15rem; font-weight:800; text-transform:uppercase; letter-spacing:0.04em;">
+                            All Operation &amp; Dispatch Records ({{ all_records|default([])|length }})
+                        </h2>
+                    </div>
+
+                    {% if all_records|default([]) is empty %}
+                        <div class="card glass-card active-ops-empty">
+                            <h2>No Dispatch Records Found</h2>
+                            <p>No dispatch requests have been submitted yet.</p>
+                        </div>
+                    {% else %}
+                        <div class="row g-4 active-ops-grid">
+                            {% for record in all_records %}
+                                <div class="col-md-6 col-xl-4">
+                                    {% include 'admin/active_operations/_operation_card.html.twig' with {
+                                        operation: record,
+                                        statuses: statuses
+                                    } only %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
             {% endif %}
         </div>
 
         {% include 'admin/active_operations/_resolve_warning_modal.html.twig' %}
+
+        {# ── Clear History Verification Modal ── #}
+        <div class="modal fade active-ops-modal" id="clearHistoryModal" tabindex="-1" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content bg-dark text-white glass-card" style="border: 1px solid rgba(239, 68, 68, 0.55);">
+                    <div class="modal-header" style="border-bottom: 1px solid rgba(239, 68, 68, 0.25);">
+                        <h2 class="modal-title" style="color: #f87171; font-weight: 800; font-size: 1.1rem; text-transform: uppercase;">
+                            Clear All History Verification
+                        </h2>
+                        <button type="button" class="btn-close btn-close-white" data-modal-dismiss aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" style="padding: 22px;">
+                        <p style="color: #fca5a5; font-weight: 700; font-size: 0.92rem; margin-bottom: 10px;">
+                            WARNING: Are you sure you want to permanently clear all dispatch history?
+                        </p>
+                        <p style="color: #cbd5e1; font-size: 0.85rem; line-height: 1.6; margin-bottom: 0;">
+                            This will permanently delete all dispatch requests, operational diagnostic logs, engineer deployment history, and invoice records. All deployed personnel will be reset to available status. This action cannot be reversed.
+                        </p>
+                    </div>
+                    <div class="modal-footer" style="border-top: 1px solid rgba(239, 68, 68, 0.25); display: flex; justify-content: flex-end; gap: 10px;">
+                        <button type="button" class="btn btn-outline-secondary" data-modal-dismiss style="border-color: rgba(163, 182, 200, 0.35); color: #cbd5e1;">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="confirmClearHistoryBtn" style="background: #dc2626; border-color: #dc2626; color: #fff; font-weight: 700; padding: 8px 18px;">
+                            Yes, Clear All History
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <form id="clearHistoryForm" action="{{ path('admin_active_operations') }}" method="post" style="display:none;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token('admin_clear_history') }}">
+            <input type="hidden" name="action" value="clear_history">
+        </form>
     </main>
 {% endblock %}
