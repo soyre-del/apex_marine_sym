@@ -712,6 +712,14 @@
     <div class="admin-content">
 
         {# ── Alerts ───────────────────────────────────────────────────────── #}
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="adm-alert adm-alert--{{ label == 'danger' or label == 'error' ? 'danger' : (label == 'warning' ? 'warning' : 'success') }}" role="status">
+                    <span><strong>&gt; SYSTEM_LOG:</strong> {{ message }}</span>
+                    <button type="button" class="adm-alert-close" data-alert-dismiss aria-label="Dismiss">&times;</button>
+                </div>
+            {% endfor %}
+        {% endfor %}
         {% if system_message %}
             <div class="adm-alert adm-alert--{{ message_type == 'danger' ? 'danger' : (message_type == 'warning' ? 'warning' : (message_type == 'success' ? 'success' : 'info')) }}"
                  role="{{ message_type == 'danger' ? 'alert' : 'status' }}">
